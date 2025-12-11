@@ -1,0 +1,197 @@
+/* Container for the whole page */
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+  overflow: hidden;
+}
+
+/* --- LEFT SIDE (Branding) --- */
+.login-banner {
+  flex: 1;
+  background-color: #282c34; /* Navy Blue */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-content {
+  z-index: 2;
+  text-align: center;
+  padding: 40px;
+  max-width: 500px;
+}
+
+.banner-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.banner-content p {
+  font-size: 1.1rem;
+  color: #cfd8dc; /* Light grey text for contrast */
+  line-height: 1.6;
+}
+
+/* Decorative background circle effect */
+.decoration-circle {
+  position: absolute;
+  bottom: -100px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+/* --- RIGHT SIDE (Form) --- */
+.login-form-wrapper {
+  flex: 1;
+  background-color: #ffffff; /* White */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-box h2 {
+  font-size: 28px;
+  color: #282c34; /* Navy text */
+  margin-bottom: 10px;
+}
+
+.sub-text {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+/* Input Fields */
+.input-group {
+  margin-bottom: 20px;
+
+  align-items: center;
+}
+
+.input-group label {
+  display: block;
+  width:11px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.input-group input {
+  width: 100%;
+  margin-left:1px;
+  padding: 12px 15px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px; /* Slightly rounded corners */
+  transition: all 0.3s;
+  outline: none;
+}
+
+/* Focus Effect: Orange Border */
+.input-group input:focus {
+  border-color: #ff7c00;
+  box-shadow: 0 0 0 3px rgba(255, 124, 0, 0.1);
+}
+
+/* Form Actions (Remember me / Forgot Pass) */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 25px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #555;
+  cursor: pointer;
+}
+
+.forgot-password {
+  color: #282c34;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* Login Button */
+.login-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #ff7c00; /* Primary Orange */
+  color: white;
+  border: none;
+  border-radius: 50px; /* Pill shape matching your navbar */
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.login-submit-btn:hover {
+  background-color: #e06b00; /* Darker Orange */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 124, 0, 0.3);
+}
+
+/* Register Link Area */
+.register-link {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 14px;
+  color: #666;
+}
+
+.register-link a {
+  color: #ff7c00; /* Orange Link */
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 900px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  /* Hide the banner image on small mobile screens or reduce height */
+  .login-banner {
+    display: none; 
+    /* Alternatively, set height: 150px to show a small header */
+  }
+
+  .login-form-wrapper {
+    width: 100%;
+    padding: 20px;
+  }
+}

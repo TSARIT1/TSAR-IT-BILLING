@@ -1,0 +1,543 @@
+/* =========================================
+   GODOWN PAGE STYLING
+   Orange-Blue-White Theme
+   ========================================= */
+
+/* Page Header */
+.godown-page-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+}
+
+.godown-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.godown-title-section {
+    flex: 1;
+}
+
+.godown-page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.godown-title-icon {
+    font-size: 36px;
+    color: #ffffff;
+}
+
+.godown-page-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.godown-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.godown-add-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #3e4e96;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.godown-add-btn:hover {
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Empty State */
+.godown-empty-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 60px 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.godown-empty-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.godown-empty-icon-wrapper {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 25px;
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(62, 78, 150, 0.3);
+}
+
+.godown-empty-icon {
+    font-size: 60px;
+    color: #ffffff;
+}
+
+.godown-empty-content h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 15px 0;
+}
+
+.godown-empty-content p {
+    font-size: 16px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 30px 0;
+}
+
+.godown-enable-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+.godown-enable-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.5);
+}
+
+/* Summary Card */
+.godown-summary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.godown-summary-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 5px solid #3e4e96;
+}
+
+.godown-summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.godown-summary-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.godown-summary-icon {
+    font-size: 32px;
+    color: #ffffff;
+}
+
+.godown-summary-content {
+    flex: 1;
+}
+
+.godown-summary-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.godown-summary-content p {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+/* Table Container */
+.godown-list-container {
+    margin-top: 0;
+}
+
+.godown-table-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.godown-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.godown-table thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    
+}
+
+.godown-table th {
+    align-items: center;
+    padding: 16px 14px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.godown-table th svg {
+    margin-right: 6px;
+    vertical-align: middle;
+    color: #3e4e96;
+}
+
+.godown-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+.godown-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.godown-table td {
+    padding: 14px;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.godown-name-cell {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.godown-row-icon {
+    margin-right: 8px;
+    color: #3e4e96;
+    vertical-align: middle;
+}
+
+.godown-actions-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.godown-action-btn {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+
+.godown-action-btn.edit-btn {
+    color: #3e4e96;
+}
+
+.godown-action-btn.edit-btn:hover {
+    background: #eef2ff;
+    color: #1e3a8a;
+}
+
+.godown-action-btn.delete-btn {
+    color: #ef4444;
+}
+
+.godown-action-btn.delete-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Modal */
+.godown-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.godown-modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.godown-modal-header {
+    padding: 25px 30px;
+    border-bottom: 2px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.godown-modal-header h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.godown-modal-header h3 svg {
+    color: #3e4e96;
+    font-size: 26px;
+}
+
+.godown-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.godown-modal-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.godown-modal-body {
+    padding: 30px;
+}
+
+.godown-input-group {
+    margin-bottom: 20px;
+}
+
+.godown-input-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.label-icon-godown {
+    font-size: 14px;
+    color: #3e4e96;
+}
+
+.godown-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.godown-input-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    color: #9ca3af;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.godown-input {
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    font-size: 14px;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.godown-input:focus {
+    border-color: #3e4e96;
+    outline: none;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+}
+
+.godown-modal-footer {
+    padding: 20px 30px;
+    border-top: 2px solid #f3f4f6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 0 0 16px 16px;
+}
+
+.godown-cancel-btn,
+.godown-save-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.godown-cancel-btn {
+    background: #ffffff;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+}
+
+.godown-cancel-btn:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.godown-save-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+}
+
+.godown-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .godown-page-title {
+        font-size: 24px;
+    }
+
+    .godown-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .godown-add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .godown-empty-container {
+        padding: 40px 20px;
+    }
+
+    .godown-table-container {
+        overflow-x: auto;
+    }
+
+    .godown-modal-content {
+        width: 95%;
+    }
+
+    .godown-modal-header,
+    .godown-modal-body,
+    .godown-modal-footer {
+        padding: 20px;
+    }
+
+    .godown-modal-footer {
+        flex-direction: column;
+    }
+
+    .godown-cancel-btn,
+    .godown-save-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

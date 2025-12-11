@@ -1,0 +1,248 @@
+/* ===== Sidebar Container ===== */
+.sidebar {
+  width: 260px;
+  background: #0f1c39;
+  color: white;
+  padding: 15px;
+  position: fixed;
+  top: 8%;
+  /* Adjust based on your Navbar height */
+  left: 0;
+  height: 95%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+/* Scrollbar Styling */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #273b66;
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #3b56a3;
+}
+
+/* ===== Business Profile ===== */
+.business-profile {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.profile-circle {
+  width: 50px;
+  height: 50px;
+  background: #f47520;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 18px;
+  color: black;
+}
+
+.business-profile h4 {
+  margin: 10px 0 3px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.business-profile p {
+  font-size: 13px;
+  opacity: 0.7;
+  color: #bfc8e2;
+}
+
+/* ===== Create Invoice Button ===== */
+.create-invoice-btn {
+  width: 100%;
+  background: #132452;
+  padding: 12px;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  margin: 18px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.create-invoice-btn:hover {
+  background: #1f3673;
+}
+
+/* ===== Menu Sections ===== */
+.menu-title {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.65;
+  margin: 14px 0 6px;
+}
+
+.menu-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-section li {
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.menu-section li a {
+  text-decoration: none;
+  color: #dfe6ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.menu-section li:hover {
+  background: #1d2d55;
+}
+
+.menu-section li a:hover {
+  color: #fff;
+}
+
+.menu-section li.active,
+.menu-section li.active a {
+  background: #21335b;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 15px;
+  width: 18px;
+}
+
+/* ===== Dropdown Menu Styling ===== */
+.dropdown-parent {
+  padding: 10px 12px;
+  border-radius: 6px;
+  display: block;
+  /* Important for vertical stacking */
+  margin-bottom: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  color: #dfe6ff;
+}
+
+.dropdown-parent:hover {
+  background: #1d2d55;
+}
+
+/* Dropdown Header (The Clickable Part) */
+.dropdown-header {
+  /* padding removed here as parent handles padding */
+  color: #cfd8dc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  transition: color 0.3s;
+  width: 100%;
+}
+
+.dropdown-header:hover {
+  color: white;
+}
+
+/* Dropdown List (The Hidden Part) */
+.sidebar .dropdown-menu {
+  list-style: none;
+  padding-left: 0;
+  margin: 5px 0 0 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  /* Animation */
+  display: block !important;
+  /* Override navbar.css with !important */
+  animation: dropdownFade 0.3s ease-out;
+}
+
+.sidebar .dropdown-menu li {
+  padding: 0;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.sidebar .dropdown-menu li:hover {
+  background: transparent;
+  /* Remove default hover from parent li */
+}
+
+.sidebar .dropdown-menu li a {
+  display: block;
+  padding: 10px 12px 10px 25px;
+  /* Indentation */
+  color: #cfd8dc;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.sidebar .dropdown-menu li a:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding-left: 30px;
+  /* Slight slide effect */
+}
+
+/* Animation Keyframes */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Settings Section ===== */
+.settings-section {
+  padding-top: 10px;
+  border-top: 1px solid #20305d;
+}
+
+.settings-section ul li a {
+  font-size: 15px;
+  color: #ffffffd5;
+  gap: 12px;
+}
+
+.settings-section ul li a:hover {
+  color: #fff;
+}
+
+/* ===== Responsive Design for Sidebar ===== */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 220px;
+    height: 100%;
+    top: 0;
+    /* Full height on mobile */
+  }
+}

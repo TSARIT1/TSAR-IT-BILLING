@@ -1,0 +1,288 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: #4b1dd1;
+  color: white;
+  overflow-x: hidden;
+}
+
+/* Navbar */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  color: black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 50px;
+  z-index: 1000;
+  transition: background-color 0.4s ease, color 0.4s;
+}
+
+nav.scrolled {
+  background-color: #3b1cc3;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.logo img {
+  cursor: pointer;
+}
+
+.nav-links {
+  display: flex;
+  gap: 25px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: #ff7c00;
+}
+
+/* Navbar Buttons */
+.nav-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-buttons button {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.demo-btn {
+  background: white;
+  border: 2px solid #000;
+  color: black;
+}
+
+.demo-btn:hover {
+  background: #ff7c00;
+  color: white;
+  border-color: #ff7c00;
+}
+
+.start-btn {
+  background: #000;
+  color: white;
+}
+
+.start-btn:hover {
+  background: #ff7c00;
+}
+
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+/* Hero Section */
+.hero {
+  margin-top: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80px 100px;
+  flex-wrap: wrap;
+}
+
+.hero-content {
+  max-width: 600px;
+}
+
+.hero-content h1 {
+  font-size: 2.8rem;
+  line-height: 1.3;
+  margin-bottom: 20px;
+}
+
+.hero-content ul {
+  list-style: none;
+  margin-bottom: 30px;
+}
+
+.hero-content li {
+  margin: 12px 0;
+  font-size: 1.1rem;
+}
+
+.hero-content li i {
+  color: #00ff85;
+  margin-right: 10px;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.start-free {
+  background-color: #ff7c00;
+  color: white;
+  border: none;
+  padding: 14px 26px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.start-free:hover {
+  background-color: #ff9e3d;
+}
+
+.book-demo {
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+  padding: 14px 26px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.book-demo:hover {
+  background-color: white;
+  color: #4b1dd1;
+}
+
+/* Hero Image */
+.hero-image {
+  position: relative;
+  width: 450px;
+  text-align: center;
+}
+
+.hero-image img {
+  width: 100%;
+  border-radius: 20px;
+}
+
+.play-button {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ff7c00;
+  color: white;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  font-size: 2rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.play-button:hover {
+  background-color: #ff9e3d;
+}
+
+/* Trusted Section */
+.trusted {
+  text-align: center;
+  padding: 40px 20px;
+  color: white;
+}
+
+.trusted h3 {
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+
+.badges {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.badge {
+  border: 2px solid white;
+  border-radius: 10px;
+  padding: 20px;
+  font-size: 0.9rem;
+  width: 180px;
+}
+
+.badge i {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #00ff85;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 70px;
+    right: -100%;
+    background-color: #fff;
+    width: 250px;
+    height: 100vh;
+    padding-top: 60px;
+    gap: 25px;
+    text-align: right;
+    padding-right: 40px;
+    transition: right 0.4s ease;
+  }
+
+  nav.scrolled .nav-links {
+    background-color: #3b1cc3;
+  }
+
+  .nav-links a {
+    font-size: 1.1rem;
+  }
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  .nav-buttons {
+    display: none;
+  }
+
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .hero-image {
+    margin-top: 40px;
+    width: 100%;
+  }
+}
