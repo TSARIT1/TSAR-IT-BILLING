@@ -283,7 +283,7 @@ cash bank css */
 
 
 .cashbank-header {
-  background: #ffffff;
+  background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
   padding: 16px 22px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
@@ -389,8 +389,9 @@ cash bank css */
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
+  margin-left: 500px;
   padding: 0;
-  min-height: 500px;
+  height: 500px;
 }
 .tab-header {
   display: flex;
@@ -411,6 +412,7 @@ cash bank css */
   color: #5b4bdb !important;
 }
 .transaction-filter {
+  width:100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1090,9 +1092,12 @@ expense.css */
 
 .right-panel {
   position: absolute;
-  right: 20px;
-  top: 350px;
-  width: 320px;
+  margin-top: 1px;
+  height:calc(100vh - 100px);
+  margin-left: 550px;
+  margin-right: 4px;
+  margin-bottom: 50px;
+  width: 43%;
   color: #000;
 }
 

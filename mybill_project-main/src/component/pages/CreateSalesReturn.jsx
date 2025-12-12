@@ -5,7 +5,7 @@ import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import "../dashboard.css";
 import "../createSalesReturn.css";
-import { FiArrowLeft, FiSettings } from "react-icons/fi";
+import { FiArrowLeft, FiSettings, FiSave, FiX } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BsQrCodeScan } from "react-icons/bs";
 
@@ -126,46 +126,111 @@ export default function CreateSalesReturn() {
       <Navbar />
       <div className="dashboard-layout">
         <Sidebar />
-        <div className="dashboard-content create-sales-return" style={{ marginTop: "5%" }}>
+        <div className="dashboard-content create-sales-return" style={{ marginTop: "2%" }}>
+          {/* Enhanced Header */}
           <div className="top-bar">
             <div className="left-bar">
               <Link to="/sales-return"><FiArrowLeft className="back-icon" /></Link>
-              <h2>Create Sales Return</h2>
+              <div className="header-text">
+                <h2>
+                  <i className="bi bi-arrow-return-left"></i> Create Sales Return
+                </h2>
+                <p className="header-subtitle">Process customer returns and refunds</p>
+              </div>
             </div>
             <div className="right-bar">
               <button className="settings-btn"><FiSettings /> Settings</button>
-              <button className="save-btn" onClick={handleSave}>Save Sales Return</button>
+              <button className="cancel-btn" onClick={() => navigate("/sales-return")}>
+                <FiX /> Cancel
+              </button>
+              <button className="save-btn" onClick={handleSave}>
+                <FiSave /> Save Return
+              </button>
             </div>
           </div>
 
+          {/* Summary Cards */}
+          <div className="return-summary-cards">
+            <div className="summary-card blue">
+              <div className="card-icon">
+                <i className="bi bi-receipt"></i>
+              </div>
+              <div className="card-content">
+                <h4>Return No.</h4>
+                <p>SR-{returnNo}</p>
+              </div>
+            </div>
+            <div className="summary-card orange">
+              <div className="card-icon">
+                <i className="bi bi-calendar-event"></i>
+              </div>
+              <div className="card-content">
+                <h4>Return Date</h4>
+                <p>{new Date(returnDate).toLocaleDateString('en-IN')}</p>
+              </div>
+            </div>
+            <div className="summary-card red">
+              <div className="card-icon">
+                <i className="bi bi-currency-rupee"></i>
+              </div>
+              <div className="card-content">
+                <h4>Total Amount</h4>
+                <p>₹ {total.toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="summary-card green">
+              <div className="card-icon">
+                <i className="bi bi-box-seam"></i>
+              </div>
+              <div className="card-content">
+                <h4>Items</h4>
+                <p>{items.length}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bill Section */}
           <div className="bill-section">
             <div className="bill-to">
-              <h4>Bill To</h4>
-              <div className="add-party-box">{party ? <div style={{ textAlign: "left" }}><strong>{party}</strong></div> : "+ Add Party"}</div>
+              <h4><i className="bi bi-person-circle"></i> Bill To</h4>
+              <div className="add-party-box">
+                {party ? (
+                  <div style={{ textAlign: "left" }}>
+                    <strong><i className="bi bi-building"></i> {party}</strong>
+                  </div>
+                ) : (
+                  <span><i className="bi bi-plus-circle"></i> Add Party</span>
+                )}
+              </div>
             </div>
 
             <div className="right-details">
               <div className="detail-row">
                 <div className="detail-group">
-                  <label>Sales Return No:</label>
-                  <input type="text" value={returnNo} readOnly />
+                  <label><i className="bi bi-hash"></i> Sales Return No:</label>
+                  <input type="text" value={returnNo} readOnly className="readonly-input" />
                 </div>
                 <div className="detail-group">
-                  <label>Sales Return Date:</label>
+                  <label><i className="bi bi-calendar3"></i> Sales Return Date:</label>
                   <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
                 </div>
               </div>
 
               <div className="detail-row">
                 <div style={{ flex: 1 }}>
-                  <label>Link to Invoice :</label>
-                  <input placeholder="Search invoices" value={invoiceLink} onChange={(e) => setInvoiceLink(e.target.value)} />
+                  <label><i className="bi bi-link-45deg"></i> Link to Invoice:</label>
+                  <input placeholder="Search invoices..." value={invoiceLink} onChange={(e) => setInvoiceLink(e.target.value)} />
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Items Section */}
           <div className="items-section">
+            <div className="section-header">
+              <i className="bi bi-cart3"></i>
+              <h3>Return Items</h3>
+            </div>
             <table className="items-table">
               <thead>
                 <tr>
@@ -174,8 +239,8 @@ export default function CreateSalesReturn() {
                   <th>HSN / SAC</th>
                   <th>QTY</th>
                   <th>PRICE / ITEM (₹)</th>
-                  <th>DISCOUNT</th>
-                  <th>TAX</th>
+                  <th>DISCOUNT (%)</th>
+                  <th>TAX (%)</th>
                   <th>AMOUNT (₹)</th>
                   <th></th>
                 </tr>
@@ -190,8 +255,8 @@ export default function CreateSalesReturn() {
                     <td><input type="number" value={it.price} onChange={(e) => updateRow(it.id, "price", e.target.value)} /></td>
                     <td><input type="number" value={it.discount} onChange={(e) => updateRow(it.id, "discount", e.target.value)} /></td>
                     <td><input type="number" value={it.tax} onChange={(e) => updateRow(it.id, "tax", e.target.value)} /></td>
-                    <td>₹ {it.amount?.toFixed(2) || "0.00"}</td>
-                    <td><button className="row-remove" onClick={() => removeItemRow(it.id)}>Remove</button></td>
+                    <td className="amount-cell">₹ {it.amount?.toFixed(2) || "0.00"}</td>
+                    <td><button className="row-remove" onClick={() => removeItemRow(it.id)}><i className="bi bi-trash"></i></button></td>
                   </tr>
                 ))}
                 <tr>
@@ -204,54 +269,76 @@ export default function CreateSalesReturn() {
             </table>
           </div>
 
+          {/* Footer Section */}
           <div className="footer-section">
             <div className="left-notes">
-              <p className="add-notes" onClick={() => { }}>+ Add Notes</p>
+              <p className="add-notes" onClick={() => { }}><i className="bi bi-plus-circle"></i> Add Notes</p>
               <div className="terms">
-                <h4>Terms and Conditions</h4>
+                <h4><i className="bi bi-file-text"></i> Terms and Conditions</h4>
                 <ol>
                   <li>Goods once sold will not be taken back or exchanged</li>
                   <li>All disputes are subject to [ENTER_YOUR_CITY_NAME] jurisdiction only</li>
                 </ol>
               </div>
-              <p className="add-account">+ Add New Account</p>
+              <p className="add-account"><i className="bi bi-bank"></i> Add New Account</p>
             </div>
 
             <div className="right-summary">
-              <p className="link-text" onClick={() => { const v = prompt("Additional charges", additionalCharges); if (v !== null) setAdditionalCharges(Number(v || 0)); }}>+ Add Additional Charges</p>
+              <p className="link-text" onClick={() => { const v = prompt("Additional charges", additionalCharges); if (v !== null) setAdditionalCharges(Number(v || 0)); }}>
+                <i className="bi bi-plus-circle"></i> Add Additional Charges
+              </p>
               <div className="amount-row"><span>Taxable Amount</span><span>₹ {taxableAmount.toFixed(2)}</span></div>
-              <p className="link-text" onClick={() => { const v = prompt("Discount amount", extraDiscountFixed); if (v !== null) setExtraDiscountFixed(Number(v || 0)); }}>+ Add Discount</p>
+              <p className="link-text" onClick={() => { const v = prompt("Discount amount", extraDiscountFixed); if (v !== null) setExtraDiscountFixed(Number(v || 0)); }}>
+                <i className="bi bi-percent"></i> Add Discount
+              </p>
               <div className="amount-row"><span>Subtotal</span><span>₹ {subtotal.toFixed(2)}</span></div>
               <div className="amount-row"><span>Tax</span><span>₹ {totalTax.toFixed(2)}</span></div>
               <div className="amount-row"><span>Additional Charges</span><span>₹ {Number(additionalCharges || 0).toFixed(2)}</span></div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-                <input type="checkbox" checked={applyTCS} onChange={(e) => setApplyTCS(e.target.checked)} />
-                <label>Apply TCS</label>
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-                <input type="checkbox" checked={autoRound} onChange={(e) => setAutoRound(e.target.checked)} />
-                <label>Auto Round Off</label>
+
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={applyTCS} onChange={(e) => setApplyTCS(e.target.checked)} />
+                  <span>Apply TCS (1%)</span>
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={autoRound} onChange={(e) => setAutoRound(e.target.checked)} />
+                  <span>Auto Round Off</span>
+                </label>
               </div>
 
-              <div className="amount-row" style={{ marginTop: 12, fontWeight: 700 }}><span>Total Amount</span><span>₹ {total.toFixed(2)}</span></div>
+              <div className="total-amount-row">
+                <span><i className="bi bi-calculator"></i> Total Amount</span>
+                <span>₹ {total.toFixed(2)}</span>
+              </div>
 
-              <div className="payment-entry" style={{ marginTop: 12 }}>
+              <div className="payment-entry">
+                <label><i className="bi bi-wallet2"></i> Payment Entry</label>
                 <div className="add-dropdown">
                   <select>
-                    <option>+ Add</option>
+                    <option>Cash</option>
+                    <option>UPI</option>
+                    <option>Bank Transfer</option>
                   </select>
-                  <input type="number" value={paymentEntered} onChange={(e) => setPaymentEntered(e.target.value)} placeholder="₹ 0" />
+                  <input type="number" value={paymentEntered} onChange={(e) => setPaymentEntered(e.target.value)} placeholder="₹ 0.00" />
                 </div>
-                <button className="payment-btn" onClick={() => { alert("Payment entered"); }}>Enter Payment amount</button>
+                <button className="payment-btn" onClick={() => { alert("Payment entered"); }}>
+                  <i className="bi bi-check-circle"></i> Enter Payment
+                </button>
               </div>
 
-              <div className="balance-amount" style={{ marginTop: 12 }}><span>Balance Amount</span><span>₹ {balance.toFixed(2)}</span></div>
+              <div className="balance-amount">
+                <span><i className="bi bi-cash-stack"></i> Balance Amount</span>
+                <span>₹ {balance.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
+          {/* Signature Section */}
           <div className="signature-section">
             <p>Authorized signatory for <strong>Business Name</strong></p>
-            <div className="add-signature">+ Add Signature</div>
+            <div className="add-signature">
+              <i className="bi bi-pen"></i> Add Signature
+            </div>
           </div>
         </div>
       </div>
