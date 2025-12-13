@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
-import "../businessSettings.css"; // separate CSS file as requested
-import { Link } from "react-router-dom";
+import "../businessSettings.css"; 
+import { useNavigate } from "react-router-dom";
+import {
+  saveBusinessSettings,
+  getBusinessSettings,
+} from "../../services/api";
 
 function BusinessSettings() {
+  const navigate = useNavigate();
   // Company details state
+  const [gstNumber, setGstNumber] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
@@ -13,69 +19,156 @@ function BusinessSettings() {
   const [stateName, setStateName] = useState("");
   const [city, setCity] = useState("");
   const [pincode, setPincode] = useState("");
-  const [isGstRegistered, setIsGstRegistered] = useState("Yes");
+  const [isGstRegistered, setIsGstRegistered] = useState("");
   const [enableEInvoicing, setEnableEInvoicing] = useState(false);
   const [panNumber, setPanNumber] = useState("");
   const [enableTds, setEnableTds] = useState(false);
   const [enableTcs, setEnableTcs] = useState(false);
-
+  const [logoFile, setLogoFile] = useState(null);
   // Right column / additional details
   const [businessType, setBusinessType] = useState("");
   const [industryType, setIndustryType] = useState("");
-  const [registrationType, setRegistrationType] = useState("Private Limited Company");
+  const [registrationType, setRegistrationType] = useState("");
   const [signatureDataUrl, setSignatureDataUrl] = useState("");
   const [extraKey, setExtraKey] = useState("");
   const [extraValue, setExtraValue] = useState("");
   const [extras, setExtras] = useState([]);
+  const [logoPreview, setLogoPreview] = useState("");
+  const [panError, setPanError] = useState("");
+  const validatePan = (value) => {
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
+  if (!panRegex.test(value)) {
+    setPanError("PAN must be in format AAAPA1234A");
+  } else {
+    setPanError("");
+  }
+};
   // Load saved settings from localStorage on mount
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("businessSettings")) || {};
-    if (Object.keys(saved).length) {
-      setBusinessName(saved.businessName || "");
-      setCompanyPhone(saved.companyPhone || "");
-      setCompanyEmail(saved.companyEmail || "");
-      setBillingAddress(saved.billingAddress || "");
-      setStateName(saved.stateName || "");
-      setCity(saved.city || "");
-      setPincode(saved.pincode || "");
-      setIsGstRegistered(saved.isGstRegistered || "Yes");
-      setEnableEInvoicing(saved.enableEInvoicing || false);
-      setPanNumber(saved.panNumber || "");
-      setEnableTds(saved.enableTds || false);
-      setEnableTcs(saved.enableTcs || false);
-      setBusinessType(saved.businessType || "");
-      setIndustryType(saved.industryType || "");
-      setRegistrationType(saved.registrationType || "Private Limited Company");
-      setSignatureDataUrl(saved.signatureDataUrl || "");
-      setExtras(saved.extras || []);
-    }
-  }, []);
+  const userId = localStorage.getItem("userId");
+
+  // Redirect if user not logged in
+  if (!userId) {
+    console.warn("User not logged in → redirecting to login");
+    navigate("/login", { replace: true });
+    return;
+  }
+
+  getBusinessSettings(userId)
+    .then((data) => {
+      console.log("Fetched business settings:", data);
+      if (!data) return;
+
+      setBusinessName(data.businessName || "");
+      setCompanyPhone(data.companyPhone || "");
+      setCompanyEmail(data.companyEmail || "");
+      setBillingAddress(data.billingAddress || "");
+      setStateName(data.state || "");
+      setCity(data.city || "");
+      setPincode(data.pincode || "");
+      setIsGstRegistered(data.gstRegistered || "Yes");
+      setEnableEInvoicing(data.enableEInvoicing || false);
+      setPanNumber(data.panNumber || "");
+      setEnableTds(data.enableTds || false);
+      setEnableTcs(data.enableTcs || false);
+      setBusinessType(data.businessType || "");
+      setIndustryType(data.industryType || "");
+      setRegistrationType(data.registrationType || "");
+      setExtras(data.extras || []);
+
+      // FIXED: IMAGE PREVIEW HANDLING
+      if (data.logo) {
+        setLogoPreview(`data:image/png;base64,${data.logo}`);
+      }
+
+      if (data.signature) {
+        setSignatureDataUrl(`data:image/png;base64,${data.signature}`);
+      }
+   // Store into localStorage for quick retrieval
+      localStorage.setItem("businessSettings", JSON.stringify(data));
+    })
+    .catch((err) => console.log("Error fetching business settings:", err));
+}, [navigate]);
 
   // Save to localStorage (simulate Save Changes)
-  const handleSave = () => {
-    const payload = {
-      businessName,
-      companyPhone,
-      companyEmail,
-      billingAddress,
-      stateName,
-      city,
-      pincode,
-      isGstRegistered,
-      enableEInvoicing,
-      panNumber,
-      enableTds,
-      enableTcs,
-      businessType,
-      industryType,
-      registrationType,
-      signatureDataUrl,
-      extras,
-    };
-    localStorage.setItem("businessSettings", JSON.stringify(payload));
-    alert("Settings saved to localStorage (for demo).");
+  const handleSave = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+    alert("Session expired. Please login again.");
+    navigate("/login", { replace: true });
+    return;
+  }
+    console.log(" Saving Business Settings for user:", userId);
+
+  // Block save if PAN invalid
+  if (panError) {
+    alert("Please enter a valid PAN number");
+    return;
+  }
+  if (isGstRegistered === "Yes" && !gstNumber) {
+  alert("Please enter GST Number");
+  return;
+}
+
+const business = {
+    userId: Number(userId),
+    businessName,
+    companyPhone,
+    companyEmail,
+    billingAddress,
+    state: stateName,
+    city,
+    pincode,
+    panNumber,
+
+    businessType,          // enum: Proprietorship / Partnership / LLP
+    industryType,
+    registrationType,
+
+    gstRegistered: isGstRegistered === "Yes",
+    gstNo: isGstRegistered === "Yes" ? gstNumber : null,
+
+    enableEInvoicing,
+    enableTds,
+    enableTcs,
+
+    extras
   };
+
+const formData = new FormData();
+
+// REQUIRED: business as JSON
+  formData.append(
+    "business",
+    new Blob([JSON.stringify(business)], {
+      type: "application/json",
+    })
+  );
+
+  // Optional logo
+  if (logoFile) {
+    formData.append("logo", logoFile);
+  }
+
+  // Optional signature
+  if (signatureDataUrl) {
+    const blob = await fetch(signatureDataUrl).then(res => res.blob());
+    formData.append("signature", blob, "signature.png");
+  }
+   try {
+    const data = await saveBusinessSettings(formData);
+    console.log("Backend response after save:", data);
+
+    alert("Business Settings saved successfully");
+    localStorage.setItem("businessSettings", JSON.stringify(data));
+
+  } catch (err) {
+    console.error("Error saving business settings:", err);
+    alert("Failed to save Business Settings");
+  }
+};
+
 
   // Upload signature as dataURL (simple client-side preview)
   const handleSignatureUpload = (e) => {
@@ -118,7 +211,7 @@ function BusinessSettings() {
     setEnableTcs(false);
     setBusinessType("");
     setIndustryType("");
-    setRegistrationType("Private Limited Company");
+    setRegistrationType("");
     setSignatureDataUrl("");
     setExtras([]);
     localStorage.removeItem("businessSettings");
@@ -148,11 +241,23 @@ function BusinessSettings() {
               <div className="form-row">
                 <div className="upload-box">
                   <label className="upload-label">Upload Logo</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={() => alert("Logo upload placeholder (implement as needed)")}
-                  />
+                  {logoPreview && (
+                                <img
+                                  src={logoPreview}
+                                  alt="Business Logo"
+                                  className="logo-preview"
+                                       />
+                                    )}
+                        <input
+                         type="file"
+                         accept="image/*"
+                         onChange={(e) => {
+                         const file = e.target.files[0];
+                         setLogoFile(file);
+                         setLogoPreview(URL.createObjectURL(file)); // instant preview
+                             }}
+                          />
+
                   <small>PNG/JPG, max 5 MB</small>
                 </div>
 
@@ -260,6 +365,19 @@ function BusinessSettings() {
                     </label>
                   </div>
                 </div>
+                {isGstRegistered === "Yes" && (
+               <div className="form-row">
+               <div className="field-group wide">
+              <label>GST Number</label>
+             <input
+              type="text"
+              value={gstNumber}
+              onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+               placeholder="Enter GST Number"
+             />
+            </div>
+            </div>
+                )}
               </div>
 
               <div className="form-row small-toggle">
@@ -278,11 +396,20 @@ function BusinessSettings() {
                 <div className="field-group wide">
                   <label>PAN Number</label>
                   <input
-                    type="text"
-                    value={panNumber}
-                    onChange={(e) => setPanNumber(e.target.value)}
-                    placeholder="Enter your PAN Number"
-                  />
+                   type="text"
+                   value={panNumber}
+                   maxLength={10}
+                   onChange={(e) => {
+                   const value = e.target.value.toUpperCase();
+                   setPanNumber(value);
+                   validatePan(value);
+                  }}
+                  placeholder="Enter your PAN Number"
+                    />
+
+                    {panError && (
+                    <small style={{ color: "red" }}>{panError}</small>
+                        )}
                 </div>
               </div>
 
@@ -319,9 +446,10 @@ function BusinessSettings() {
                 <label>Business Type (Select multiple, if applicable)</label>
                 <select value={businessType} onChange={(e) => setBusinessType(e.target.value)}>
                   <option value="">Select</option>
-                  <option value="Proprietorship">Proprietorship</option>
-                  <option value="Partnership">Partnership</option>
+                  <option value="Proprietorship">PROPRIETORSHIP</option>
+                  <option value="Partnership">PARTNERSHIP</option>
                   <option value="LLP">LLP</option>
+                  <option value="PRIVATE">PRIVATE</option>
                 </select>
               </div>
 
@@ -407,7 +535,7 @@ function BusinessSettings() {
             </div>
           </div>
 
-          {/* bottom add new business / exports */}
+          {/* bottom add new business / exports 
           <div className="bottom-row">
             <div className="left">
               <div className="tally-export card small">
@@ -416,9 +544,12 @@ function BusinessSettings() {
                 <button className="btn small ghost">Configure</button>
               </div>
             </div>
+            
             <div className="right" />
           </div>
+          */}
         </div>
+        
       </div>
     </>
   );

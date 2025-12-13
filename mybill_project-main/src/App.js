@@ -47,6 +47,7 @@ import Registration from "./component/pages/Registration";
 import ManageUsers from "./component/pages/ManageUsers";
 import EditParty from "./component/pages/EditParty";
 import BusinessSettings from "./component/pages/BusinessSettings";
+import Settings from "./component/pages/Settings";
 function App() {
   return (
     <Routes>
@@ -64,50 +65,51 @@ function App() {
       <Route path="/create-invoice" element={<CreateSalesInvoice />} />
       <Route path="/parties" element={<Parties />} />
       <Route path="/inventory" element={<ItemsInventory />} />
-      <Route path="/godown" element={<Godown/>} />
+      <Route path="/godown" element={<Godown />} />
       <Route path="/sales-invoices" element={<SalesInvoices />} />
       <Route path="/quotation" element={<QuotationEstimate />} />
       <Route path="/create-quotation" element={<CreateQuotation />} />
       <Route path="/payment-in" element={<PaymentIn />} />
-      <Route path="/create-payment-in" element={<CreatePaymentIn/>} />
-      <Route path="/sales-return" element={<SalesReturn/>} />
-      <Route path="/create-sales-return" element={<CreateSalesReturn/>} />
-      <Route path="/credit-note" element={<CreditNote/>} />
-      <Route path="/create-credit-note" element={<CreateCreditNote/>} />
-      <Route path="/delivery-challan" element={<DeliveryChallan/>} />
-      <Route path="/create-delivery-challan" element={<CreateDeliveryChallan/>} />
-      <Route path="/proforma-invoice" element={<ProformaInvoice/>} />
-      <Route path="/create-proforma-invoice" element={<CreateProformaInvoice/>} />
-      <Route path="/purchase-invoices" element={<PurchaseInvoices/>} />
-      <Route path="/create-purchase-invoice" element={<CreatePurchaseInvoice/>} />
-      <Route path="/payment-out" element={<PaymentOut/>} />
-      <Route path="/create-payment-out" element={<CreatePaymentOut/>} />
-      <Route path="/purchase-return" element={<PurchaseReturn/>} />
-      <Route path="create-purchase-return" element={<CreatePurchaseReturn/>} />
-      <Route path="debit-note" element={<DebitNoteList/>} />
-      <Route path="debit-note/create" element={<CreateDebitNote/>} />
-      <Route path="purchase-orders" element={<PurchaseOrders/>} />
-      <Route path="purchase-orders/create" element={<CreatePurchaseOrder/>} />
-      <Route path="reports" element={<Reports/>} />
-      <Route path="cash/bank" element={<CashBank/>} />
-      <Route path="e-invoicing" element={<EInvoicing/>} />
-      <Route path="automated-bills" element={<AutomatedBillsPage/>} />
-      <Route path="expenses" element={<Expenses/>} />
-      <Route path="createexpense" element={<CreateExpense/>} />
-      <Route path="pos-billing" element={<PosBilling/>} />
-      <Route path="staff-attendance" element={<StaffAttendance/>} />
-      <Route path="online-orders" element={<OnlineOrders/>} />
-      <Route path="sms-marketing" element={<SmsPromotion/>} />
-      <Route path="apply-loan" element={<ApplyLoan/>} />
-       <Route path="login" element={<Login />} />
+      <Route path="/create-payment-in" element={<CreatePaymentIn />} />
+      <Route path="/sales-return" element={<SalesReturn />} />
+      <Route path="/create-sales-return" element={<CreateSalesReturn />} />
+      <Route path="/credit-note" element={<CreditNote />} />
+      <Route path="/create-credit-note" element={<CreateCreditNote />} />
+      <Route path="/delivery-challan" element={<DeliveryChallan />} />
+      <Route path="/create-delivery-challan" element={<CreateDeliveryChallan />} />
+      <Route path="/proforma-invoice" element={<ProformaInvoice />} />
+      <Route path="/create-proforma-invoice" element={<CreateProformaInvoice />} />
+      <Route path="/purchase-invoices" element={<PurchaseInvoices />} />
+      <Route path="/create-purchase-invoice" element={<CreatePurchaseInvoice />} />
+      <Route path="/payment-out" element={<PaymentOut />} />
+      <Route path="/create-payment-out" element={<CreatePaymentOut />} />
+      <Route path="/purchase-return" element={<PurchaseReturn />} />
+      <Route path="create-purchase-return" element={<CreatePurchaseReturn />} />
+      <Route path="debit-note" element={<DebitNoteList />} />
+      <Route path="debit-note/create" element={<CreateDebitNote />} />
+      <Route path="purchase-orders" element={<PurchaseOrders />} />
+      <Route path="purchase-orders/create" element={<CreatePurchaseOrder />} />
+      <Route path="reports" element={<Reports />} />
+      <Route path="cash/bank" element={<CashBank />} />
+      <Route path="e-invoicing" element={<EInvoicing />} />
+      <Route path="automated-bills" element={<AutomatedBillsPage />} />
+      <Route path="expenses" element={<Expenses />} />
+      <Route path="createexpense" element={<CreateExpense />} />
+      <Route path="pos-billing" element={<PosBilling />} />
+      <Route path="staff-attendance" element={<StaffAttendance />} />
+      <Route path="online-orders" element={<OnlineOrders />} />
+      <Route path="sms-marketing" element={<SmsPromotion />} />
+      <Route path="apply-loan" element={<ApplyLoan />} />
+      <Route path="login" element={<Login />} />
       <Route path="register" element={<Registration />} />
-       <Route path="login" element={<Login />} />
+      <Route path="login" element={<Login />} />
       <Route path="register" element={<Registration />} />
       <Route path="manage-users" element={<ManageUsers />} />
       <Route path="edit-party" element={<EditParty />} />
       <Route path="business-settings" element={<BusinessSettings />}
       />
-      
+      <Route path="settings" element={<BusinessSettings />} />
+
     </Routes>
   );
 }

@@ -118,7 +118,7 @@ function Parties() {
               <BsSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search by name or mobile..."
+                placeholder="     Search by name or mobile..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
