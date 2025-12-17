@@ -165,6 +165,84 @@
     margin: 0;
 }
 
+/* Action Buttons in History Table */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.edit-btn,
+.delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    color: #ffffff;
+}
+
+.edit-btn:hover {
+    background: linear-gradient(135deg, #2d3a6e 0%, #3e4e96 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(62, 78, 150, 0.3);
+}
+
+.delete-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+}
+
+.delete-btn:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+}
+
+/* Editing Row Highlight */
+.invoice-history-table tbody tr.editing-row {
+    background: linear-gradient(135deg, rgba(62, 78, 150, 0.1) 0%, rgba(232, 150, 27, 0.1) 100%);
+    border-left: 4px solid #3e4e96;
+}
+
+.invoice-history-table tbody tr.editing-row:hover {
+    background: linear-gradient(135deg, rgba(62, 78, 150, 0.15) 0%, rgba(232, 150, 27, 0.15) 100%);
+}
+
+/* Cancel Edit Button */
+.cancel-edit-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.cancel-edit-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: translateY(-2px);
+}
+
+
 /* Invoice Form Container */
 .invoice-form-container {
     background: #ffffff;
@@ -383,6 +461,70 @@
     background: #fee2e2;
     color: #dc2626;
 }
+
+/* Item Action Buttons (Bootstrap Style) */
+.item-action-buttons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.save-item-btn,
+.delete-item-btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.save-item-btn {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #ffffff;
+}
+
+.save-item-btn:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+}
+
+.save-item-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+.delete-item-btn-new {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+}
+
+.delete-item-btn-new:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.delete-item-btn-new:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+/* Icon styling within buttons */
+.save-item-btn svg,
+.delete-item-btn-new svg {
+    font-size: 14px;
+}
+
 
 /* Empty Items State */
 .empty-items {

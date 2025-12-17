@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
-import "../businessSettings.css"; 
+import "../businessSettings.css";
 import { useNavigate } from "react-router-dom";
 import {
   saveBusinessSettings,
@@ -36,139 +36,186 @@ function BusinessSettings() {
   const [logoPreview, setLogoPreview] = useState("");
   const [panError, setPanError] = useState("");
   const validatePan = (value) => {
-  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
-  if (!panRegex.test(value)) {
-    setPanError("PAN must be in format AAAPA1234A");
-  } else {
-    setPanError("");
-  }
-};
+    if (!panRegex.test(value)) {
+      setPanError("PAN must be in format AAAPA1234A");
+    } else {
+      setPanError("");
+    }
+  };
   // Load saved settings from localStorage on mount
   useEffect(() => {
-  const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("userId");
 
-  // Redirect if user not logged in
-  if (!userId) {
-    console.warn("User not logged in → redirecting to login");
-    navigate("/login", { replace: true });
-    return;
-  }
+    // Redirect if user not logged in
+    if (!userId) {
+      console.warn("User not logged in → redirecting to login");
+      navigate("/login", { replace: true });
+      return;
+    }
 
-  getBusinessSettings(userId)
-    .then((data) => {
-      console.log("Fetched business settings:", data);
-      if (!data) return;
+    getBusinessSettings(userId)
+      .then((data) => {
+        console.log("Fetched business settings:", data);
+        if (!data) return;
 
-      setBusinessName(data.businessName || "");
-      setCompanyPhone(data.companyPhone || "");
-      setCompanyEmail(data.companyEmail || "");
-      setBillingAddress(data.billingAddress || "");
-      setStateName(data.state || "");
-      setCity(data.city || "");
-      setPincode(data.pincode || "");
-      setIsGstRegistered(data.gstRegistered || "Yes");
-      setEnableEInvoicing(data.enableEInvoicing || false);
-      setPanNumber(data.panNumber || "");
-      setEnableTds(data.enableTds || false);
-      setEnableTcs(data.enableTcs || false);
-      setBusinessType(data.businessType || "");
-      setIndustryType(data.industryType || "");
-      setRegistrationType(data.registrationType || "");
-      setExtras(data.extras || []);
+        setBusinessName(data.businessName || "");
+        setCompanyPhone(data.companyPhone || "");
+        setCompanyEmail(data.companyEmail || "");
+        setBillingAddress(data.billingAddress || "");
+        setStateName(data.state || "");
+        setCity(data.city || "");
+        setPincode(data.pincode || "");
+        setIsGstRegistered(data.gstRegistered || "Yes");
+        setEnableEInvoicing(data.enableEInvoicing || false);
+        setPanNumber(data.panNumber || "");
+        setEnableTds(data.enableTds || false);
+        setEnableTcs(data.enableTcs || false);
+        setBusinessType(data.businessType || "");
+        setIndustryType(data.industryType || "");
+        setRegistrationType(data.registrationType || "");
+        setExtras(data.extras || []);
 
-      // FIXED: IMAGE PREVIEW HANDLING
-      if (data.logo) {
-        setLogoPreview(`data:image/png;base64,${data.logo}`);
-      }
+        // FIXED: IMAGE PREVIEW HANDLING
+        if (data.logo) {
+          setLogoPreview(`data:image/png;base64,${data.logo}`);
+        }
 
-      if (data.signature) {
-        setSignatureDataUrl(`data:image/png;base64,${data.signature}`);
-      }
-   // Store into localStorage for quick retrieval
-      localStorage.setItem("businessSettings", JSON.stringify(data));
-    })
-    .catch((err) => console.log("Error fetching business settings:", err));
-}, [navigate]);
+        if (data.signature) {
+          setSignatureDataUrl(`data:image/png;base64,${data.signature}`);
+        }
+        // Store into localStorage for quick retrieval
+        localStorage.setItem("businessSettings", JSON.stringify(data));
+      })
+      .catch((err) => console.log("Error fetching business settings:", err));
+  }, [navigate]);
 
   // Save to localStorage (simulate Save Changes)
   const handleSave = async () => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
-    alert("Session expired. Please login again.");
-    navigate("/login", { replace: true });
-    return;
-  }
+      alert("Session expired. Please login again.");
+      navigate("/login", { replace: true });
+      return;
+    }
     console.log(" Saving Business Settings for user:", userId);
 
-  // Block save if PAN invalid
-  if (panError) {
-    alert("Please enter a valid PAN number");
-    return;
-  }
-  if (isGstRegistered === "Yes" && !gstNumber) {
-  alert("Please enter GST Number");
-  return;
-}
+    // Block save if PAN invalid
+    if (panError) {
+      alert("Please enter a valid PAN number");
+      return;
+    }
+    if (isGstRegistered === "Yes" && !gstNumber) {
+      alert("Please enter GST Number");
+      return;
+    }
 
-const business = {
-    userId: Number(userId),
-    businessName,
-    companyPhone,
-    companyEmail,
-    billingAddress,
-    state: stateName,
-    city,
-    pincode,
-    panNumber,
+    const business = {
+      businessName,
+      phoneNo: companyPhone,
+      email: companyEmail,
+      address: billingAddress,
+      state: stateName,
+      city,
+      pincode,
+      panNumber,
 
-    businessType,          // enum: Proprietorship / Partnership / LLP
-    industryType,
-    registrationType,
+      businessType,          // enum: Proprietorship / Partnership / LLP
+      industryType,
+      registrationType,
 
-    gstRegistered: isGstRegistered === "Yes",
-    gstNo: isGstRegistered === "Yes" ? gstNumber : null,
+      isEnableEinvoicing: enableEInvoicing,
+      isEnableTds: enableTds,
+      isEnableTcs: enableTcs,
+      extras
+    };
 
-    enableEInvoicing,
-    enableTds,
-    enableTcs,
+    const formData = new FormData();
 
-    extras
+    // REQUIRED
+    formData.append(
+      "business",
+      new Blob([JSON.stringify(business)], {
+        type: "application/json"
+      })
+    );
+
+    formData.append("userId", userId);
+
+    formData.append(
+      "isGstRegistered",
+      isGstRegistered === "Yes" ? "true" : "false"
+    );
+
+    if (isGstRegistered === "Yes") {
+      formData.append("gstNo", gstNumber);
+    }
+
+    // OPTIONAL FILES
+    if (logoFile) {
+      formData.append("businessLogo", logoFile);
+    }
+
+    if (signatureDataUrl) {
+      const blob = await fetch(signatureDataUrl).then(res => res.blob());
+      formData.append("signature", blob, "signature.png");
+    }
+
+    try {
+      const response = await saveBusinessSettings(formData);
+      console.log("========== BUSINESS SETTINGS SAVE DEBUG ==========");
+      console.log("Full response:", response);
+      console.log("Response keys:", Object.keys(response));
+
+      // Extract businessId and userBusinessId from response
+      const businessId = response.businessId || response.data?.businessId;
+      const userBusinessId = response.userBusinessId || response.data?.userBusinessId || response.id || response.data?.id;
+
+      console.log("Checking for IDs in response:");
+      console.log("  response.businessId:", response.businessId);
+      console.log("  response.userBusinessId:", response.userBusinessId);
+      console.log("  response.id:", response.id);
+      console.log("  response.data?.businessId:", response.data?.businessId);
+      console.log("  response.data?.userBusinessId:", response.data?.userBusinessId);
+      console.log("  response.data?.id:", response.data?.id);
+      console.log("Final businessId:", businessId);
+      console.log("Final userBusinessId:", userBusinessId);
+
+      // Store businessId in localStorage
+      if (businessId) {
+        localStorage.setItem("businessId", businessId);
+        console.log("✅ businessId stored:", businessId);
+
+        // IMPORTANT: Backend doesn't return userBusinessId, so we use businessId for both
+        // This allows godown creation to work with the FK requirement
+        localStorage.setItem("userBusinessId", userBusinessId || businessId);
+        console.log("✅ userBusinessId stored (using businessId):", businessId);
+
+        // VERIFICATION: Check if userBusinessId is actually in localStorage
+        const verifyUserBusinessId = localStorage.getItem("userBusinessId");
+        console.log("========== VERIFICATION ==========");
+        console.log("✅ Reading back from localStorage:");
+        console.log("   userBusinessId:", verifyUserBusinessId);
+        console.log("   Match:", verifyUserBusinessId === businessId ? "✅ SUCCESS" : "❌ FAILED");
+        console.log("==================================");
+
+        alert(`Business Settings saved successfully!\nBusiness ID: ${businessId}\nUserBusiness ID: ${verifyUserBusinessId}\n\nYou can now access Godown Management.`);
+      } else {
+        console.error("❌ businessId NOT FOUND in response!");
+        console.error("Response structure:", JSON.stringify(response, null, 2));
+        alert("Business Settings saved, but businessId not found in response.\nPlease check the console.");
+      }
+      console.log("==================================================");
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Failed to save Business Settings");
+    }
   };
 
-const formData = new FormData();
-
-// REQUIRED: business as JSON
-  formData.append(
-    "business",
-    new Blob([JSON.stringify(business)], {
-      type: "application/json",
-    })
-  );
-
-  // Optional logo
-  if (logoFile) {
-    formData.append("logo", logoFile);
-  }
-
-  // Optional signature
-  if (signatureDataUrl) {
-    const blob = await fetch(signatureDataUrl).then(res => res.blob());
-    formData.append("signature", blob, "signature.png");
-  }
-   try {
-    const data = await saveBusinessSettings(formData);
-    console.log("Backend response after save:", data);
-
-    alert("Business Settings saved successfully");
-    localStorage.setItem("businessSettings", JSON.stringify(data));
-
-  } catch (err) {
-    console.error("Error saving business settings:", err);
-    alert("Failed to save Business Settings");
-  }
-};
-
+  const handleRemoveExtra = (idx) => {
+    setExtras((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   // Upload signature as dataURL (simple client-side preview)
   const handleSignatureUpload = (e) => {
@@ -185,13 +232,17 @@ const formData = new FormData();
       alert("Enter both key and value to add.");
       return;
     }
-    setExtras((prev) => [...prev, { key: extraKey, value: extraValue }]);
+
+    setExtras((prev) => [
+      ...prev,
+      {
+        extraKey: extraKey,
+        extraValue: extraValue
+      }
+    ]);
+
     setExtraKey("");
     setExtraValue("");
-  };
-
-  const handleRemoveExtra = (idx) => {
-    setExtras((prev) => prev.filter((_, i) => i !== idx));
   };
 
   // Optional: reset form
@@ -242,21 +293,21 @@ const formData = new FormData();
                 <div className="upload-box">
                   <label className="upload-label">Upload Logo</label>
                   {logoPreview && (
-                                <img
-                                  src={logoPreview}
-                                  alt="Business Logo"
-                                  className="logo-preview"
-                                       />
-                                    )}
-                        <input
-                         type="file"
-                         accept="image/*"
-                         onChange={(e) => {
-                         const file = e.target.files[0];
-                         setLogoFile(file);
-                         setLogoPreview(URL.createObjectURL(file)); // instant preview
-                             }}
-                          />
+                    <img
+                      src={logoPreview}
+                      alt="Business Logo"
+                      className="logo-preview"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      setLogoFile(file);
+                      setLogoPreview(URL.createObjectURL(file)); // instant preview
+                    }}
+                  />
 
                   <small>PNG/JPG, max 5 MB</small>
                 </div>
@@ -366,17 +417,17 @@ const formData = new FormData();
                   </div>
                 </div>
                 {isGstRegistered === "Yes" && (
-               <div className="form-row">
-               <div className="field-group wide">
-              <label>GST Number</label>
-             <input
-              type="text"
-              value={gstNumber}
-              onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
-               placeholder="Enter GST Number"
-             />
-            </div>
-            </div>
+                  <div className="form-row">
+                    <div className="field-group wide">
+                      <label>GST Number</label>
+                      <input
+                        type="text"
+                        value={gstNumber}
+                        onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                        placeholder="Enter GST Number"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -396,20 +447,20 @@ const formData = new FormData();
                 <div className="field-group wide">
                   <label>PAN Number</label>
                   <input
-                   type="text"
-                   value={panNumber}
-                   maxLength={10}
-                   onChange={(e) => {
-                   const value = e.target.value.toUpperCase();
-                   setPanNumber(value);
-                   validatePan(value);
-                  }}
-                  placeholder="Enter your PAN Number"
-                    />
+                    type="text"
+                    value={panNumber}
+                    maxLength={10}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase();
+                      setPanNumber(value);
+                      validatePan(value);
+                    }}
+                    placeholder="Enter your PAN Number"
+                  />
 
-                    {panError && (
+                  {panError && (
                     <small style={{ color: "red" }}>{panError}</small>
-                        )}
+                  )}
                 </div>
               </div>
 
@@ -450,6 +501,7 @@ const formData = new FormData();
                   <option value="Partnership">PARTNERSHIP</option>
                   <option value="LLP">LLP</option>
                   <option value="PRIVATE">PRIVATE</option>
+                  <option value="OTHERS">Others</option>
                 </select>
               </div>
 
@@ -460,6 +512,7 @@ const formData = new FormData();
                   <option value="Retail">Retail</option>
                   <option value="Education">Education</option>
                   <option value="IT Services">IT Services</option>
+                  <option value="OTHERS">Others</option>
                 </select>
               </div>
 
@@ -469,9 +522,10 @@ const formData = new FormData();
                   value={registrationType}
                   onChange={(e) => setRegistrationType(e.target.value)}
                 >
-                  <option>Private Limited Company</option>
-                  <option>Partnership</option>
-                  <option>Proprietorship</option>
+                  <option value="PRIVATE LIMITED COMPANY">Private Limited Company</option>
+                  <option value="PARTNERSHIP">Partnership</option>
+                  <option value="PROPRIETORSHIP">Proprietorship</option>
+                  <option value="OTHERS">Others</option>
                 </select>
               </div>
 
@@ -510,20 +564,19 @@ const formData = new FormData();
                 </div>
 
                 <div className="extras-list">
-                  {extras.length === 0 ? (
-                    <div className="empty">No additional business details added.</div>
-                  ) : (
-                    extras.map((ex, idx) => (
-                      <div className="extra-item" key={idx}>
-                        <div className="extra-kv">
-                          <strong>{ex.key}:</strong> <span>{ex.value}</span>
-                        </div>
-                        <button className="btn small danger" onClick={() => handleRemoveExtra(idx)}>
-                          Remove
-                        </button>
+                  {extras.map((ex, idx) => (
+                    <div className="extra-item" key={idx}>
+                      <div className="extra-kv">
+                        <strong>{ex.extraKey}:</strong> <span>{ex.extraValue}</span>
                       </div>
-                    ))
-                  )}
+                      <button
+                        className="btn small danger"
+                        onClick={() => handleRemoveExtra(idx)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -549,7 +602,7 @@ const formData = new FormData();
           </div>
           */}
         </div>
-        
+
       </div>
     </>
   );

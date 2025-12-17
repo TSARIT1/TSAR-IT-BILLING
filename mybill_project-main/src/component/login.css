@@ -10,7 +10,8 @@
 /* --- LEFT SIDE (Branding) --- */
 .login-banner {
   flex: 1;
-  background-color: #282c34; /* Navy Blue */
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  /* Blue Gradient */
   color: white;
   display: flex;
   align-items: center;
@@ -30,11 +31,13 @@
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 20px;
+  color: #ffffff;
 }
 
 .banner-content p {
   font-size: 1.1rem;
-  color: #cfd8dc; /* Light grey text for contrast */
+  color: #e0f2fe;
+  /* Light blue text for contrast */
   line-height: 1.6;
 }
 
@@ -45,7 +48,7 @@
   left: -100px;
   width: 400px;
   height: 400px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   z-index: 1;
 }
@@ -53,7 +56,8 @@
 /* --- RIGHT SIDE (Form) --- */
 .login-form-wrapper {
   flex: 1;
-  background-color: #ffffff; /* White */
+  background-color: #ffffff;
+  /* White */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,13 +66,15 @@
 
 .login-box {
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
 }
 
 .login-box h2 {
-  font-size: 28px;
-  color: #282c34; /* Navy text */
-  margin-bottom: 10px;
+  font-size: 32px;
+  color: #1e3a8a;
+  /* Blue heading */
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .sub-text {
@@ -79,37 +85,52 @@
 
 /* Input Fields */
 .input-group {
-  margin-bottom: 20px;
-
-  align-items: center;
+  margin-bottom: 22px;
+  position: relative;
 }
 
 .input-group label {
   display: block;
-  width:11px;
   font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  align-items: center;
-  margin-top: 10px;
+  font-weight: 600;
+  color: #1e3a8a;
+  /* Blue labels */
   margin-bottom: 8px;
 }
 
 .input-group input {
   width: 100%;
-  margin-left:1px;
-  padding: 12px 15px;
+  padding: 14px 16px 14px 45px;
+  /* Left padding for icon */
   font-size: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px; /* Slightly rounded corners */
-  transition: all 0.3s;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  transition: all 0.3s ease;
   outline: none;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Icon styling */
+.input-group i {
+  position: absolute;
+  left: 16px;
+  top: 43px;
+  color: #9ca3af;
+  font-size: 18px;
+  transition: color 0.3s ease;
 }
 
 /* Focus Effect: Orange Border */
 .input-group input:focus {
   border-color: #ff7c00;
-  box-shadow: 0 0 0 3px rgba(255, 124, 0, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 124, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.input-group input:focus+i,
+.input-group:focus-within i {
+  color: #ff7c00;
 }
 
 /* Form Actions (Remember me / Forgot Pass) */
@@ -124,39 +145,51 @@
 .remember-me {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   color: #555;
   cursor: pointer;
+  font-weight: 500;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #ff7c00;
 }
 
 .forgot-password {
-  color: #282c34;
+  color: #1e3a8a;
   text-decoration: none;
   font-weight: 600;
+  transition: color 0.3s;
 }
 
 .forgot-password:hover {
+  color: #ff7c00;
   text-decoration: underline;
 }
 
 /* Login Button */
 .login-submit-btn {
   width: 100%;
-  padding: 14px;
-  background-color: #ff7c00; /* Primary Orange */
+  padding: 16px;
+  background: linear-gradient(135deg, #ff7c00 0%, #ff9500 100%);
+  /* Orange gradient */
   color: white;
   border: none;
-  border-radius: 50px; /* Pill shape matching your navbar */
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 124, 0, 0.3);
 }
 
 .login-submit-btn:hover {
-  background-color: #e06b00; /* Darker Orange */
+  background: linear-gradient(135deg, #e06b00 0%, #ff7c00 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 124, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 124, 0, 0.4);
 }
 
 /* Register Link Area */
@@ -168,13 +201,16 @@
 }
 
 .register-link a {
-  color: #ff7c00; /* Orange Link */
+  color: #ff7c00;
+  /* Orange Link */
   font-weight: 600;
   text-decoration: none;
   margin-left: 5px;
+  transition: color 0.3s;
 }
 
 .register-link a:hover {
+  color: #e06b00;
   text-decoration: underline;
 }
 
@@ -183,10 +219,10 @@
   .login-container {
     flex-direction: column;
   }
-  
+
   /* Hide the banner image on small mobile screens or reduce height */
   .login-banner {
-    display: none; 
+    display: none;
     /* Alternatively, set height: 150px to show a small header */
   }
 

@@ -14,7 +14,10 @@ import {
   BsArrowLeft,
   BsSave,
   BsEyeFill,
-  BsEyeSlashFill
+  BsEyeSlashFill,
+  BsPencilSquare,
+  BsXCircle,
+  BsCheck
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
@@ -22,7 +25,7 @@ import "../dashboard.css";
 import "../salesInvoice.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { createInvoice, getInvoices } from "../../services/api";
+import { createInvoice, getInvoices, deleteInvoice, updateInvoice, updateInvoiceItem, deleteInvoiceItem, getInvoiceItems } from "../../services/api";
 
 function CreateSalesInvoice() {
   const [party, setParty] = useState("");
@@ -33,6 +36,7 @@ function CreateSalesInvoice() {
   const [paymentTerm, setPaymentTerm] = useState(30);
   const [showHistory, setShowHistory] = useState(false);
   const [invoices, setInvoices] = useState([]);
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
   const userId = localStorage.getItem("userId");
   const navigate = useNavigate();
 
@@ -114,16 +118,27 @@ function CreateSalesInvoice() {
     };
 
     try {
-      const response = await createInvoice(invoiceData);
-      alert("Invoice saved successfully!");
+      if (editingInvoiceId) {
+        // Update existing invoice
+        await updateInvoice(editingInvoiceId, invoiceData);
+        alert("Invoice updated successfully!");
+        setEditingInvoiceId(null);
+      } else {
+        // Create new invoice
+        await createInvoice(invoiceData);
+        alert("Invoice saved successfully!");
+      }
+
+      // Clear form
       setParty("");
       setMobile("");
       setCity("");
       setItems([]);
+
       if (showHistory) fetchInvoices();
     } catch (err) {
       console.error(err);
-      alert("Error saving invoice.");
+      alert(editingInvoiceId ? "Error updating invoice." : "Error saving invoice.");
     }
   };
 
@@ -133,9 +148,12 @@ function CreateSalesInvoice() {
       console.log("Fetching invoices for userId:", userId);
       const data = await getInvoices(userId);
       console.log("Invoice history response:", data);
-      setInvoices(data);
+      // Ensure data is always an array, even if API returns null/undefined
+      setInvoices(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching invoices:", err);
+      // Set to empty array on error to prevent null reference errors
+      setInvoices([]);
     }
   };
 
@@ -145,6 +163,139 @@ function CreateSalesInvoice() {
       fetchInvoices();
     }
     setShowHistory(!showHistory);
+  };
+
+  const handleEdit = async (invoice) => {
+    setEditingInvoiceId(invoice.invoiceId);
+    setParty(invoice.customerName);
+    setMobile(invoice.mobileNo);
+    setCity(invoice.city);
+    setInvoiceDate(invoice.invoiceDate);
+    try {
+    // Fetch items from invoice_items table
+    const itemsData = await getInvoiceItems(invoice.invoiceId);
+
+    // Map backend DTO → frontend state
+    const mappedItems = itemsData.map(item => ({
+      itemId: item.itemId,      
+      itemNo: item.itemNo,
+      itemName: item.itemName,
+      qty: item.qty,
+      price: item.price,
+      discount: item.discount,
+      tax: item.tax,
+      totalLineAmount: item.totalLineAmount
+    }));
+
+    setItems(mappedItems);
+  } catch (err) {
+    console.error("Error fetching invoice items:", err);
+    alert("Failed to load invoice items");
+    setItems([]);
+  }
+
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (invoiceId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this invoice? This action cannot be undone.");
+
+    if (confirmed) {
+      try {
+        await deleteInvoice(invoiceId);
+        alert("Invoice deleted successfully!");
+        fetchInvoices();
+      } catch (err) {
+        console.error(err);
+        alert("Error deleting invoice.");
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingInvoiceId(null);
+    setParty("");
+    setMobile("");
+    setCity("");
+    setItems([]);
+    setInvoiceDate(new Date().toISOString().slice(0, 10));
+  };
+
+  // Save individual item
+  const handleSaveItem = async (index) => {
+    if (!editingInvoiceId) {
+      alert("Please save the invoice first before saving individual items.");
+      return;
+    }
+
+    const item = items[index];
+
+    // Validate item
+    if (!item.itemName || !item.qty || !item.price) {
+      alert("Please fill in all required fields (Item Name, Quantity, Price)");
+      return;
+    }
+
+    if (!item.id) {
+      alert("This is a new item. Please save the entire invoice to add new items.");
+      return;
+    }
+
+    try {
+      await updateInvoiceItem(editingInvoiceId, item.id, {
+        itemNo: item.itemNo,
+        itemName: item.itemName,
+        qty: item.qty,
+        price: item.price,
+        discount: item.discount,
+        tax: item.tax,
+        totalLineAmount: item.totalLineAmount
+      });
+
+      alert("Item saved successfully!");
+
+      // Refresh invoice history to get updated totals
+      if (showHistory) {
+        fetchInvoices();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error saving item: " + (err.message || "Unknown error"));
+    }
+  };
+
+  // Delete individual item
+  const handleDeleteItem = async (index) => {
+    const item = items[index];
+
+    if (!editingInvoiceId || !item.itemId) {
+      // If not editing or item has no ID, just remove from local state
+      removeItem(index);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${item.itemName}"?\n\nThis will permanently remove the item from the invoice.`
+    );
+
+    if (confirmed) {
+      try {
+        await deleteInvoiceItem(editingInvoiceId, item.itemId);
+        alert("Item deleted successfully!");
+
+        // Remove from local state
+        removeItem(index);
+
+        // Refresh invoice history to get updated totals
+        if (showHistory) {
+          fetchInvoices();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error deleting item: " + (err.message || "Unknown error"));
+      }
+    }
   };
 
   return (
@@ -159,11 +310,19 @@ function CreateSalesInvoice() {
             <div className="invoice-header-content">
               <div className="invoice-title-section">
                 <h2 className="invoice-page-title">
-                  <BsFileEarmarkText className="invoice-title-icon" /> Create Sales Invoice
+                  <BsFileEarmarkText className="invoice-title-icon" />
+                  {editingInvoiceId ? 'Edit Sales Invoice' : 'Create Sales Invoice'}
                 </h2>
-                <p className="invoice-page-subtitle">Generate professional invoices for your customers</p>
+                <p className="invoice-page-subtitle">
+                  {editingInvoiceId ? 'Update invoice details' : 'Generate professional invoices for your customers'}
+                </p>
               </div>
               <div className="invoice-header-actions">
+                {editingInvoiceId && (
+                  <button className="cancel-edit-btn" onClick={handleCancelEdit}>
+                    <BsXCircle /> Cancel Edit
+                  </button>
+                )}
                 <button
                   className={`history-toggle-btn ${showHistory ? 'active' : ''}`}
                   onClick={handleViewHistory}
@@ -189,28 +348,47 @@ function CreateSalesInvoice() {
                       <th><BsTelephoneFill /> Mobile</th>
                       <th><BsGeoAltFill /> City</th>
                       <th><BsCalendar3 /> Date</th>
-                      <th>Items</th>
+                      <th>Total Items</th>
                       <th><BsCashStack /> Amount</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {invoices.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="empty-history">
+                        <td colSpan="8" className="empty-history">
                           <BsListUl className="empty-history-icon" />
                           <p>No invoices found</p>
                         </td>
                       </tr>
                     ) : (
                       invoices.map((inv) => (
-                        <tr key={inv.invoiceId}>
-                          <td>#{inv.invoiceId}</td>
+                        <tr key={inv.invoiceId} className={editingInvoiceId === inv.invoiceId ? 'editing-row' : ''}>
+                          <td>#{inv.invoiceId.substring(0, 8)}</td>
                           <td>{inv.customerName}</td>
                           <td>{inv.mobileNo}</td>
                           <td>{inv.city}</td>
                           <td>{inv.invoiceDate}</td>
                           <td>{inv.totalItems}</td>
                           <td className="amount-cell">₹{inv.totalAmount}</td>
+                          <td>
+                            <div className="action-buttons">
+                              <button
+                                className="edit-btn"
+                                onClick={() => handleEdit(inv)}
+                                title="Edit Invoice"
+                              >
+                                <BsPencilSquare /> Edit
+                              </button>
+                              <button
+                                className="delete-btn"
+                                onClick={() => handleDelete(inv.invoiceId)}
+                                title="Delete Invoice"
+                              >
+                                <BsTrash /> Delete
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))
                     )}
@@ -316,7 +494,7 @@ function CreateSalesInvoice() {
                       <th style={{ width: '100px' }}><BsPercent /> Disc</th>
                       <th style={{ width: '100px' }}><BsPercent /> Tax</th>
                       <th style={{ width: '120px' }}>Amount (₹)</th>
-                      <th style={{ width: '60px' }}>Action</th>
+                      <th style={{ width: '140px' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -388,13 +566,22 @@ function CreateSalesInvoice() {
                             ).toFixed(2)}
                           </td>
                           <td>
-                            <button
-                              className="delete-item-btn"
-                              onClick={() => removeItem(index)}
-                              title="Remove item"
-                            >
-                              <BsTrash />
-                            </button>
+                            <div className="item-action-buttons">
+                              <button
+                                className="btn btn-sm save-item-btn"
+                                onClick={() => handleSaveItem(index)}
+                                title="Save item changes"
+                              >
+                                <BsCheck /> Save
+                              </button>
+                              <button
+                                className="btn btn-sm delete-item-btn-new"
+                                onClick={() => handleDeleteItem(index)}
+                                title="Delete item"
+                              >
+                                <BsTrash /> Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -446,7 +633,7 @@ function CreateSalesInvoice() {
                 </button>
               </Link>
               <button className="invoice-save-btn" onClick={handleSave}>
-                <BsSave /> Save Invoice
+                <BsSave /> {editingInvoiceId ? 'Update Invoice' : 'Save Invoice'}
               </button>
             </div>
           </div>
