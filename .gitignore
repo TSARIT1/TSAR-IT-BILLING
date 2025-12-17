@@ -1,0 +1,13 @@
+﻿# ===== Backend =====
+backend/**/target/
+
+# ===== Frontend =====
+frontend/**/node_modules/
+frontend/**/build/
+
+# ===== IDE =====
+.vscode/
+.idea/
+
+# ===== OS =====
+.DS_Store
