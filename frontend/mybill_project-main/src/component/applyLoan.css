@@ -1,0 +1,769 @@
+/* =========================================
+   APPLY FOR LOAN PAGE STYLING
+   Orange-Blue-White Theme with Bootstrap
+   Multi-Step Form Design
+   ========================================= */
+
+/* Page Header */
+.loan-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 25px 35px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.loan-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.loan-header .header-left {
+    z-index: 1;
+}
+
+.loan-header .header-left h2 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.loan-header .header-left h2 i {
+    font-size: 32px;
+}
+
+.loan-header .header-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    margin: 5px 0 0 0;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Progress Stepper */
+.progress-stepper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 0 50px;
+}
+
+.progress-stepper .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.progress-stepper .step-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border: 3px solid #e5e7eb;
+    z-index: 1;
+}
+
+.progress-stepper .step.active .step-circle {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    border-color: #3e4e96;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+}
+
+.progress-stepper .step.completed .step-circle {
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+}
+
+.progress-stepper .step-label {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+}
+
+.progress-stepper .step.active .step-label {
+    color: #3e4e96;
+}
+
+.progress-stepper .step.completed .step-label {
+    color: #10b981;
+}
+
+.progress-stepper .step-line {
+    width: 150px;
+    height: 3px;
+    background: #e5e7eb;
+    margin: 0 20px;
+    position: relative;
+    top: -20px;
+}
+
+/* Loan Form Card */
+.loan-form-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.loan-form-card .form-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 25px 30px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.loan-form-card .form-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.loan-form-card .form-header h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 5px 0;
+}
+
+.loan-form-card .form-header p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Form Body */
+.loan-form-card .form-body {
+    padding: 30px;
+}
+
+.loan-form-card .form-group {
+    margin-bottom: 25px;
+}
+
+.loan-form-card .form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loan-form-card .form-group label i {
+    color: #3e4e96;
+    font-size: 16px;
+}
+
+.loan-form-card .form-control,
+.loan-form-card .form-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.loan-form-card .form-control:focus,
+.loan-form-card .form-select:focus {
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    outline: none;
+}
+
+.loan-form-card .form-text {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Form Row */
+.loan-form-card .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Toggle Buttons */
+.loan-form-card .toggle-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.loan-form-card .toggle-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.loan-form-card .toggle-btn:hover {
+    border-color: #3e4e96;
+    background: #ffffff;
+}
+
+.loan-form-card .toggle-btn.active {
+    border-color: #3e4e96;
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+}
+
+/* Info Box */
+.loan-form-card .info-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-left: 4px solid #3e4e96;
+    padding: 15px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.loan-form-card .info-box i {
+    font-size: 24px;
+    color: #3e4e96;
+    flex-shrink: 0;
+}
+
+.loan-form-card .info-box strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.loan-form-card .info-box p {
+    font-size: 13px;
+    color: #374151;
+    margin: 0;
+}
+
+.loan-form-card .info-box.success {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-left-color: #10b981;
+}
+
+.loan-form-card .info-box.success i {
+    color: #10b981;
+}
+
+/* Features List */
+.loan-form-card .features-list {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.loan-form-card .features-list h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loan-form-card .features-list h4 i {
+    color: #e8961b;
+    font-size: 18px;
+}
+
+.loan-form-card .features-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.loan-form-card .features-list ul li {
+    font-size: 14px;
+    color: #374151;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.loan-form-card .features-list ul li i {
+    color: #10b981;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Form Footer */
+.loan-form-card .form-footer {
+    padding: 20px 30px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.loan-form-card .form-footer .btn {
+    padding: 12px 25px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.loan-form-card .form-footer .btn-outline-secondary {
+    border-width: 2px !important;
+}
+
+.loan-form-card .form-footer .btn-primary {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+}
+
+.loan-form-card .form-footer .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+.loan-form-card .form-footer .btn-success {
+    background: #10b981 !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.loan-form-card .form-footer .btn-success:hover {
+    background: #059669 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Applications View */
+.applications-view {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.applications-view .applications-header {
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.applications-view .applications-header>div {
+    flex: 1;
+}
+
+.applications-view .applications-header h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.applications-view .applications-header h3 i {
+    color: #3e4e96;
+    font-size: 28px;
+}
+
+.applications-view .applications-header p {
+    font-size: 15px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Loading State */
+.applications-view .loading-state {
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.applications-view .loading-state .spinner-border {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 20px;
+}
+
+.applications-view .loading-state p {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Error State */
+.applications-view .alert {
+    margin: 20px 0;
+    padding: 15px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.applications-view .alert i {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+.applications-view .alert .btn-link {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Applications Table */
+.applications-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.applications-table-card .table-header-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1.2fr 1.3fr 1.2fr 1.2fr 1fr;
+    gap: 15px;
+    padding: 18px 25px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.applications-table-card .table-header-row .header-cell {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.applications-table-card .table-header-row .header-cell i {
+    color: #3e4e96;
+    font-size: 14px;
+}
+
+.applications-table-card .table-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1.2fr 1.3fr 1.2fr 1.2fr 1fr;
+    gap: 15px;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+.applications-table-card .table-row:hover {
+    background: #f9fafb;
+}
+
+.applications-table-card .table-row:last-child {
+    border-bottom: none;
+}
+
+.applications-table-card .table-cell {
+    font-size: 14px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+}
+
+.applications-table-card .app-id {
+    font-weight: 700;
+    color: #3e4e96;
+    background: #eff6ff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.applications-table-card .amount-text {
+    font-weight: 700;
+    color: #059669;
+    font-size: 15px;
+}
+
+/* Status Badges */
+.applications-table-card .status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.applications-table-card .status-badge.approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.applications-table-card .status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.applications-table-card .status-badge.under-review {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.applications-table-card .action-btn {
+    padding: 6px 15px !important;
+    font-weight: 600 !important;
+    border-width: 2px !important;
+}
+
+/* Empty State for Applications */
+.applications-view .empty-state {
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.applications-view .empty-state .empty-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 25px;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.applications-view .empty-state .empty-icon i {
+    font-size: 60px;
+    color: #9ca3af;
+}
+
+.applications-view .empty-state h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 10px 0;
+}
+
+.applications-view .empty-state p {
+    font-size: 15px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.applications-view .empty-state .btn-primary {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    border: none !important;
+    padding: 12px 28px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+}
+
+.applications-view .empty-state .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+/* Header Actions */
+.loan-header .header-actions {
+    display: flex;
+    gap: 12px;
+    z-index: 1;
+}
+
+.loan-header .header-actions .btn {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.loan-header .header-actions .btn-outline-primary {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.loan-header .header-actions .btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+.loan-header .header-actions .btn-primary {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    color: #3e4e96 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.loan-header .header-actions .btn-primary:hover {
+    background: #ffffff !important;
+    color: #3e4e96 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loan-header {
+        padding: 20px;
+    }
+
+    .loan-header .header-left h2 {
+        font-size: 22px;
+    }
+
+    .progress-stepper {
+        padding: 0 20px;
+    }
+
+    .progress-stepper .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .progress-stepper .step-line {
+        width: 80px;
+        margin: 0 10px;
+        top: -15px;
+    }
+
+    .progress-stepper .step-label {
+        font-size: 11px;
+    }
+
+    .loan-form-card .form-header {
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .loan-form-card .form-body {
+        padding: 20px;
+    }
+
+    .loan-form-card .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .loan-form-card .form-footer {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px 20px;
+    }
+
+    .loan-form-card .form-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-stepper {
+        padding: 0 10px;
+    }
+
+    .progress-stepper .step-circle {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+
+    .progress-stepper .step-line {
+        width: 50px;
+        margin: 0 5px;
+    }
+
+    .loan-form-card .form-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    .loan-form-card .form-header h3 {
+        font-size: 18px;
+    }
+
+    .loan-form-card .toggle-buttons {
+        flex-direction: column;
+    }
+}

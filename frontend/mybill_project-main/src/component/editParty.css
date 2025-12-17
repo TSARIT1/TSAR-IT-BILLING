@@ -1,0 +1,507 @@
+/* =========================================
+   MODERN EDIT PARTY PAGE STYLING
+   ========================================= */
+
+.edit-party-container {
+  margin-left: 280px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin-top: 70px;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================
+   PAGE HEADER
+   ========================================= */
+.page-header {
+  background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+  padding: 30px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-icon {
+  font-size: 36px;
+  color: #ffffff;
+}
+
+.page-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  margin: 8px 0 0 0;
+  font-weight: 400;
+}
+
+/* =========================================
+   CARD CONTAINER
+   ========================================= */
+.edit-party-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 35px;
+  max-width: 1200px;
+  margin: 0 auto 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-party-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================================
+   SECTION HEADERS
+   ========================================= */
+.section-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.section-heading {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon {
+  font-size: 24px;
+  color: #667eea;
+}
+
+/* =========================================
+   FORM GRID LAYOUTS
+   ========================================= */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-bottom: 20px;
+}
+
+.form-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* =========================================
+   FORM LABELS
+   ========================================= */
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label-icon {
+  font-size: 16px;
+  color: #667eea;
+}
+
+/* =========================================
+   INPUT FIELDS WITH ICONS
+   ========================================= */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 18px;
+  color: #9ca3af;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-input.icon-padded {
+  padding-left: 42px;
+}
+
+.form-input:focus {
+  border-color: #667eea;
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+/* =========================================
+   SELECT DROPDOWNS
+   ========================================= */
+select.form-input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+/* =========================================
+   TEXTAREA
+   ========================================= */
+.form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  min-height: 100px;
+  resize: vertical;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-textarea:focus {
+  border-color: #667eea;
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+/* =========================================
+   CALENDAR INPUT
+   ========================================= */
+.calendar-input input[type="date"] {
+  cursor: pointer;
+}
+
+.calendar-input input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.calendar-input input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* =========================================
+   BALANCE GROUP (Currency + Select)
+   ========================================= */
+.balance-group {
+  display: flex;
+  align-items: center;
+}
+
+.balance-group .icon-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.balance-group .form-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.form-select-small {
+  height: 46px;
+  padding: 0 14px;
+  background-color: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-select-small:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #ffffff;
+}
+
+/* =========================================
+   ICON INPUT WRAPPER (Currency Icon)
+   ========================================= */
+.icon-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 18px;
+  color: #9ca3af;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.icon-input-wrapper .form-input {
+  padding-left: 38px;
+}
+
+/* =========================================
+   GST DETAILS BUTTON GROUP
+   ========================================= */
+.input-group-btn {
+  display: flex;
+  align-items: center;
+}
+
+.input-group-btn .form-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.get-details-btn {
+  height: 46px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 0 10px 10px 0;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.get-details-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   BANK SECTION
+   ========================================= */
+.bank-section {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 30px;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.bank-section:hover {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+}
+
+.add-bank-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 20px;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.add-bank-placeholder:hover {
+  color: #667eea;
+}
+
+.bank-icon {
+  font-size: 48px;
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.add-bank-placeholder p {
+  margin: 10px 0;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.add-bank-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.add-bank-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.bank-form {
+  margin-top: 15px;
+}
+
+.cancel-bank-btn {
+  margin-top: 20px;
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  color: #6b7280;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-bank-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* =========================================
+   FORM ACTIONS (Buttons)
+   ========================================= */
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 35px;
+  justify-content: flex-start;
+}
+
+.save-party-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.save-party-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.cancel-party-btn {
+  background-color: #ffffff;
+  color: #6b7280;
+  padding: 14px 32px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-party-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+   ========================================= */
+@media (max-width: 768px) {
+  .edit-party-container {
+    margin-left: 0;
+    padding: 15px;
+  }
+
+  .form-grid-2,
+  .form-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .edit-party-card {
+    padding: 20px;
+  }
+}

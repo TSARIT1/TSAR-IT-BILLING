@@ -1,0 +1,235 @@
+/* Container */
+.register-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+  overflow: hidden;
+}
+
+/* --- LEFT SIDE (Blue Gradient Theme) --- */
+.register-banner {
+  flex: 1;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  /* Blue Gradient */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-content {
+  z-index: 2;
+  text-align: center;
+  padding: 40px;
+  max-width: 500px;
+}
+
+.banner-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.banner-content p {
+  font-size: 1.1rem;
+  color: #e0f2fe;
+  line-height: 1.6;
+}
+
+/* Background Circle Decoration */
+.decoration-circle {
+  position: absolute;
+  bottom: -100px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+/* --- RIGHT SIDE (Form Area - White) --- */
+.register-form-wrapper {
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.register-box {
+  margin-top: 150px;
+  width: 100%;
+  max-width: 650px;
+  padding: 20px;
+}
+
+.register-box h2 {
+  font-size: 32px;
+  color: #1e3a8a;
+  /* Blue heading */
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.sub-text {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+/* --- INPUT GROUPS --- */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  /* Stack label above input */
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 0;
+  /* Bootstrap row handles spacing */
+  position: relative;
+}
+
+/* Label Styling */
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a8a;
+  /* Blue labels */
+  margin: 0;
+}
+
+/* Input Styling */
+.input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.input-group input:focus {
+  border-color: #ff7c00;
+  /* Orange Focus */
+  box-shadow: 0 0 0 4px rgba(255, 124, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Error State */
+.input-group input.error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.input-group input.error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+/* Success State */
+.input-group input.success {
+  border-color: #10b981;
+}
+
+/* Error Message */
+.error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: -4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Register Button (Orange) */
+.register-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #ff7c00 0%, #ff9500 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  box-shadow: 0 4px 12px rgba(255, 124, 0, 0.3);
+}
+
+.register-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e06b00 0%, #ff7c00 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 124, 0, 0.4);
+}
+
+.register-submit-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Link to Login */
+.login-link {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-link a {
+  color: #ff7c00;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 5px;
+  transition: color 0.3s;
+}
+
+.login-link a:hover {
+  color: #e06b00;
+  text-decoration: underline;
+}
+
+/* --- MOBILE RESPONSIVE --- */
+@media (max-width: 900px) {
+  .register-container {
+    flex-direction: column;
+    overflow-y: auto;
+    /* Allow scrolling on mobile */
+  }
+
+  .register-banner {
+    display: none;
+    /* Hide banner on mobile */
+  }
+
+  .register-form-wrapper {
+    width: 100%;
+    padding: 30px 20px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+
+  /* On very small screens, stack label and input */
+  .input-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .input-group label {
+    width: 100%;
+  }
+}

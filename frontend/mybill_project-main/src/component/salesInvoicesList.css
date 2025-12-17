@@ -1,0 +1,558 @@
+/* =========================================
+   SALES INVOICES LIST PAGE STYLING
+   Orange-Blue-White Theme
+   ========================================= */
+
+/* Page Header */
+.sales-invoices-page-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+}
+
+.sales-invoices-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.sales-invoices-title-section {
+    flex: 1;
+}
+
+.sales-invoices-page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sales-invoices-title-icon {
+    font-size: 36px;
+    color: #ffffff;
+}
+
+.sales-invoices-page-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.sales-invoices-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.sales-invoices-report-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #3e4e96;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.sales-invoices-report-btn:hover {
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Summary Cards */
+.sales-invoices-summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.sales-invoices-summary-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 5px solid transparent;
+}
+
+.sales-invoices-summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.sales-invoices-summary-card.total-sales {
+    border-left-color: #3e4e96;
+}
+
+.sales-invoices-summary-card.paid-sales {
+    border-left-color: #22c55e;
+}
+
+.sales-invoices-summary-card.unpaid-sales {
+    border-left-color: #ef4444;
+}
+
+.sales-invoices-card-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.total-sales-icon {
+    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+}
+
+.paid-sales-icon {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.unpaid-sales-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.sales-invoices-card-icon {
+    font-size: 32px;
+    color: #ffffff;
+}
+
+.sales-invoices-card-content {
+    flex: 1;
+}
+
+.sales-invoices-card-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sales-invoices-card-content p {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+/* Filters Container */
+.sales-invoices-filters-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+}
+
+.sales-invoices-filters-left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.sales-invoices-filters-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Search Box */
+.sales-invoices-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.sales-invoices-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.sales-invoices-search-input {
+    width: 100%;
+    padding: 12px 16px 12px 45px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
+
+.sales-invoices-search-input:focus {
+    outline: none;
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+}
+
+/* Filter Group */
+.sales-invoices-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sales-invoices-filter-icon {
+    font-size: 20px;
+    color: #6b7280;
+}
+
+.sales-invoices-filter-select {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.sales-invoices-filter-select:focus {
+    outline: none;
+    border-color: #e8961b;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(232, 150, 27, 0.1);
+}
+
+/* Status Filter */
+.sales-invoices-status-filter {
+    display: flex;
+    align-items: center;
+}
+
+.sales-invoices-status-select {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 130px;
+}
+
+.sales-invoices-status-select:focus {
+    outline: none;
+    border-color: #22c55e;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+/* Amount Filter */
+.sales-invoices-amount-filter {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sales-invoices-amount-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.sales-invoices-amount-input {
+    padding: 12px 16px 12px 40px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    min-width: 150px;
+}
+
+.sales-invoices-amount-input:focus {
+    outline: none;
+    border-color: #e8961b;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(232, 150, 27, 0.1);
+}
+
+/* Date Filter */
+.sales-invoices-date-filter {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sales-invoices-date-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    color: #9ca3af;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.sales-invoices-date-input {
+    padding: 12px 16px 12px 40px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    min-width: 180px;
+}
+
+.sales-invoices-date-input:focus {
+    outline: none;
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+}
+
+/* Create Button */
+.sales-invoices-create-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    text-decoration: none;
+}
+
+.sales-invoices-create-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+/* Table Container */
+.sales-invoices-table-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.sales-invoices-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sales-invoices-table thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.sales-invoices-table th {
+    padding: 16px 14px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.sales-invoices-table th svg {
+    margin-right: 6px;
+    vertical-align: middle;
+    color: #3e4e96;
+}
+
+.sales-invoices-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+.sales-invoices-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.sales-invoices-table td {
+    padding: 14px;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.invoice-number-cell {
+    font-weight: 600;
+    color: #3e4e96;
+}
+
+.customer-name-cell {
+    font-weight: 500;
+}
+
+.customer-icon {
+    margin-right: 8px;
+    color: #6b7280;
+    vertical-align: middle;
+}
+
+.amount-cell {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Status Badge */
+.sales-invoices-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.sales-invoices-status-badge.paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.sales-invoices-status-badge.unpaid {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sales-invoices-status-badge svg {
+    font-size: 14px;
+}
+
+/* Empty State */
+.sales-invoices-empty-state {
+    text-align: center;
+    padding: 60px 20px !important;
+}
+
+.sales-invoices-empty-icon {
+    font-size: 64px;
+    color: #d1d5db;
+    margin-bottom: 15px;
+}
+
+.sales-invoices-empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 10px 0;
+}
+
+.sales-invoices-empty-state p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 20px 0;
+}
+
+.sales-invoices-empty-add-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    text-decoration: none;
+}
+
+.sales-invoices-empty-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sales-invoices-summary-row {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-invoices-filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sales-invoices-filters-left,
+    .sales-invoices-filters-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .sales-invoices-search-box {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .sales-invoices-page-title {
+        font-size: 24px;
+    }
+
+    .sales-invoices-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sales-invoices-report-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sales-invoices-table-container {
+        overflow-x: auto;
+    }
+
+    .sales-invoices-create-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,158 @@
+/* =========================================
+   CREATE PAYMENT OUT PAGE STYLING
+   Orange-Blue-White Theme
+   (Reuses payment in form styling)
+   ========================================= */
+
+/* Page Header */
+.paymentout-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 20px 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+}
+
+.paymentout-header h2 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.paymentout-header .right-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.paymentout-header .cancel-btn,
+.paymentout-header .save-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.paymentout-header .cancel-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.paymentout-header .cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.paymentout-header .save-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #3e4e96;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.paymentout-header .save-btn:hover {
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Payment Grid */
+.paymentout-grid {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.left-box,
+.right-box {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.left-box label,
+.right-box label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: -12px;
+}
+
+.left-box input,
+.left-box select,
+.left-box textarea,
+.right-box input,
+.right-box select,
+.right-box textarea {
+    padding: 12px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.left-box input:focus,
+.left-box select:focus,
+.left-box textarea:focus,
+.right-box input:focus,
+.right-box select:focus,
+.right-box textarea:focus {
+    outline: none;
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+}
+
+.left-box input[readonly],
+.right-box input[readonly] {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.left-box textarea,
+.right-box textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .paymentout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .paymentout-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .paymentout-header .right-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .paymentout-header .cancel-btn,
+    .paymentout-header .save-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

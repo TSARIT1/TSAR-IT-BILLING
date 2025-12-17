@@ -1,0 +1,359 @@
+/* =========================================
+   DEBIT NOTE PAGE STYLING
+   Orange-Blue-White Theme
+   ========================================= */
+
+/* Page Header */
+.debit-note-page-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+}
+
+.debit-note-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.debit-note-title-section {
+    flex: 1;
+}
+
+.debit-note-page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.debit-note-title-icon {
+    font-size: 36px;
+    color: #ffffff;
+}
+
+.debit-note-page-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.debit-note-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.debit-note-report-btn,
+.debit-note-create-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.debit-note-report-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.debit-note-report-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.debit-note-create-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #3e4e96;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.debit-note-create-btn:hover {
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Summary Cards */
+.debit-note-summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.debit-note-summary-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 5px solid transparent;
+}
+
+.debit-note-summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.debit-note-summary-card.total-notes {
+    border-left-color: #3e4e96;
+}
+
+.debit-note-summary-card.total-amount {
+    border-left-color: #8b5cf6;
+}
+
+.debit-note-summary-card.open-notes {
+    border-left-color: #f59e0b;
+}
+
+.debit-note-summary-card.closed-notes {
+    border-left-color: #22c55e;
+}
+
+.debit-note-card-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.total-notes-icon {
+    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+}
+
+.total-amount-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+}
+
+.open-notes-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.closed-notes-icon {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.debit-note-card-icon {
+    font-size: 28px;
+    color: #ffffff;
+}
+
+.debit-note-card-content {
+    flex: 1;
+}
+
+.debit-note-card-content h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.debit-note-card-content p {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+/* Table Container */
+.debit-note-table-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.debit-note-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.debit-note-table thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.debit-note-table th {
+    padding: 16px 14px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.debit-note-table th svg {
+    margin-right: 6px;
+    vertical-align: middle;
+    color: #3e4e96;
+}
+
+.debit-note-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+.debit-note-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.debit-note-table td {
+    padding: 14px;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.note-number-cell {
+    font-weight: 600;
+    color: #3e4e96;
+}
+
+.party-name-cell {
+    font-weight: 500;
+}
+
+.party-icon {
+    margin-right: 8px;
+    color: #6b7280;
+    vertical-align: middle;
+}
+
+.amount-cell {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Status Badge */
+.debit-note-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.debit-note-status-badge.open {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.debit-note-status-badge.closed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.debit-note-status-badge svg {
+    font-size: 14px;
+}
+
+/* Empty State */
+.debit-note-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.debit-note-empty-icon {
+    font-size: 80px;
+    color: #d1d5db;
+    margin-bottom: 20px;
+}
+
+.debit-note-empty-state h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 12px 0;
+}
+
+.debit-note-empty-state p {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0 0 30px 0;
+}
+
+.debit-note-empty-add-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+.debit-note-empty-add-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .debit-note-summary-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .debit-note-page-title {
+        font-size: 24px;
+    }
+
+    .debit-note-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .debit-note-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .debit-note-report-btn,
+    .debit-note-create-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .debit-note-summary-row {
+        grid-template-columns: 1fr;
+    }
+
+    .debit-note-table-container {
+        overflow-x: auto;
+    }
+}

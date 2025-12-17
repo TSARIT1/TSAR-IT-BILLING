@@ -1,0 +1,409 @@
+/* =========================================
+   CREATE EXPENSE PAGE STYLING
+   Orange-Blue-White Theme with Bootstrap
+   Enhanced UI Design
+   ========================================= */
+
+/* Page Header */
+.expense-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 25px 35px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.expense-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.expense-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 1;
+}
+
+.expense-header .back-icon {
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.expense-header .back-icon:hover {
+    transform: translateX(-5px);
+}
+
+.expense-header .header-text h2 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expense-header .header-text h2 i {
+    font-size: 32px;
+}
+
+.expense-header .header-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    margin: 5px 0 0 0;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.expense-header .header-right {
+    display: flex;
+    gap: 12px;
+    z-index: 1;
+}
+
+.expense-header .btn {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.expense-header .btn-outline-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.expense-header .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+.expense-header .btn-outline-danger {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.expense-header .btn-outline-danger:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+.expense-header .btn-primary {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    color: #3e4e96 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.expense-header .btn-primary:hover {
+    background: #ffffff !important;
+    color: #3e4e96 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Expense Body */
+.expense-body {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Form Grid */
+.expense-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+/* Form Card */
+.form-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.form-card .card-header-custom {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-card .card-header-custom i {
+    color: #3e4e96;
+    font-size: 18px;
+}
+
+/* Form Groups */
+.form-group {
+    padding: 20px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.form-group:last-child {
+    border-bottom: none;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label i {
+    color: #3e4e96;
+    font-size: 16px;
+}
+
+.form-group .form-control,
+.form-group .form-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.form-group .form-control:focus,
+.form-group .form-select:focus {
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+}
+
+.form-group .readonly-input {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    color: #3e4e96 !important;
+    font-weight: 700 !important;
+    border-color: #3e4e96 !important;
+    cursor: not-allowed;
+}
+
+.form-group textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* GST Toggle Group */
+.gst-toggle-group {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b !important;
+}
+
+.gst-toggle-group .form-check-input {
+    width: 50px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.gst-toggle-group .form-check-input:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+/* Add Item Section */
+.add-item-section {
+    background: #ffffff;
+    border: 3px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.add-item-section:hover {
+    border-color: #3e4e96;
+    background: #f9fafb;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.1);
+}
+
+.add-item-section .add-item-btn {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    color: #ffffff;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    margin-bottom: 10px;
+}
+
+.add-item-section .add-item-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+/* Total Amount Card */
+.total-amount-card {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.total-amount-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.total-amount-card .total-label {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1;
+}
+
+.total-amount-card .total-label i {
+    font-size: 24px;
+}
+
+.total-amount-card .total-value {
+    color: #ffffff;
+    font-size: 36px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 1;
+}
+
+.total-amount-card .total-value .currency {
+    font-size: 28px;
+    opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .expense-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .expense-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .expense-header .header-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .expense-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .expense-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .add-item-section {
+        padding: 30px 20px;
+    }
+
+    .total-amount-card {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .total-amount-card .total-value {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .expense-header .header-text h2 {
+        font-size: 22px;
+    }
+
+    .form-group {
+        padding: 15px;
+    }
+
+    .total-amount-card .total-value {
+        font-size: 28px;
+    }
+
+    .add-item-section .add-item-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

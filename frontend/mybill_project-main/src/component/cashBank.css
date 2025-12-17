@@ -1,0 +1,455 @@
+/* =========================================
+   CASH & BANK PAGE STYLING
+   Enhanced with Bootstrap Components
+   Orange-Blue-White Theme
+   ========================================= */
+
+/* Page Header */
+.cashbank-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    margin-top: 25px;
+    padding: 25px 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.cashbank-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.cashbank-header .header-left {
+    z-index: 1;
+}
+
+.cashbank-header .header-left h2 {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cashbank-header .header-left h2 i {
+    font-size: 28px;
+}
+
+.cashbank-header .header-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    margin: 0;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cashbank-header .top-buttons {
+    display: flex;
+    gap: 12px;
+    z-index: 1;
+}
+
+.cashbank-header .action-btn {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.cashbank-header .btn-outline-success {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.cashbank-header .btn-outline-success:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+.cashbank-header .btn-outline-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.cashbank-header .btn-outline-info:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+.cashbank-header .btn-primary {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    color: #3e4e96 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.cashbank-header .btn-primary:hover {
+    background: #ffffff !important;
+    color: #3e4e96 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Content Grid */
+.cashbank-body {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 25px;
+}
+
+/* Left Panel - Enhanced with Bootstrap */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Balance Card Enhanced */
+.balance-card-enhanced {
+    border-radius: 16px !important;
+    border-width: 2px !important;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.15) !important;
+    transition: all 0.3s ease;
+}
+
+.balance-card-enhanced:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(62, 78, 150, 0.25) !important;
+}
+
+.balance-card-enhanced .balance-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #eef2ff 0%, #dbeafe 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.balance-card-enhanced .balance-icon i {
+    font-size: 28px;
+}
+
+/* Accounts Section */
+.accounts-section {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+.accounts-section .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Account Item Enhanced */
+.account-item-enhanced {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+}
+
+.account-item-enhanced:last-child {
+    margin-bottom: 0;
+}
+
+.account-item-enhanced:hover {
+    background: #ffffff;
+    border-color: #3e4e96;
+    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.15);
+    transform: translateX(5px);
+}
+
+.account-item-enhanced .account-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 20px;
+}
+
+.account-item-enhanced .account-icon.bg-success {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+
+.account-item-enhanced .account-icon.bg-info {
+    background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+}
+
+.account-item-enhanced .account-icon.bg-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+}
+
+.account-item-enhanced.bank-item {
+    border-left: 4px solid #f59e0b;
+}
+
+/* Right Panel - Enhanced */
+.right-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+/* Transactions Header Enhanced with Nav Pills */
+.transactions-header-enhanced {
+    width: 100%;
+    margin-top: 0px;
+    padding: 20px 25px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.transactions-header-enhanced .nav-pills {
+    gap: 10px;
+}
+
+.transactions-header-enhanced .nav-link {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.transactions-header-enhanced .nav-link:hover {
+    background: #f3f4f6;
+    color: #3e4e96;
+}
+
+.transactions-header-enhanced .nav-link.active {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.3);
+}
+
+/* Transaction Filter Enhanced */
+.transaction-filter-enhanced {
+    display: flex;
+    gap: 15px;
+    padding: 20px 25px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: center;
+}
+
+.transaction-filter-enhanced .input-group {
+    flex: 1;
+    max-width: 300px;
+}
+
+.transaction-filter-enhanced .input-group-text {
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+}
+
+.transaction-filter-enhanced .form-select {
+    border: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+}
+
+.transaction-filter-enhanced .form-select:focus {
+    border-color: #3e4e96;
+    box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.1);
+}
+
+.transaction-filter-enhanced .filter-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.transaction-filter-enhanced .btn-outline-secondary {
+    border-width: 2px;
+}
+
+.transaction-filter-enhanced .btn-warning {
+    background: #f59e0b !important;
+    border: none;
+}
+
+.transaction-filter-enhanced .btn-warning:hover {
+    background: #d97706 !important;
+}
+
+/* No Transactions Enhanced */
+.no-transactions-enhanced {
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.no-transactions-enhanced .empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.no-transactions-enhanced .empty-icon-large {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-transactions-enhanced .empty-icon-large i {
+    font-size: 60px;
+    color: #9ca3af;
+}
+
+.no-transactions-enhanced h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.no-transactions-enhanced p {
+    font-size: 15px;
+    margin: 0;
+}
+
+.no-transactions-enhanced .btn-primary {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    border: none !important;
+    padding: 12px 28px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+}
+
+.no-transactions-enhanced .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .cashbank-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .cashbank-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .cashbank-header .top-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .cashbank-header .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .cashbank-body {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-filter-enhanced {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .transaction-filter-enhanced .input-group {
+        max-width: 100%;
+    }
+
+    .transaction-filter-enhanced .filter-actions {
+        width: 100%;
+    }
+
+    .transaction-filter-enhanced .filter-actions button {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .cashbank-header {
+        padding: 15px;
+    }
+
+    .cashbank-header .header-left h2 {
+        font-size: 22px;
+    }
+
+    .accounts-section {
+        padding: 15px;
+    }
+
+    .no-transactions-enhanced {
+        padding: 60px 20px;
+    }
+
+    .balance-card-enhanced .card-body {
+        padding: 15px;
+    }
+}
