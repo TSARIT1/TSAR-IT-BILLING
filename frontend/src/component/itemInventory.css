@@ -452,6 +452,244 @@
     color: #dc2626;
 }
 
+.inventory-action-btn.history-btn {
+    color: #e8961b;
+}
+
+.inventory-action-btn.history-btn:hover {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Product ID Cell */
+.product-id-cell {
+    font-weight: 600;
+    color: #6b7280;
+    font-family: 'Courier New', monospace;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.status-in-stock {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.status-low-stock {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.status-badge.status-out-of-stock {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.status-expired {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Stock History Modal */
+.stock-history-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.stock-history-modal {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.stock-history-modal-header {
+    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    padding: 25px 30px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stock-history-modal-header h3 {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stock-history-modal-header h3 svg {
+    font-size: 26px;
+}
+
+.stock-history-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 24px;
+}
+
+.stock-history-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.stock-history-modal-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.stock-history-empty {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.stock-history-empty .empty-icon {
+    font-size: 64px;
+    color: #d1d5db;
+    margin-bottom: 15px;
+}
+
+.stock-history-empty p {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.stock-history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stock-history-table thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.stock-history-table th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.stock-history-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+.stock-history-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.stock-history-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.transaction-type-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.transaction-type-badge.purchase {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+}
+
+.transaction-type-badge.sale {
+    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    color: #ffffff;
+}
+
+.quantity-cell {
+    font-weight: 700;
+}
+
+.quantity-cell.purchase {
+    color: #10b981;
+}
+
+.quantity-cell.sale {
+    color: #3e4e96;
+}
+
+.balance-cell {
+    font-weight: 700;
+    color: #1f2937;
+}
+
 /* Empty State */
 .inventory-empty-state {
     text-align: center;

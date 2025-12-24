@@ -441,6 +441,32 @@
     box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.1);
 }
 
+.table-select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233e4e96' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 30px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.table-select:hover {
+    border-color: #3e4e96;
+    background-color: #f9fafb;
+}
+
+.table-select option {
+    padding: 10px;
+    background: #ffffff;
+    color: #1f2937;
+}
+
+.table-select option:hover {
+    background: #f3f4f6;
+}
+
 .amount-cell {
     font-weight: 700;
     color: #22c55e;

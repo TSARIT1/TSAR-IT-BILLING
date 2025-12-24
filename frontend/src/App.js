@@ -106,6 +106,7 @@ function App() {
       <Route path="register" element={<Registration />} />
       <Route path="manage-users" element={<ManageUsers />} />
       <Route path="edit-party" element={<EditParty />} />
+      <Route path="edit-party/:id" element={<EditParty />} />
       <Route path="business-settings" element={<BusinessSettings />}
       />
       <Route path="settings" element={<BusinessSettings />} />

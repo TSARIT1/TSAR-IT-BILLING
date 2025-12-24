@@ -25,7 +25,7 @@ import "../dashboard.css";
 import "../salesInvoice.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { createInvoice, getInvoices, deleteInvoice, updateInvoice, updateInvoiceItem, deleteInvoiceItem, getInvoiceItems } from "../../services/api";
+import { createInvoice, getInvoices, deleteInvoice, updateInvoice, updateInvoiceItem, deleteInvoiceItem, getInvoiceItems, getAllProducts } from "../../services/api";
 
 function CreateSalesInvoice() {
   const [party, setParty] = useState("");
@@ -37,6 +37,7 @@ function CreateSalesInvoice() {
   const [showHistory, setShowHistory] = useState(false);
   const [invoices, setInvoices] = useState([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  const [availableProducts, setAvailableProducts] = useState([]);
   const userId = localStorage.getItem("userId");
   const navigate = useNavigate();
 
@@ -49,18 +50,39 @@ function CreateSalesInvoice() {
     } else {
       console.log("userId found:", userId);
     }
+
+    // Load available products from backend
+    fetchProductsFromBackend();
   }, []);
+
+  // Fetch products from backend
+  const fetchProductsFromBackend = async () => {
+    try {
+      console.log("Fetching products from backend...");
+      const products = await getAllProducts();
+      console.log("Products fetched from backend:", products);
+      setAvailableProducts(Array.isArray(products) ? products : []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      // Fallback to localStorage if backend fails
+      const storedProducts = JSON.parse(localStorage.getItem("items")) || [];
+      setAvailableProducts(storedProducts);
+      alert("Could not fetch products from server. Using local data.");
+    }
+  };
 
   const addItem = () => {
     setItems([
       ...items,
       {
         itemNo: items.length + 1,
+        productId: "",
+        godownId: "",
         itemName: "",
         qty: 1,
         price: 0,
         discount: 0,
-        tax: 0,
+        taxRate: 0,
         totalLineAmount: 0
       }
     ]);
@@ -73,16 +95,56 @@ function CreateSalesInvoice() {
 
   const updateItem = (index, field, value) => {
     const updated = [...items];
-    updated[index][field] = value;
 
-    const qty = parseFloat(updated[index].qty) || 0;
-    const price = parseFloat(updated[index].price) || 0;
-    const discount = parseFloat(updated[index].discount) || 0;
-    const tax = parseFloat(updated[index].tax) || 0;
+    // If changing item name and it's a product selection
+    if (field === "itemName") {
+      const selectedProduct = availableProducts.find(p => p.productName === value || p.name === value);
 
-    const subtotal = qty * price;
-    const total = subtotal - (subtotal * discount) / 100 + (subtotal * tax) / 100;
-    updated[index].totalLineAmount = total;
+      if (selectedProduct) {
+        // Autofill ALL fields from the selected product including ID, Godown ID, etc.
+        updated[index].productId = selectedProduct.productId || selectedProduct.id || ""; // Product ID from backend
+        updated[index].godownId = selectedProduct.godownId || ""; // Godown ID from backend
+        updated[index].itemName = selectedProduct.productName || selectedProduct.name;
+        updated[index].qty = 1; // Default quantity
+        updated[index].price = selectedProduct.sellingPrice || selectedProduct.price || 0;
+        updated[index].discount = selectedProduct.discount || 0; // Discount from backend
+        updated[index].tax = selectedProduct.taxRate || 0; // Tax rate from backend
+
+        // Calculate total
+        const qty = 1;
+        const price = selectedProduct.sellingPrice || selectedProduct.price || 0;
+        const discount = selectedProduct.discount || 0;
+        const tax = selectedProduct.taxRate || 0;
+        const subtotal = qty * price;
+        const total = subtotal - (subtotal * discount) / 100 + (subtotal * tax) / 100;
+        updated[index].totalLineAmount = total;
+
+        console.log("Autofilled product details:", {
+          productId: updated[index].productId,
+          godownId: updated[index].godownId,
+          itemName: updated[index].itemName,
+          price: updated[index].price,
+          discount: updated[index].discount,
+          tax: updated[index].tax
+        });
+      } else {
+        // Manual entry
+        updated[index][field] = value;
+      }
+    } else {
+      // Update other fields normally
+      updated[index][field] = value;
+
+      // Recalculate total
+      const qty = parseFloat(updated[index].qty) || 0;
+      const price = parseFloat(updated[index].price) || 0;
+      const discount = parseFloat(updated[index].discount) || 0;
+      const tax = parseFloat(updated[index].tax) || 0;
+
+      const subtotal = qty * price;
+      const total = subtotal - (subtotal * discount) / 100 + (subtotal * tax) / 100;
+      updated[index].totalLineAmount = total;
+    }
 
     setItems(updated);
   };
@@ -172,27 +234,27 @@ function CreateSalesInvoice() {
     setCity(invoice.city);
     setInvoiceDate(invoice.invoiceDate);
     try {
-    // Fetch items from invoice_items table
-    const itemsData = await getInvoiceItems(invoice.invoiceId);
+      // Fetch items from invoice_items table
+      const itemsData = await getInvoiceItems(invoice.invoiceId);
 
-    // Map backend DTO → frontend state
-    const mappedItems = itemsData.map(item => ({
-      itemId: item.itemId,      
-      itemNo: item.itemNo,
-      itemName: item.itemName,
-      qty: item.qty,
-      price: item.price,
-      discount: item.discount,
-      tax: item.tax,
-      totalLineAmount: item.totalLineAmount
-    }));
+      // Map backend DTO → frontend state
+      const mappedItems = itemsData.map(item => ({
+        itemId: item.itemId,
+        itemNo: item.itemNo,
+        itemName: item.itemName,
+        qty: item.qty,
+        price: item.price,
+        discount: item.discount,
+        tax: item.tax,
+        totalLineAmount: item.totalLineAmount
+      }));
 
-    setItems(mappedItems);
-  } catch (err) {
-    console.error("Error fetching invoice items:", err);
-    alert("Failed to load invoice items");
-    setItems([]);
-  }
+      setItems(mappedItems);
+    } catch (err) {
+      console.error("Error fetching invoice items:", err);
+      alert("Failed to load invoice items");
+      setItems([]);
+    }
 
     // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -224,11 +286,6 @@ function CreateSalesInvoice() {
 
   // Save individual item
   const handleSaveItem = async (index) => {
-    if (!editingInvoiceId) {
-      alert("Please save the invoice first before saving individual items.");
-      return;
-    }
-
     const item = items[index];
 
     // Validate item
@@ -237,6 +294,13 @@ function CreateSalesInvoice() {
       return;
     }
 
+    // For new invoices (not editing), just show confirmation
+    if (!editingInvoiceId) {
+      alert(`${item.itemName} is added successfully!`);
+      return;
+    }
+
+    // For editing existing invoices
     if (!item.id) {
       alert("This is a new item. Please save the entire invoice to add new items.");
       return;
@@ -253,7 +317,8 @@ function CreateSalesInvoice() {
         totalLineAmount: item.totalLineAmount
       });
 
-      alert("Item saved successfully!");
+      // Show custom alert with item name
+      alert(`${item.itemName} is added successfully!`);
 
       // Refresh invoice history to get updated totals
       if (showHistory) {
@@ -268,24 +333,37 @@ function CreateSalesInvoice() {
   // Delete individual item
   const handleDeleteItem = async (index) => {
     const item = items[index];
+    const itemName = item.itemName || "this item";
 
-    if (!editingInvoiceId || !item.itemId) {
-      // If not editing or item has no ID, just remove from local state
-      removeItem(index);
-      return;
-    }
-
+    // Show confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to delete "${item.itemName}"?\n\nThis will permanently remove the item from the invoice.`
+      `Do you want to delete "${itemName}"?`
     );
 
-    if (confirmed) {
+    if (!confirmed) {
+      return; // User cancelled
+    }
+
+    // If editing an existing invoice and item has an ID
+    if (editingInvoiceId && item.itemId) {
       try {
         await deleteInvoiceItem(editingInvoiceId, item.itemId);
-        alert("Item deleted successfully!");
+        alert(`${itemName} is deleted successfully!`);
 
-        // Remove from local state
-        removeItem(index);
+        // Clear the row content instead of removing it
+        const updated = [...items];
+        updated[index] = {
+          itemNo: index + 1,
+          productId: "",
+          godownId: "",
+          itemName: "",
+          qty: 1,
+          price: 0,
+          discount: 0,
+          tax: 0,
+          totalLineAmount: 0
+        };
+        setItems(updated);
 
         // Refresh invoice history to get updated totals
         if (showHistory) {
@@ -295,6 +373,22 @@ function CreateSalesInvoice() {
         console.error(err);
         alert("Error deleting item: " + (err.message || "Unknown error"));
       }
+    } else {
+      // For new items (not saved to backend), just clear the row
+      alert(`${itemName} is deleted successfully!`);
+      const updated = [...items];
+      updated[index] = {
+        itemNo: index + 1,
+        productId: "",
+        godownId: "",
+        itemName: "",
+        qty: 1,
+        price: 0,
+        discount: 0,
+        tax: 0,
+        totalLineAmount: 0
+      };
+      setItems(updated);
     }
   };
 
@@ -513,13 +607,21 @@ function CreateSalesInvoice() {
                         <tr key={index}>
                           <td className="item-no">{index + 1}</td>
                           <td>
-                            <input
-                              type="text"
+                            <select
                               value={item.itemName}
                               onChange={(e) => updateItem(index, "itemName", e.target.value)}
-                              placeholder="Item name"
-                              className="table-input"
-                            />
+                              className="table-input table-select"
+                            >
+                              <option value="">Select product</option>
+                              {availableProducts.map((product) => (
+                                <option
+                                  key={product.productId || product.id}
+                                  value={product.productName || product.name}
+                                >
+                                  {product.productName || product.name} - ₹{product.sellingPrice || product.price || 0}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td>
                             <input

@@ -9,9 +9,11 @@ import {
   BsDownload,
   BsUpload,
   BsFileEarmarkSpreadsheet,
-   BsGrid3X3GapFill,
+  BsGrid3X3GapFill,
   BsPencilSquare,
-  BsTrash
+  BsTrash,
+  BsClockHistory,
+  BsX
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
@@ -24,6 +26,8 @@ function ItemsInventory() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showLowStock, setShowLowStock] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedItemHistory, setSelectedItemHistory] = useState(null);
 
   // Categories for dropdown
   const categories = ["All", "Electronics", "Clothing", "Food", "Furniture", "Other"];
@@ -33,30 +37,109 @@ function ItemsInventory() {
     setItems(stored);
   }, []);
 
+  // Get stock history for an item
+  const getStockHistory = (itemId) => {
+    const history = JSON.parse(localStorage.getItem(`stockHistory_${itemId}`)) || [];
+    return history;
+  };
+
+  // Add stock transaction
+  const addStockTransaction = (itemId, type, quantity, date = new Date()) => {
+    const history = getStockHistory(itemId);
+    const item = items.find(i => i.id === itemId);
+
+    if (!item) return;
+
+    const currentBalance = item.currentStock || item.qty || 0;
+    const newBalance = type === 'purchase' ? currentBalance + quantity : currentBalance - quantity;
+
+    const transaction = {
+      id: Date.now(),
+      date: date.toISOString(),
+      type: type, // 'purchase' or 'sale'
+      quantity: quantity,
+      balance: newBalance
+    };
+
+    history.push(transaction);
+    localStorage.setItem(`stockHistory_${itemId}`, JSON.stringify(history));
+
+    // Update item's current stock
+    const updatedItems = items.map(i => {
+      if (i.id === itemId) {
+        return {
+          ...i,
+          currentStock: newBalance,
+          totalSold: type === 'sale' ? (i.totalSold || 0) + quantity : (i.totalSold || 0)
+        };
+      }
+      return i;
+    });
+
+    setItems(updatedItems);
+    localStorage.setItem("items", JSON.stringify(updatedItems));
+  };
+
+  // Get stock status based on rules
+  const getStockStatus = (item) => {
+    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty;
+    const minLevel = item.minLevel || 50;
+    const expiryDate = item.expiryDate ? new Date(item.expiryDate) : null;
+    const today = new Date();
+
+    // Check expiry first
+    if (expiryDate && today > expiryDate) {
+      return { label: "Expired", className: "status-expired" };
+    }
+
+    // Check stock levels
+    if (currentStock === 0) {
+      return { label: "Out of Stock", className: "status-out-of-stock" };
+    } else if (currentStock <= minLevel) {
+      return { label: "Low Stock", className: "status-low-stock" };
+    } else {
+      return { label: "In Stock", className: "status-in-stock" };
+    }
+  };
+
   const handleCreateItem = () => {
     const itemName = prompt("Enter Item Name:");
     if (!itemName) return;
 
     const itemCode = prompt("Enter Item Code (optional):");
-    const qty = parseInt(prompt("Enter Stock Quantity:") || "0");
-    const selling = parseFloat(prompt("Enter Selling Price:") || "0");
-    const purchase = parseFloat(prompt("Enter Purchase Price:") || "0");
+    const totalStock = parseInt(prompt("Enter Total Stock:") || "0");
+    const currentStock = parseInt(prompt("Enter Current Stock:") || totalStock);
     const category = prompt("Enter Category (Electronics/Clothing/Food/Furniture/Other):") || "Other";
+    const minLevel = parseInt(prompt("Enter Minimum Stock Level (default 50):") || "50");
 
     const newItem = {
       id: Date.now(),
       name: itemName,
       code: itemCode || "-",
-      qty: qty,
-      selling: selling,
-      purchase: purchase,
       category: category,
-      lowStockThreshold: 10
+      totalStock: totalStock,
+      currentStock: currentStock,
+      totalSold: totalStock - currentStock,
+      minLevel: minLevel,
+      qty: currentStock, // For backward compatibility
+      lowStockThreshold: minLevel
     };
 
     const updated = [...items, newItem];
     setItems(updated);
     localStorage.setItem("items", JSON.stringify(updated));
+
+    // Initialize stock history with initial stock
+    if (totalStock > 0) {
+      const initialHistory = [{
+        id: Date.now(),
+        date: new Date().toISOString(),
+        type: 'purchase',
+        quantity: totalStock,
+        balance: currentStock
+      }];
+      localStorage.setItem(`stockHistory_${newItem.id}`, JSON.stringify(initialHistory));
+    }
   };
 
   const handleDeleteItem = (id) => {
@@ -64,6 +147,7 @@ function ItemsInventory() {
       const updated = items.filter(item => item.id !== id);
       setItems(updated);
       localStorage.setItem("items", JSON.stringify(updated));
+      localStorage.removeItem(`stockHistory_${id}`);
     }
   };
 
@@ -92,29 +176,43 @@ function ItemsInventory() {
       const updated = items.filter(item => !selectedItems.includes(item.id));
       setItems(updated);
       localStorage.setItem("items", JSON.stringify(updated));
+      selectedItems.forEach(id => localStorage.removeItem(`stockHistory_${id}`));
       setSelectedItems([]);
     }
+  };
+
+  const handleViewHistory = (item) => {
+    const history = getStockHistory(item.id);
+    setSelectedItemHistory({ item, history });
+    setShowHistoryModal(true);
   };
 
   // Filter items based on search, category, and low stock
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.code && item.code.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
-    const matchesLowStock = !showLowStock || item.qty < (item.lowStockThreshold || 10);
+
+    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty;
+    const minLevel = item.minLevel || item.lowStockThreshold || 50;
+    const matchesLowStock = !showLowStock || currentStock <= minLevel;
 
     return matchesSearch && matchesCategory && matchesLowStock;
   });
 
   // Calculate statistics
   const totalStockValue = items.reduce((sum, item) => {
-  const qty = Number(item.qty) || 0;
-  const purchase = Number(item.purchase) || 0;
+    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty || 0;
+    const purchase = Number(item.purchase) || 0;
+    return sum + currentStock * purchase;
+  }, 0);
 
-  return sum + qty * purchase;
-}, 0);
+  const lowStockCount = items.filter(item => {
+    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty;
+    const minLevel = item.minLevel || item.lowStockThreshold || 50;
+    return currentStock <= minLevel;
+  }).length;
 
-  const lowStockCount = items.filter(item => item.qty < (item.lowStockThreshold || 10)).length;
   const totalItems = items.length;
 
   // Export to CSV
@@ -124,16 +222,19 @@ function ItemsInventory() {
       return;
     }
 
-    const headers = ["Item Name", "Item Code", "Category", "Stock QTY", "Selling Price", "Purchase Price", "Stock Value"];
-    const csvData = items.map(item => [
-      item.name,
-      item.code,
-      item.category || "-",
-      item.qty,
-      item.selling,
-      item.purchase,
-      (item.qty * item.purchase).toFixed(2)
-    ]);
+    const headers = ["Product ID", "Product Name", "Category", "Total Stock", "Current Stock", "Total Sold", "Status"];
+    const csvData = items.map(item => {
+      const status = getStockStatus(item);
+      return [
+        item.id,
+        item.name,
+        item.category || "-",
+        item.totalStock || item.qty || 0,
+        item.currentStock !== undefined ? item.currentStock : item.qty || 0,
+        item.totalSold || 0,
+        status.label
+      ];
+    });
 
     const csvContent = [
       headers.join(","),
@@ -265,14 +366,14 @@ function ItemsInventory() {
                       checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
                     />
                   </th>
-                  <th>Item Name</th>
-                  <th>Item Code</th>
+                  <th>Product ID</th>
+                  <th>Product Name</th>
                   <th>Category</th>
-                  <th>Stock QTY</th>
-                  <th>Selling Price</th>
-                  <th>Purchase Price</th>
-                  <th>Stock Value</th>
-                  <th style={{ width: '100px' }}>Actions</th>
+                  <th>Total Stock</th>
+                  <th>Current Stock</th>
+                  <th>Total Sold</th>
+                  <th>Status</th>
+                  <th style={{ width: '150px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -294,44 +395,58 @@ function ItemsInventory() {
                     </td>
                   </tr>
                 ) : (
-                  filteredItems.map((item) => (
-                    <tr key={item.id} className={item.qty < (item.lowStockThreshold || 10) ? 'low-stock-row' : ''}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.includes(item.id)}
-                          onChange={() => handleSelectItem(item.id)}
-                        />
-                      </td>
-                      <td className="item-name-cell">
-                        <BsBoxSeam className="item-row-icon" /> {item.name}
-                      </td>
-                      <td>{item.code}</td>
-                      <td>
-                        <span className="category-badge">{item.category || "-"}</span>
-                      </td>
-                      <td className={item.qty < (item.lowStockThreshold || 10) ? 'low-stock-qty' : 'stock-qty'}>
-                        {item.qty} PCS
-                      </td>
-                      <td className="price-cell">₹{item.selling}</td>
-                      <td className="price-cell">₹{item.purchase}</td>
-                      <td className="value-cell">
-                        ₹{( (Number(item.qty) || 0) * (Number(item.purchase) || 0) ).toFixed(2)}
-                      </td>
-                      <td className="actions-cell">
-                        <button className="inventory-action-btn edit-btn" title="Edit Item">
-                          <BsPencilSquare />
-                        </button>
-                        <button
-                          className="inventory-action-btn delete-btn"
-                          onClick={() => handleDeleteItem(item.id)}
-                          title="Delete Item"
-                        >
-                          <BsTrash />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  filteredItems.map((item) => {
+                    const status = getStockStatus(item);
+                    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty || 0;
+                    const totalStock = item.totalStock || item.qty || 0;
+                    const totalSold = item.totalSold || 0;
+
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={() => handleSelectItem(item.id)}
+                          />
+                        </td>
+                        <td className="product-id-cell">#{item.id}</td>
+                        <td className="item-name-cell">
+                          <BsBoxSeam className="item-row-icon" /> {item.name}
+                        </td>
+                        <td>
+                          <span className="category-badge">{item.category || "-"}</span>
+                        </td>
+                        <td className="stock-qty">{totalStock} PCS</td>
+                        <td className="stock-qty">{currentStock} PCS</td>
+                        <td className="stock-qty">{totalSold} PCS</td>
+                        <td>
+                          <span className={`status-badge ${status.className}`}>
+                            {status.label}
+                          </span>
+                        </td>
+                        <td className="actions-cell">
+                          <button
+                            className="inventory-action-btn history-btn"
+                            title="Stock History"
+                            onClick={() => handleViewHistory(item)}
+                          >
+                            <BsClockHistory />
+                          </button>
+                          <button className="inventory-action-btn edit-btn" title="Edit Item">
+                            <BsPencilSquare />
+                          </button>
+                          <button
+                            className="inventory-action-btn delete-btn"
+                            onClick={() => handleDeleteItem(item.id)}
+                            title="Delete Item"
+                          >
+                            <BsTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -351,7 +466,7 @@ function ItemsInventory() {
                     <BsDownload /> Import Items
                   </button>
                   <button className="inventory-library-btn">
-                    < BsGrid3X3GapFill /> Product Library
+                    <BsGrid3X3GapFill /> Product Library
                   </button>
                   <button className="inventory-excel-btn">
                     <BsFileEarmarkSpreadsheet /> Upload Excel
@@ -368,6 +483,66 @@ function ItemsInventory() {
           </div>
         </div>
       </div>
+
+      {/* Stock History Modal */}
+      {showHistoryModal && selectedItemHistory && (
+        <div className="stock-history-modal-overlay" onClick={() => setShowHistoryModal(false)}>
+          <div className="stock-history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="stock-history-modal-header">
+              <h3>
+                <BsClockHistory /> Stock History - {selectedItemHistory.item.name}
+              </h3>
+              <button
+                className="stock-history-close-btn"
+                onClick={() => setShowHistoryModal(false)}
+              >
+                <BsX />
+              </button>
+            </div>
+            <div className="stock-history-modal-body">
+              {selectedItemHistory.history.length === 0 ? (
+                <div className="stock-history-empty">
+                  <BsClockHistory className="empty-icon" />
+                  <p>No transaction history available</p>
+                </div>
+              ) : (
+                <table className="stock-history-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Quantity</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedItemHistory.history.map((transaction) => (
+                      <tr key={transaction.id}>
+                        <td>{new Date(transaction.date).toLocaleDateString('en-IN', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</td>
+                        <td>
+                          <span className={`transaction-type-badge ${transaction.type}`}>
+                            {transaction.type === 'purchase' ? 'Purchase' : 'Sale'}
+                          </span>
+                        </td>
+                        <td className={`quantity-cell ${transaction.type}`}>
+                          {transaction.type === 'purchase' ? '+' : '-'}{transaction.quantity} PCS
+                        </td>
+                        <td className="balance-cell">{transaction.balance} PCS</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

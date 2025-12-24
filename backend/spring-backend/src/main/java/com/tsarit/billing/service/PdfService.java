@@ -1,5 +1,5 @@
 package com.tsarit.billing.service;
-
+import java.util.List;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.geom.PageSize;
@@ -46,7 +46,7 @@ public class PdfService {
 	private GstDetailsRepository gstDetailsRepository;
 
     // Export all products (table format)
-    public byte[] generateProductsPdf(java.util.List<Product> products) {
+    public byte[] generateProductsPdf(List<Product> products) {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(out);
             PdfDocument pdf = new PdfDocument(writer);
@@ -161,6 +161,8 @@ public class PdfService {
         table.addCell(new Paragraph(value));
     }
 
+	
+	
 	// Generate Godown Report with all godowns and their products
 	public byte[] generateGodownReport(
 	        List<Godown> godowns,
@@ -193,7 +195,7 @@ public class PdfService {
 
 	            Business business = godowns.get(0).getUserBusiness().getBusiness();
 
-	            Table header = new Table(new float[]{1, 4});
+	            Table header = new Table(new float[]{1, 4});// 1 row 4 columns
 	            header.setWidth(UnitValue.createPercentValue(100));
 
 	            // Logo
@@ -202,7 +204,7 @@ public class PdfService {
 	                Image logo = new Image(
 	                        ImageDataFactory.create(business.getBusinessLogo())
 	                );
-	                logo.scaleToFit(70, 70);
+	                logo.scaleToFit(70, 70); // width and height
 	                logoCell.add(logo);
 	            }
 	            header.addCell(logoCell);
