@@ -11,11 +11,13 @@ import {
   BsShare,
   BsTelephoneFill,
   BsBuilding,
+  BsGeoAlt,
   BsPencilSquare,
   BsTrash
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
+import { getAllCustomers, getCustomersByBusinessId, deleteCustomer } from "../../services/api";
 import "../dashboard.css";
 import "../parties.css";
 
@@ -23,33 +25,82 @@ function Parties() {
   const [parties, setParties] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("parties")) || [];
-    setParties(stored);
+    fetchCustomers();
   }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Try to get businessId from localStorage
+      const userBusinessId = localStorage.getItem("userBusinessId");
+
+      let customersData;
+      if (userBusinessId) {
+        // Fetch customers for specific business
+        console.log("Fetching customers for businessId:", userBusinessId);
+        customersData = await getCustomersByBusinessId(userBusinessId);
+      } else {
+        // Fetch all customers if no businessId is found
+        console.log("Fetching all customers");
+        customersData = await getAllCustomers();
+      }
+
+      console.log("Fetched customers:", customersData);
+      setParties(Array.isArray(customersData) ? customersData : []);
+    } catch (err) {
+      console.error("Error fetching customers:", err);
+      setError("Failed to load customers from server.");
+      setParties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddParty = () => {
     navigate("/edit-party");
   };
 
+  const handleEdit = (customerId) => {
+    navigate(`/edit-party/${customerId}`);
+  };
+
+  const handleDelete = async (customerId, customerName) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${customerName}"?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteCustomer(customerId);
+      alert(`Customer "${customerName}" has been deleted successfully!`);
+      // Refresh the customer list
+      fetchCustomers();
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      alert(`Failed to delete customer: ${error.message || "Unknown error"}`);
+    }
+  };
+
   // Filter parties based on search and filter
   const filteredParties = parties.filter(party => {
     const matchesSearch = party.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      party.mobile?.includes(searchTerm);
-    const matchesFilter = filterType === "All" || party.type === filterType;
+      party.phone?.includes(searchTerm);
+    const matchesFilter = filterType === "All" || party.customerType === filterType;
     return matchesSearch && matchesFilter;
   });
 
-  // Calculate totals
-  const toCollect = parties.reduce((sum, p) => {
-    return p.balanceType === "To Collect" ? sum + (parseFloat(p.balance) || 0) : sum;
-  }, 0);
-
-  const toPay = parties.reduce((sum, p) => {
-    return p.balanceType === "To Pay" ? sum + (parseFloat(p.balance) || 0) : sum;
-  }, 0);
+  // Calculate totals based on customer type
+  const totalCustomers = parties.filter(p => p.customerType === "Customer").length;
+  const totalSuppliers = parties.filter(p => p.customerType === "Supplier").length;
+  const totalBoth = parties.filter(p => p.customerType === "Both").length;
 
   return (
     <>
@@ -94,20 +145,20 @@ function Parties() {
             </div>
             <div className="parties-summary-box to-collect">
               <div className="summary-icon-wrapper">
-                <BsCashStack className="summary-icon" />
+                <BsPersonFill className="summary-icon" />
               </div>
               <div className="summary-content">
-                <h4>To Collect</h4>
-                <p className="amount">₹ {toCollect.toFixed(2)}</p>
+                <h4>Total Customers</h4>
+                <p className="count">{totalCustomers}</p>
               </div>
             </div>
             <div className="parties-summary-box to-pay">
               <div className="summary-icon-wrapper">
-                <BsCashStack className="summary-icon" />
+                <BsBuilding className="summary-icon" />
               </div>
               <div className="summary-content">
-                <h4>To Pay</h4>
-                <p className="amount">₹ {toPay.toFixed(2)}</p>
+                <h4>Total Suppliers</h4>
+                <p className="count">{totalSuppliers}</p>
               </div>
             </div>
           </div>
@@ -144,15 +195,38 @@ function Parties() {
               <thead>
                 <tr>
                   <th><BsPersonFill /> Party Name</th>
-                  <th><BsBuilding /> Category</th>
-                  <th><BsTelephoneFill /> Mobile Number</th>
-                  <th>Party Type</th>
-                  <th><BsCashStack /> Balance</th>
+                  <th><BsGeoAlt /> City</th>
+                  <th><BsTelephoneFill /> Phone Number</th>
+                  <th>Customer Type</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredParties.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="empty-state">
+                      <div className="empty-state-content">
+                        <BsPeopleFill className="empty-icon" />
+                        <h3>Loading customers...</h3>
+                        <p>Please wait while we fetch the data</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan="6" className="empty-state">
+                      <div className="empty-state-content">
+                        <BsPeopleFill className="empty-icon" />
+                        <h3>Error Loading Customers</h3>
+                        <p>{error}</p>
+                        <button className="empty-add-btn" onClick={fetchCustomers}>
+                          <BsPlus /> Retry
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredParties.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="empty-state">
                       <div className="empty-state-content">
@@ -175,25 +249,33 @@ function Parties() {
                   filteredParties.map((p, i) => (
                     <tr key={i} className="table-row">
                       <td className="party-name">
-                        <BsPersonFill className="row-icon" /> {p.partyName || p.name || "N/A"}
+                        <BsPersonFill className="row-icon" /> {p.name || "N/A"}
                       </td>
-                      <td>{p.partyCategory || "-"}</td>
-                      <td>{p.mobile || "-"}</td>
+                      <td>{p.city || "-"}</td>
+                      <td>{p.phone || "-"}</td>
                       <td>
-                        <span className={`type-badge ${p.partyType?.toLowerCase() || p.type?.toLowerCase()}`}>
-                          {p.partyType || p.type || "N/A"}
+                        <span className={`type-badge ${p.customerType?.toLowerCase()}`}>
+                          {p.customerType || "N/A"}
                         </span>
                       </td>
-                      <td className="balance-cell">
-                        <span className={`balance ${p.balanceType === "To Collect" ? "positive" : "negative"}`}>
-                          ₹ {p.openingBalance || p.balance || "0"}
+                      <td>
+                        <span className={`status-badge ${p.status?.toLowerCase()}`}>
+                          {p.status || "N/A"}
                         </span>
                       </td>
                       <td className="actions-cell">
-                        <button className="action-btn edit-btn" title="Edit Party">
+                        <button
+                          className="action-btn edit-btn"
+                          title="Edit Party"
+                          onClick={() => handleEdit(p.id)}
+                        >
                           <BsPencilSquare />
                         </button>
-                        <button className="action-btn delete-btn" title="Delete Party">
+                        <button
+                          className="action-btn delete-btn"
+                          title="Delete Party"
+                          onClick={() => handleDelete(p.id, p.name)}
+                        >
                           <BsTrash />
                         </button>
                       </td>

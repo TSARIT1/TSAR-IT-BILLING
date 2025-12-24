@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { FiCalendar } from "react-icons/fi";
 import { MdCurrencyRupee } from "react-icons/md";
 import {
@@ -16,24 +17,45 @@ import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../editParty.css";
+import { createCustomer, getCustomerById, updateCustomer } from "../../services/api";
 
 export default function EditParty() {
+  const navigate = useNavigate();
+  const { id } = useParams(); // Get customer ID from URL
+  const isEditMode = Boolean(id); // Determine if we're editing or creating
+
   const [partyData, setPartyData] = useState({
-    partyName: "",
-    mobile: "",
+    // Basic Details
+    name: "",  // Maps to 'name' in customer table
+    phone: "",  // Maps to 'phone' in customer table
     email: "",
+    customer_type: "Customer",  // Maps to 'customer_type' in customer table
+    status: "ACTIVE",  // Maps to 'status' enum in customer table
+
+    // Address Details
+    street_address: "",  // Maps to 'street_address' in customer table
+    city: "",  // Maps to 'city' in customer table
+    state: "",  // Maps to 'state' in customer table
+    country: "",  // Maps to 'country' in customer table
+    zip_code: "",  // Maps to 'zip_code' in customer table
+
+    // Tax Details
+    tax_id: "",  // Maps to 'tax_id' in customer table (GST/PAN)
+    gstNumber: "",  // For UI compatibility
+    panNumber: "",  // For UI compatibility
+
+    // Additional Details
+    notes: "",  // Maps to 'notes' in customer table
+
+    // Legacy/Additional Fields (for backward compatibility)
     openingBalance: "",
     balanceType: "To Pay",
-    gstNumber: "",
-    panNumber: "",
-    partyType: "Customer",
     partyCategory: "",
     billingAddress: "",
     shippingAddress: "",
-    creditPeriod: "", // New Field
+    creditPeriod: "",
     creditLimit: "",
-    additionalDetails: "",
-    bankDetails: {    // New Bank Data Object
+    bankDetails: {
       accountNumber: "",
       ifscCode: "",
       bankName: "",
@@ -42,7 +64,65 @@ export default function EditParty() {
   });
 
   const [sameAsBilling, setSameAsBilling] = useState(false);
-  const [showBankForm, setShowBankForm] = useState(false)
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch customer data if in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      fetchCustomerData();
+    }
+  }, [id]);
+
+  const fetchCustomerData = async () => {
+    try {
+      setLoading(true);
+      const customer = await getCustomerById(id);
+      console.log("Fetched customer data:", customer);
+
+      // Map backend camelCase fields to form snake_case fields
+      setPartyData({
+        name: customer.name || "",
+        phone: customer.phone || "",
+        email: customer.email || "",
+        customer_type: customer.customerType || "Customer",
+        status: customer.status || "ACTIVE",
+        street_address: customer.streetAddress || "",
+        city: customer.city || "",
+        state: customer.state || "",
+        country: customer.country || "",
+        zip_code: customer.zipCode || "",
+        tax_id: customer.taxId || "",
+        gstNumber: "",
+        panNumber: "",
+        notes: customer.notes || "",
+        openingBalance: "",
+        balanceType: "To Pay",
+        partyCategory: "",
+        billingAddress: "",
+        shippingAddress: "",
+        creditPeriod: "",
+        creditLimit: "",
+        bankDetails: {
+          accountNumber: customer.bankDetails?.accountNumber || "",
+          ifscCode: customer.bankDetails?.ifscCode || "",
+          bankName: customer.bankDetails?.bankName || "",
+          branchName: customer.bankDetails?.branchName || ""
+        }
+      });
+
+      // Show bank form if bank details exist
+      if (customer.bankDetails?.accountNumber) {
+        setShowBankForm(true);
+      }
+    } catch (error) {
+      console.error("Error fetching customer:", error);
+      alert("Failed to load customer data. Redirecting to parties page.");
+      navigate("/parties");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -79,10 +159,64 @@ export default function EditParty() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Party Details Saved:", partyData);
-    alert("Party details saved successfully!");
+
+    // Get businessId from localStorage
+    const businessId = localStorage.getItem("userBusinessId");
+
+    if (!businessId && !isEditMode) {
+      alert("Business ID not found. Please login again.");
+      return;
+    }
+
+    // Prepare customer data matching backend entity field names (camelCase)
+    const customerData = {
+      businessId: businessId,  // UUID from localStorage
+      name: partyData.name,
+      phone: partyData.phone,
+      email: partyData.email || null,
+      customerType: partyData.customer_type,  // camelCase for backend
+      status: partyData.status,
+      streetAddress: partyData.street_address,  // camelCase for backend
+      city: partyData.city || null,
+      state: partyData.state || null,
+      country: partyData.country || null,
+      zipCode: partyData.zip_code,  // camelCase for backend
+      taxId: partyData.tax_id,  // camelCase for backend
+      notes: partyData.notes || null,
+
+      // Bank Details (nested object - will be saved to bank_details table)
+      bankDetails: {
+        accountNumber: partyData.bankDetails.accountNumber || null,
+        ifscCode: partyData.bankDetails.ifscCode || null,
+        bankName: partyData.bankDetails.bankName || null,
+        branchName: partyData.bankDetails.branchName || null
+      }
+    };
+
+    try {
+      console.log(isEditMode ? "Updating customer data:" : "Creating customer data:", customerData);
+
+      let response;
+      if (isEditMode) {
+        // Update existing customer
+        response = await updateCustomer(id, customerData);
+        console.log("Customer updated successfully:", response);
+        alert(`Customer "${partyData.name}" has been updated successfully!`);
+      } else {
+        // Create new customer
+        response = await createCustomer(customerData);
+        console.log("Customer created successfully:", response);
+        alert(`Customer "${partyData.name}" has been added successfully!`);
+      }
+
+      // Navigate back to parties page to show updated customer list
+      navigate('/parties');
+    } catch (error) {
+      console.error(isEditMode ? "Error updating customer:" : "Error creating customer:", error);
+      alert(`Failed to ${isEditMode ? 'update' : 'create'} customer: ${error.message || "Unknown error"}`);
+    }
   };
 
   return (
@@ -94,9 +228,11 @@ export default function EditParty() {
 
         <div className="page-header">
           <h2 className="page-title">
-            <BsPersonFill className="title-icon" /> Add Party
+            <BsPersonFill className="title-icon" /> {isEditMode ? 'Edit Party' : 'Add Party'}
           </h2>
-          <p className="page-subtitle">Manage your customer and supplier information</p>
+          <p className="page-subtitle">
+            {isEditMode ? 'Update customer and supplier information' : 'Manage your customer and supplier information'}
+          </p>
         </div>
 
         <div className="edit-party-card">
@@ -112,16 +248,16 @@ export default function EditParty() {
             <div className="form-grid-4" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", }}>
               <div>
                 <label className="form-label">
-                  <BsPersonFill className="label-icon" /> Party Name *
+                  <BsPersonFill className="label-icon" /> Customer Name *
                 </label>
                 <div className="input-with-icon">
                   <BsPersonFill className="field-icon" />
                   <input
                     type="text"
-                    name="partyName"
+                    name="name"
                     className="form-input icon-padded"
-                    placeholder="Enter party name"
-                    value={partyData.partyName}
+                    placeholder="Enter customer name"
+                    value={partyData.name}
                     onChange={handleChange}
                     required
                   />
@@ -130,17 +266,18 @@ export default function EditParty() {
 
               <div>
                 <label className="form-label">
-                  <BsTelephoneFill className="label-icon" /> Mobile Number
+                  <BsTelephoneFill className="label-icon" /> Phone Number *
                 </label>
                 <div className="input-with-icon">
                   <BsTelephoneFill className="field-icon" />
                   <input
                     type="text"
-                    name="mobile"
+                    name="phone"
                     className="form-input icon-padded"
-                    placeholder="Enter mobile number"
-                    value={partyData.mobile}
+                    placeholder="Enter phone number"
+                    value={partyData.phone}
                     onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
@@ -163,31 +300,26 @@ export default function EditParty() {
               </div>
 
               <div>
-                <label className="form-label">Opening Balance</label>
-                <div className="balance-group">
-                  <div className="icon-input-wrapper">
-                    <MdCurrencyRupee className="input-icon" />
-                    <input type="number" name="openingBalance" className="form-input" placeholder="0" value={partyData.openingBalance} onChange={handleChange} />
-                    <select name="balanceType" className="form-select-small" value={partyData.balanceType} onChange={handleChange}>
-                      <option value="To Pay">To Pay</option>
-                      <option value="To Collect">To Collect</option>
-                    </select>
-                  </div>
-                </div>
+                <label className="form-label">Customer Type *</label>
+                <select name="customer_type" className="form-input" value={partyData.customer_type} onChange={handleChange} required>
+                  <option value="Customer">Customer</option>
+                  <option value="Supplier">Supplier</option>
+                  <option value="Both">Both</option>
+                </select>
               </div>
             </div>
 
-            {/* Row 3: Party Type, Party Category */}
+            {/* Row 2: Status and Category */}
             <div className="form-grid-2" style={{ marginTop: "15px" }}>
               <div>
-                <label className="form-label">Party Type *</label>
-                <select name="partyType" className="form-input" value={partyData.partyType} onChange={handleChange}>
-                  <option value="Customer">Customer</option>
-                  <option value="Supplier">Supplier</option>
+                <label className="form-label">Status *</label>
+                <select name="status" className="form-input" value={partyData.status} onChange={handleChange} required>
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
                 </select>
               </div>
               <div>
-                <label className="form-label">Party Category</label>
+                <label className="form-label">Category</label>
                 <select name="partyCategory" className="form-input" value={partyData.partyCategory} onChange={handleChange}>
                   <option value="">Select Category</option>
                   <option value="VIP">VIP</option>
@@ -206,55 +338,109 @@ export default function EditParty() {
 
             <div className="form-grid-2">
               <div>
-                <label className="form-label">Billing Address</label>
+                <label className="form-label">Street Address</label>
                 <textarea
-                  name="billingAddress"
+                  name="street_address"
                   className="form-textarea"
-                  value={partyData.billingAddress}
+                  value={partyData.street_address}
                   onChange={handleChange}
-                  placeholder="Enter Billing Address"
+                  placeholder="Enter street address"
+                  rows="3"
                 ></textarea>
               </div>
 
-              <div>
-                {/* 3. Checkbox moved here inside a header container */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
-                  <label className="form-label" style={{ margin: 0 }}>Shipping Address</label>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "14px", color: "#555" }}>
-                    <input
-                      type="checkbox"
-                      id="sameAddress"
-                      checked={sameAsBilling}
-                      onChange={handleCheckboxChange}
-                      style={{ cursor: "pointer", height: "15px", width: "15px" }}
-                    />
-                    <label htmlFor="sameAddress" style={{ cursor: "pointer", margin: 0 }}>
-                      Same as Billing
-                    </label>
-                  </div>
+              <div className="form-grid-2" style={{ gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                <div>
+                  <label className="form-label">City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    className="form-input"
+                    placeholder="Enter city"
+                    value={partyData.city}
+                    onChange={handleChange}
+                  />
                 </div>
-
-                <textarea
-                  name="shippingAddress"
-                  className="form-textarea"
-                  value={partyData.shippingAddress}
-                  onChange={handleChange}
-                  readOnly={sameAsBilling} // This prevents editing
-                  style={sameAsBilling ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" } : {}}
-                  placeholder="Enter Shipping Address"
-                ></textarea>
+                <div>
+                  <label className="form-label">State</label>
+                  <input
+                    type="text"
+                    name="state"
+                    className="form-input"
+                    placeholder="Enter state"
+                    value={partyData.state}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Country</label>
+                  <input
+                    type="text"
+                    name="country"
+                    className="form-input"
+                    placeholder="Enter country"
+                    value={partyData.country}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">ZIP Code</label>
+                  <input
+                    type="text"
+                    name="zip_code"
+                    className="form-input"
+                    placeholder="Enter ZIP code"
+                    value={partyData.zip_code}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* GST DETAILS */}
+            {/* TAX DETAILS */}
             <div className="section-header">
               <h3 className="section-heading">
-                <BsCreditCard2Front className="section-icon" /> GST Details
+                <BsCreditCard2Front className="section-icon" /> Tax Details
               </h3>
             </div>
 
             <div className="form-grid-2">
+              <div>
+                <label className="form-label">Tax ID (GST/PAN/VAT)</label>
+                <input
+                  type="text"
+                  name="tax_id"
+                  className="form-input"
+                  placeholder="Enter tax identification number"
+                  value={partyData.tax_id}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="form-label">GSTIN</label>
+                <input
+                  type="text"
+                  name="gstNumber"
+                  className="form-input"
+                  placeholder="ex: 29XXXXX9438X1XX"
+                  value={partyData.gstNumber}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-grid-2" style={{ marginTop: "15px" }}>
+              <div>
+                <label className="form-label">PAN Number</label>
+                <input
+                  type="text"
+                  name="panNumber"
+                  className="form-input"
+                  placeholder="Enter PAN number"
+                  value={partyData.panNumber}
+                  onChange={handleChange}
+                />
+              </div>
               <div>
                 <label className="form-label">GST Treatment</label>
                 <select
@@ -268,23 +454,9 @@ export default function EditParty() {
                   <option value="Unregistered">Unregistered</option>
                 </select>
               </div>
-
-              <div className="form-grid-2" style={{ marginTop: "15px" }}>
-                <div>
-                  <label className="form-label">GSTIN</label>
-                  <div className="input-group-btn">
-                    <input type="text" name="gstNumber" className="form-input" placeholder="ex: 29XXXXX9438X1XX" value={partyData.gstNumber} onChange={handleChange} />
-                    <button type="button" className="get-details-btn">Get Details</button>
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">PAN Number</label>
-                  <input type="text" name="panNumber" className="form-input" placeholder="Enter party PAN Number" value={partyData.panNumber} onChange={handleChange} />
-                </div>
-              </div>
             </div>
 
-            {/* --- CREDIT & BALANCE --- */}
+            {/* --- CREDIT & BALANCE --- 
             <div className="section-header" style={{ marginTop: "30px" }}>
               <h3 className="section-heading">
                 <BsCreditCard2Front className="section-icon" /> Credit & Balance
@@ -303,7 +475,7 @@ export default function EditParty() {
                 </div>
               </div>
             </div>
-
+                   */}
             {/* CONTACT PERSON DETAILS (Matches Screenshot & Uses Calendar) */}
             <div className="section-header" style={{ marginTop: "30px" }}>
               <h3 className="section-heading">
@@ -345,12 +517,15 @@ export default function EditParty() {
             </div>
 
             <div>
-              <label className="form-label">Additional Notes</label>
+              <label className="form-label">Notes</label>
               <textarea
-                name="additionalDetails"
+                name="notes"
                 className="form-textarea"
-                value={partyData.additionalDetails}
+                value={partyData.notes}
                 onChange={handleChange}
+                placeholder="Add any additional notes or comments (max 2000 characters)"
+                maxLength="2000"
+                rows="4"
               ></textarea>
             </div>
             {/* --- PARTY BANK ACCOUNT --- */}

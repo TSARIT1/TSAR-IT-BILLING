@@ -74,6 +74,7 @@ function Godown() {
 
   const [godowns, setGodowns] = useState([]);
   const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]); // Store all products from all godowns
   const [errors, setErrors] = useState({});
 
   const categories = [
@@ -136,6 +137,8 @@ function Godown() {
       // Automatically fetch products for the first godown
       console.log("Godowns loaded, fetching products for first godown:", godowns[0].godownId);
       fetchProducts(godowns[0].godownId);
+      // Also fetch all products from all godowns for summary calculations
+      fetchAllProducts();
     }
   }, [godowns]);
 
@@ -165,6 +168,34 @@ function Godown() {
       if (error.response?.status !== 404) {
         console.log("Failed to load products:", error.message);
       }
+    }
+  };
+
+  // Fetch all products from all godowns for summary calculations
+  const fetchAllProducts = async () => {
+    if (godowns.length === 0) {
+      setAllProducts([]);
+      return;
+    }
+
+    try {
+      console.log("Fetching products from all godowns...");
+      const allProductsPromises = godowns.map(godown =>
+        getProductsByGodown(godown.godownId)
+          .catch(error => {
+            console.error(`Error fetching products for godown ${godown.godownId}:`, error);
+            return []; // Return empty array if fetch fails for this godown
+          })
+      );
+
+      const allProductsArrays = await Promise.all(allProductsPromises);
+      const combinedProducts = allProductsArrays.flat(); // Flatten array of arrays
+
+      console.log(`Fetched ${combinedProducts.length} total products from ${godowns.length} godowns`);
+      setAllProducts(combinedProducts);
+    } catch (error) {
+      console.error("Error fetching all products:", error);
+      setAllProducts([]);
     }
   };
 
@@ -436,6 +467,8 @@ function Godown() {
       if (productData.godownId) {
         await fetchProducts(productData.godownId);
       }
+      // Refresh all products for summary calculations
+      await fetchAllProducts();
 
       resetProductForm();
       setShowProductModal(false);
@@ -545,6 +578,8 @@ function Godown() {
         if (product.godownId) {
           await fetchProducts(product.godownId);
         }
+        // Refresh all products for summary calculations
+        await fetchAllProducts();
       } catch (error) {
         console.error("Error deleting product:", error);
         alert("Failed to delete product: " + (error.message || "Unknown error"));
@@ -699,7 +734,7 @@ function Godown() {
               </div>
               <div className="godown-summary-content">
                 <h4>Total Products</h4>
-                <p>{products.length}</p>
+                <p>{allProducts.length}</p>
               </div>
             </div>
             <div className="godown-summary-card">
@@ -708,7 +743,7 @@ function Godown() {
               </div>
               <div className="godown-summary-content">
                 <h4>Total Stock</h4>
-                <p>{products.reduce((sum, p) => sum + (parseInt(p.stockQuantity) || 0), 0)}</p>
+                <p>{allProducts.reduce((sum, p) => sum + (parseInt(p.stockQuantity) || 0), 0)}</p>
               </div>
             </div>
           </div>

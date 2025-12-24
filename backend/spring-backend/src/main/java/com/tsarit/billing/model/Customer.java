@@ -33,35 +33,50 @@ import jakarta.persistence.*;
 @Table(name = "customers")
 public class Customer {
 
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // Basic Info
-    private String name;       // Full Name
-    private String phone;      // Phone Number
-    private String email;      // Email Address
-
-    // Address Fields
+    
+    @Column(length = 255)
+    private String name;
+    
+    @Column(length = 255)
+    private String phone;
+    
+    @Column(length = 255)
+    private String email;
+    
+    @Column(name = "business_id", nullable = false)
+    private String businessId; 
+    
+    @Column(name = "customer_type", length = 255)
+    private String customerType;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private Status status;
+    
+    @Column(name = "street_address", length = 255)
     private String streetAddress;
+    
+    @Column(length = 255)
     private String city;
+    
+    @Column(length = 255)
     private String state;
-    private String zipCode;
+    
+    @Column(length = 255)
     private String country;
-
-    // Business Info
-    private String customerType;   // Example: Regular, Corporate, etc.
-    private String taxId;          // Tax ID / GSTIN
-
-    // Notes
+    
+    @Column(name = "zip_code", length = 255)
+    private String zipCode;
+    
+    @Column(name = "tax_id", length = 255)
+    private String taxId;
+    
     @Column(length = 2000)
     private String notes;
-
-    // Status
-    @Enumerated(EnumType.STRING)
-    private Status status;
-
-    // Enum for status
+    
     public enum Status {
         ACTIVE, INACTIVE
     }
@@ -105,5 +120,14 @@ public class Customer {
 
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
+	public String getBusinessId() {
+		return businessId;
+	}
+	public void setBusinessId(String businessId) {
+		this.businessId = businessId;
+	}
+    
+    
+    
 }
 

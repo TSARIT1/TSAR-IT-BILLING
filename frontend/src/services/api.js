@@ -7,6 +7,7 @@ const BUSINESS_API = "http://localhost:8081/api/business";
 const INVOICE_API = "http://localhost:8081/api/invoices";
 const GODOWN_API = "http://localhost:8081/api/godowns";
 const PRODUCT_API = "http://localhost:8081/api/products";
+const CUSTOMER_API = "http://localhost:8081/api/customers";
 
 // 2. Create Axios Instance
 const apiClient = axios.create({
@@ -40,6 +41,13 @@ const godownClient = axios.create({
 
 const productClient = axios.create({
   baseURL: PRODUCT_API,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const customerClient = axios.create({
+  baseURL: CUSTOMER_API,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -251,6 +259,16 @@ export const getProductsByGodown = async (godownId) => {
   }
 };
 
+// Get All Products (for sales invoice dropdown)
+export const getAllProducts = async () => {
+  try {
+    const response = await productClient.get(""); // Empty path matches @GetMapping in backend
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
 // Get Product by ID
 export const getProductById = async (productId) => {
   try {
@@ -292,3 +310,70 @@ export const downloadGodownReport = async (userBusinessId) => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
+// =========================================
+// CUSTOMER API FUNCTIONS
+// =========================================
+
+// Create Customer
+export const createCustomer = async (customerData) => {
+  try {
+    console.log("Creating customer with data:", customerData);
+    const response = await customerClient.post("/create", customerData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Get All Customers
+export const getAllCustomers = async () => {
+  try {
+    const response = await customerClient.get("/getAll");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Get Customers by Business ID
+export const getCustomersByBusinessId = async (businessId) => {
+  try {
+    const response = await customerClient.get(`/business/${businessId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Get Customer by ID
+export const getCustomerById = async (customerId) => {
+  try {
+    const response = await customerClient.get(`/${customerId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Update Customer
+export const updateCustomer = async (customerId, customerData) => {
+  try {
+    const response = await customerClient.put(`/${customerId}`, customerData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Delete Customer
+export const deleteCustomer = async (customerId) => {
+  try {
+    const response = await customerClient.delete(`/${customerId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+
