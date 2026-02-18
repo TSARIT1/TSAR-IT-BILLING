@@ -42,10 +42,15 @@ public class Product {
     @PositiveOrZero
     private Double sellingPrice;
 
-    @Column(name = "stock_quantity")
+    @Column(name = "total_stock")
     @PositiveOrZero
-    private Integer stockQuantity;
+    private Integer totalStock;
 
+    
+    @Column(name = "remaining_stock")
+    @PositiveOrZero
+    private Integer remainingStock;
+    
     @Column(name = "min_stock_level")
     @PositiveOrZero
     private Integer minStockLevel;
@@ -80,6 +85,12 @@ public class Product {
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    @Column(nullable = false)
+    private Boolean deleted = false;
+    
     /* ================= RELATIONSHIPS ================= */
 
     // FK → godowns.godown_id
@@ -153,15 +164,28 @@ public class Product {
         this.sellingPrice = sellingPrice;
     }
 
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
+    
+    public Integer getTotalStock() {
+		return totalStock;
+	}
 
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
+	public void setTotalStock(Integer totalStock) {
+		this.totalStock = totalStock;
+	}
 
-    public Integer getMinStockLevel() {
+	public Integer getRemainingStock() {
+		return remainingStock;
+	}
+
+	public void setRemainingStock(Integer remainingStock) {
+		this.remainingStock = remainingStock;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Integer getMinStockLevel() {
         return minStockLevel;
     }
 
@@ -244,4 +268,25 @@ public class Product {
     public void setUserBusiness(UserBusiness userBusiness) {
         this.userBusiness = userBusiness;
     }
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	public Boolean getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public void setCreatedDate(LocalDateTime createdDate) {
+		this.createdDate = createdDate;
+	}
+    
 }

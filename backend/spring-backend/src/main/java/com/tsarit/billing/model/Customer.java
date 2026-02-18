@@ -28,6 +28,7 @@
 package com.tsarit.billing.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "customers")
@@ -40,7 +41,8 @@ public class Customer {
     @Column(length = 255)
     private String name;
     
-    @Column(length = 255)
+    @NotNull
+    @Column(length = 255, unique=true)
     private String phone;
     
     @Column(length = 255)

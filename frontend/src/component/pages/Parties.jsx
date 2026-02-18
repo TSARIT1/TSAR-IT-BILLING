@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BsPersonFill,
@@ -13,11 +13,13 @@ import {
   BsBuilding,
   BsGeoAlt,
   BsPencilSquare,
-  BsTrash
+  BsTrash,
+  BsFilePdfFill,
+  BsFileEarmarkSpreadsheet
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
-import { getAllCustomers, getCustomersByBusinessId, deleteCustomer } from "../../services/api";
+import { getAllCustomers, getCustomersByBusinessId, deleteCustomer, downloadPartiesReport, downloadPartiesReportCSV } from "../../services/api";
 import "../dashboard.css";
 import "../parties.css";
 
@@ -27,10 +29,26 @@ function Parties() {
   const [filterType, setFilterType] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showReportsDropdown, setShowReportsDropdown] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     fetchCustomers();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowReportsDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const fetchCustomers = async () => {
@@ -89,6 +107,90 @@ function Parties() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      const userBusinessId = localStorage.getItem("userBusinessId");
+
+      if (!userBusinessId) {
+        alert("Business ID not found. Please ensure you are logged in and have a business profile.");
+        return;
+      }
+
+      console.log("Downloading parties report for businessId:", userBusinessId);
+
+      // Call the API to get the PDF blob
+      const blob = await downloadPartiesReport(userBusinessId);
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Parties_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Close the dropdown
+      setShowReportsDropdown(false);
+
+      alert("PDF report downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      alert(`Failed to download PDF: ${error.message || "Unknown error"}`);
+    }
+  };
+
+  const handleDownloadCSV = async () => {
+    try {
+      const userBusinessId = localStorage.getItem("userBusinessId");
+
+      if (!userBusinessId) {
+        alert("Business ID not found. Please ensure you are logged in and have a business profile.");
+        return;
+      }
+
+      console.log("Downloading parties CSV report for businessId:", userBusinessId);
+
+      // Call the API to get the CSV blob
+      const blob = await downloadPartiesReportCSV(userBusinessId);
+
+      // Check if the response is actually an error (JSON) instead of CSV
+      if (blob.type === "application/json") {
+        // Read the JSON error message
+        const text = await blob.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message || "Failed to generate CSV report");
+      }
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Parties_Report_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Close the dropdown
+      setShowReportsDropdown(false);
+
+      alert("CSV report downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+      alert(`Failed to download CSV: ${error.message || "Unknown error"}`);
+    }
+  };
+
   // Filter parties based on search and filter
   const filteredParties = parties.filter(party => {
     const matchesSearch = party.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -122,9 +224,31 @@ function Parties() {
                 <button className="header-action-btn share-btn" title="Share Party Portal">
                   <BsShare /> Share
                 </button>
-                <button className="header-action-btn report-btn" title="Download Reports">
-                  <BsDownload /> Reports
-                </button>
+                <div className="reports-dropdown-wrapper" ref={dropdownRef}>
+                  <button
+                    className="header-action-btn report-btn"
+                    title="Download Reports"
+                    onClick={() => setShowReportsDropdown(!showReportsDropdown)}
+                  >
+                    <BsDownload /> Reports
+                  </button>
+                  {showReportsDropdown && (
+                    <div className="reports-dropdown-menu">
+                      <button
+                        className="dropdown-item"
+                        onClick={handleDownloadPDF}
+                      >
+                        <BsFilePdfFill /> Download as PDF
+                      </button>
+                      <button
+                        className="dropdown-item"
+                        onClick={handleDownloadCSV}
+                      >
+                        <BsFileEarmarkSpreadsheet /> Download as CSV
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button className="add-party-btn" onClick={handleAddParty}>
                   <BsPlus className="btn-icon" /> Add Party
                 </button>

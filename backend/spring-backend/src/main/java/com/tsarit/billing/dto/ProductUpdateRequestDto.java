@@ -21,8 +21,8 @@ public class ProductUpdateRequestDto {
     private Double sellingPrice;
 
     @PositiveOrZero
-    private Integer stockQuantity;
-
+    private Integer addedStock;
+    
     @PositiveOrZero
     private Integer minStockLevel;
 
@@ -73,11 +73,12 @@ public class ProductUpdateRequestDto {
 	public void setSellingPrice(Double sellingPrice) {
 		this.sellingPrice = sellingPrice;
 	}
-	public Integer getStockQuantity() {
-		return stockQuantity;
+	
+	public Integer getAddedStock() {
+		return addedStock;
 	}
-	public void setStockQuantity(Integer stockQuantity) {
-		this.stockQuantity = stockQuantity;
+	public void setAddedStock(Integer addedStock) {
+		this.addedStock = addedStock;
 	}
 	public Integer getMinStockLevel() {
 		return minStockLevel;

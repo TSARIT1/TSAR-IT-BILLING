@@ -1,6 +1,12 @@
 package com.tsarit.billing.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.tsarit.billing.model.SaleItem;
 
-public interface SaleItemRepository extends JpaRepository<SaleItem, String> {}
+public interface SaleItemRepository extends JpaRepository<SaleItem, String> {
+
+	List<SaleItem> findBySale_Id(Long saleId);
+
+}

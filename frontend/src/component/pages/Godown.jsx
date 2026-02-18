@@ -19,7 +19,8 @@ import {
   BsBoxSeam,
   BsFileText,
   BsFileEarmarkPdf,
-  BsDownload
+  BsDownload,
+  BsFileEarmarkSpreadsheet
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
@@ -200,7 +201,9 @@ function Godown() {
   };
 
   // Computed filtered products based on selections
-  const filteredProducts = products.filter(product => {
+  // Use allProducts when no specific godown is selected, otherwise use products from selected godown
+  const sourceProducts = selectedGodownFilter ? products : allProducts;
+  const filteredProducts = sourceProducts.filter(product => {
     const matchesGodown = !selectedGodownFilter || product.godownId === selectedGodownFilter;
     const matchesCategory = !selectedCategoryFilter || product.category === selectedCategoryFilter;
     return matchesGodown && matchesCategory;
@@ -212,12 +215,10 @@ function Godown() {
     setSelectedGodownFilter(godownId);
     setSelectedCategoryFilter(""); // Reset category filter
 
+    // Only fetch products if a specific godown is selected
+    // If "All Godowns" is selected (empty value), we'll use allProducts array
     if (godownId) {
       await fetchProducts(godownId);
-    } else {
-      if (godowns.length > 0) {
-        await fetchProducts(godowns[0].godownId);
-      }
     }
   };
 
@@ -225,12 +226,10 @@ function Godown() {
     setSelectedCategoryFilter(e.target.value);
   };
 
-  const handleClearFilters = async () => {
+  const handleClearFilters = () => {
     setSelectedGodownFilter("");
     setSelectedCategoryFilter("");
-    if (godowns.length > 0) {
-      await fetchProducts(godowns[0].godownId);
-    }
+    // No need to fetch products - clearing filters will show all products from allProducts array
   };
 
   // Computed filtered godowns based on selections
@@ -368,7 +367,7 @@ function Godown() {
           location: city,
           managerName: manager,
           contactNo: contact,
-          businessId: storedUserBusinessId
+          userBusinessId: storedUserBusinessId
         };
 
         await createGodown(godownRequest);
@@ -643,6 +642,130 @@ function Godown() {
     }
   };
 
+  // Download CSV Report
+  const handleDownloadCSV = async () => {
+    try {
+      const storedUserBusinessId = localStorage.getItem("userBusinessId");
+      const businessData = JSON.parse(localStorage.getItem("businessData") || "{}");
+
+      if (!storedUserBusinessId) {
+        alert("Business profile not found. Please create a business profile first.");
+        return;
+      }
+
+      // Get current date
+      const currentDate = new Date().toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
+      // Build CSV content with professional header
+      let csvContent = "";
+
+      // Business Details Section
+      if (businessData.businessName) {
+        csvContent += "BUSINESS DETAILS\n";
+        csvContent += `Business Name:,${businessData.businessName || ""}\n`;
+        csvContent += `Phone:,${businessData.phoneNo || ""}\n`;
+        csvContent += `Email:,${businessData.email || ""}\n`;
+        csvContent += `GSTIN:,${businessData.gstNo || "Not Registered"}\n`;
+
+        // Format address
+        const addressParts = [
+          businessData.address,
+          businessData.city,
+          businessData.state,
+          businessData.pincode
+        ].filter(part => part);
+        const address = addressParts.join(", ");
+        csvContent += `Address:,"${address}"\n`;
+        csvContent += "\n";
+      }
+
+      // Report Title and Date
+      csvContent += "GODOWN REPORT\n";
+      csvContent += "\n";
+      csvContent += `Report Date:,${currentDate}\n`;
+      csvContent += "\n";
+
+      // Summary Section
+      csvContent += "SUMMARY\n";
+      csvContent += `Total Godowns:,${godowns.length}\n`;
+      csvContent += `Total Products:,${allProducts.length}\n`;
+      csvContent += `Total Stock:,${allProducts.reduce((sum, p) => sum + (parseInt(p.stockQuantity) || 0), 0)} PCS\n`;
+      csvContent += "\n";
+      csvContent += "\n";
+
+      // Godown-wise Product Details
+      for (const godown of godowns) {
+        // Fetch products for this godown
+        const godownProducts = allProducts.filter(p => p.godownId === godown.godownId);
+
+        csvContent += "=".repeat(80) + "\n";
+        csvContent += `GODOWN: ${godown.godownName}\n`;
+        csvContent += "=".repeat(80) + "\n";
+        csvContent += `Location:,${godown.location || ""}\n`;
+        csvContent += `Manager:,${godown.managerName || ""}\n`;
+        csvContent += `Contact:,${godown.contactNo || ""}\n`;
+        csvContent += `Total Products:,${godownProducts.length}\n`;
+        csvContent += `Total Stock:,${godownProducts.reduce((sum, p) => sum + (parseInt(p.stockQuantity) || 0), 0)} PCS\n`;
+        csvContent += "\n";
+
+        if (godownProducts.length > 0) {
+          // Product table header
+          csvContent += "Product Code,Product Name,Description,Category,Stock Qty,Unit,Purchase Price,Selling Price,Tax Rate,Discount,Min Stock,Expiry Date,Supplier Name,Manufacturer Name\n";
+
+          // Product rows
+          for (const product of godownProducts) {
+            csvContent += `"${product.productCode || ""}",`;
+            csvContent += `"${product.productName || product.name || ""}",`;
+            csvContent += `"${product.description || "-"}",`;
+            csvContent += `${product.category || "-"},`;
+            csvContent += `${product.stockQuantity || 0},`;
+            csvContent += `${product.unit || "-"},`;
+            csvContent += `${product.purchasePrice || 0},`;
+            csvContent += `${product.sellingPrice || 0},`;
+            csvContent += `${product.taxRate || 0}%,`;
+            csvContent += `${product.discount || 0}%,`;
+            csvContent += `${product.minStockLevel || 0},`;
+
+            // Format expiry date if available
+            const expiryDate = product.expiryDate
+              ? new Date(product.expiryDate).toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })
+              : "-";
+            csvContent += `${expiryDate},`;
+
+            csvContent += `"${product.supplierName || "-"}",`;
+            csvContent += `"${product.manufacturerName || "-"}"\n`;
+          }
+        } else {
+          csvContent += "No products in this godown\n";
+        }
+        csvContent += "\n";
+      }
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Godown_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      console.log("CSV downloaded successfully");
+      alert("CSV report downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+      alert("Failed to download CSV report: " + (error.message || "Unknown error"));
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -703,6 +826,29 @@ function Godown() {
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
                         <BsFileEarmarkPdf style={{ color: '#e8961b' }} /> Download as PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDownloadCSV();
+                          setShowReportsDropdown(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '10px 15px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          color: '#333'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <BsFileEarmarkSpreadsheet style={{ color: '#1d6f42' }} /> Download as CSV
                       </button>
                     </div>
                   )}
@@ -836,7 +982,7 @@ function Godown() {
                 </div>
 
                 <div style={{ marginLeft: 'auto', fontSize: '14px', color: '#6c757d' }}>
-                  Showing {filteredProducts.length} of {products.length} products
+                  Showing {filteredProducts.length} of {selectedGodownFilter ? products.length : allProducts.length} products
                 </div>
               </div>
 

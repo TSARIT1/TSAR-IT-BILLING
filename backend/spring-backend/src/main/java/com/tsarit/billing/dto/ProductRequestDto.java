@@ -24,7 +24,7 @@ public class ProductRequestDto {
     private Double sellingPrice;
 
     @NotNull
-    private Integer stockQuantity;
+    private Integer totalStock;
 
     private Integer minStockLevel;
     private Double taxRate;
@@ -89,12 +89,13 @@ public class ProductRequestDto {
 		this.sellingPrice = sellingPrice;
 	}
 
-	public Integer getStockQuantity() {
-		return stockQuantity;
+
+	public Integer getTotalStock() {
+		return totalStock;
 	}
 
-	public void setStockQuantity(Integer stockQuantity) {
-		this.stockQuantity = stockQuantity;
+	public void setTotalStock(Integer totalStock) {
+		this.totalStock = totalStock;
 	}
 
 	public Integer getMinStockLevel() {

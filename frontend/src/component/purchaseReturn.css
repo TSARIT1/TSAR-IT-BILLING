@@ -71,6 +71,19 @@
     border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
+
+.purchase-return-report-btn2 {
+                              background-Color: '#e7f3ff';
+                              color: '#667eea';
+                              padding: '4px 12px';
+                              border-Radius: '12px';
+                              font-Size: '13px';
+                              font-Weight: '600';
+                              display: 'inline-flex';
+                              align-Items: 'center';
+                              gap: '6px';
+}
+
 .purchase-return-report-btn:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
@@ -200,7 +213,7 @@
 
 .purchase-return-table th {
     padding: 16px 14px;
-    text-align: left;
+    text-align: center;
     font-size: 13px;
     font-weight: 700;
     color: #374151;
@@ -228,6 +241,7 @@
     padding: 14px;
     font-size: 14px;
     color: #1f2937;
+    text-align: center;
 }
 
 .return-number-cell {

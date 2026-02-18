@@ -19,5 +19,11 @@ public interface InvoiceItemsRepository extends JpaRepository<InvoiceItems, Stri
             String itemId,
             String invoiceId
     );
+    boolean existsByProduct_Id(Long productId);
+    
+    List<InvoiceItems> findByInvoice_InvoiceIdAndIsDeletedFalse(String invoiceId);
+    //List<InvoiceItems> findByInvoice_InvoiceIdAndIsDeletedFalse(String invoiceId);
+    
+    Optional<InvoiceItems> findByIdAndIsDeletedFalse(String itemId);
 }
 

@@ -1,5 +1,9 @@
 package com.tsarit.billing.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.NotNull;
+
 public class InvoiceItemsDto {
 
 	private String id;   
@@ -10,15 +14,21 @@ public class InvoiceItemsDto {
 	private Double discount;
 	private Double tax;
 	private Double totalLineAmount;
+	
+	@NotNull
+	@JsonProperty("productId")
+	private Long productId;
+	
 	public InvoiceItemsDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public InvoiceItemsDto(String itemId, int itemNo, String itemName, Integer qty, Double price, Double discount,
-			Double tax, Double totalLineAmount) {
+
+	public InvoiceItemsDto(String id, int itemNo, String itemName, Integer qty, Double price, Double discount,
+			Double tax, Double totalLineAmount, Long productId) {
 		super();
-		this.id = itemId;
+		this.id = id;
 		this.itemNo = itemNo;
 		this.itemName = itemName;
 		this.qty = qty;
@@ -26,7 +36,9 @@ public class InvoiceItemsDto {
 		this.discount = discount;
 		this.tax = tax;
 		this.totalLineAmount = totalLineAmount;
+		this.productId = productId;
 	}
+
 
 	public String getId() {
 		return id;
@@ -79,6 +91,21 @@ public class InvoiceItemsDto {
 	}
 	public void setTotalLineAmount(Double totalLineAmount) {
 		this.totalLineAmount = totalLineAmount;
+	}
+
+
+	public Long getProductId() {
+		return productId;
+	}
+
+
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+
+
+	public void setId(String id) {
+		this.id = id;
 	}
 		
 }

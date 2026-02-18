@@ -2,18 +2,23 @@ package com.tsarit.billing.dto;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 public class InvoiceRequestDto {
 	
     private String userId;          
-    private String customerName;
+    private Long customerId;
     private String mobileNo;
     private String city;
     private String invoiceDate;
 
     private int totalItems;
     private double totalAmount;
+    
+    private Long productId;
 
     private List<InvoiceItemsDto> items;
 
@@ -25,12 +30,12 @@ public class InvoiceRequestDto {
 		this.userId = userId;
 	}
 
-	public String getCustomerName() {
-		return customerName;
+	public Long getCustomerId() {
+		return customerId;
 	}
 
-	public void setCustomerName(String customerName) {
-		this.customerName = customerName;
+	public void setCustomerId(Long customerId) {
+		this.customerId = customerId;
 	}
 
 	public String getMobileNo() {
@@ -79,7 +84,16 @@ public class InvoiceRequestDto {
 
 	public void setItems(List<InvoiceItemsDto> items) {
 		this.items = items;
+	}
+
+	public Long getProductId() {
+		return productId;
+	}
+
+	public void setProductId(Long productId) {
+		this.productId = productId;
 	}  
+	
 }
 
 

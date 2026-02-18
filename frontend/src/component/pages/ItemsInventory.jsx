@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   BsBoxSeam,
   BsCashStack,
@@ -13,12 +13,14 @@ import {
   BsPencilSquare,
   BsTrash,
   BsClockHistory,
-  BsX
+  BsX,
+  BsFilePdfFill
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import "../dashboard.css";
 import "../itemInventory.css";
+import { getProductStockSummary, createProduct, updateProduct, deleteProduct, downloadInventoryReport } from "../../services/api";
 
 function ItemsInventory() {
   const [items, setItems] = useState([]);
@@ -28,14 +30,61 @@ function ItemsInventory() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedItemHistory, setSelectedItemHistory] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   // Categories for dropdown
   const categories = ["All", "Electronics", "Clothing", "Food", "Furniture", "Other"];
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("items")) || [];
-    setItems(stored);
+    fetchProducts();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowExportDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Fetch products from backend
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await getProductStockSummary();
+      console.log("Fetched product stock summary:", data);
+
+      // Map backend DTO to frontend format
+      const mappedData = Array.isArray(data) ? data.map(product => ({
+        id: product.productId,
+        name: product.productName,
+        productName: product.productName,
+        category: product.category || "Other",
+        totalStock: product.totalStock || 0,
+        currentStock: product.currentStock || 0,
+        qty: product.currentStock || 0, // For backward compatibility
+        totalSold: product.totalSold || 0,
+        minLevel: 50, // Default minimum level
+        lowStockThreshold: 50
+      })) : [];
+
+      setItems(mappedData);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      alert("Failed to load products from backend. Make sure backend is running on http://localhost:8081");
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Get stock history for an item
   const getStockHistory = (itemId) => {
@@ -189,11 +238,13 @@ function ItemsInventory() {
 
   // Filter items based on search, category, and low stock
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.code && item.code.toLowerCase().includes(searchTerm.toLowerCase()));
+    const itemName = item.name || item.productName || "";
+    const itemCode = item.code || item.productCode || "";
+    const matchesSearch = itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      itemCode.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
 
-    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty;
+    const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty || 0;
     const minLevel = item.minLevel || item.lowStockThreshold || 50;
     const matchesLowStock = !showLowStock || currentStock <= minLevel;
 
@@ -250,6 +301,155 @@ function ItemsInventory() {
     window.URL.revokeObjectURL(url);
   };
 
+  // Download PDF Report
+  const handleDownloadPDF = async () => {
+    try {
+      const userBusinessId = localStorage.getItem("userBusinessId");
+
+      if (!userBusinessId) {
+        alert("Business ID not found. Please ensure you are logged in and have a business profile.");
+        return;
+      }
+
+      if (items.length === 0) {
+        alert("No items to export");
+        return;
+      }
+
+      console.log("Downloading inventory report for businessId:", userBusinessId);
+
+      // Call the API to get the PDF blob
+      const blob = await downloadInventoryReport(userBusinessId);
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      alert("PDF report downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      alert(`Failed to download PDF: ${error.message || "Unknown error"}`);
+    } finally {
+      setShowExportDropdown(false);
+    }
+  };
+
+  // Download CSV Report
+  const handleDownloadCSV = async () => {
+    if (items.length === 0) {
+      alert("No items to export");
+      return;
+    }
+
+    try {
+      // Get business details from localStorage
+      const userBusinessId = localStorage.getItem("userBusinessId");
+      const businessData = JSON.parse(localStorage.getItem("businessData") || "{}");
+
+      // Calculate summary statistics
+      const totalItems = items.length;
+      const totalCurrentStock = items.reduce((sum, item) => {
+        const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty || 0;
+        return sum + currentStock;
+      }, 0);
+      const lowStockCount = items.filter(item => {
+        const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty;
+        const minLevel = item.minLevel || item.lowStockThreshold || 50;
+        return currentStock <= minLevel;
+      }).length;
+
+      // Get current date
+      const currentDate = new Date().toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
+      // Build CSV content with professional header
+      let csvContent = "";
+
+      // Business Details Section
+      if (businessData.businessName) {
+        csvContent += "BUSINESS DETAILS\n";
+        csvContent += `Business Name:,${businessData.businessName || ""}\n`;
+        csvContent += `Phone:,${businessData.phoneNo || ""}\n`;
+        csvContent += `Email:,${businessData.email || ""}\n`;
+        csvContent += `GSTIN:,${businessData.gstNo || "Not Registered"}\n`;
+
+        // Format address
+        const addressParts = [
+          businessData.address,
+          businessData.city,
+          businessData.state,
+          businessData.pincode
+        ].filter(part => part);
+        const address = addressParts.join(", ");
+        csvContent += `Address:,"${address}"\n`;
+        csvContent += "\n";
+      }
+
+      // Report Title and Date
+      csvContent += "INVENTORY REPORT\n";
+      csvContent += "\n";
+      csvContent += `Report Date:,${currentDate}\n`;
+      csvContent += "\n";
+
+      // Summary Section
+      csvContent += "SUMMARY\n";
+      csvContent += `Total Items:,${totalItems}\n`;
+      csvContent += `Total Current Stock:,${totalCurrentStock} PCS\n`;
+      csvContent += `Total Low Stock Items:,${lowStockCount}\n`;
+      csvContent += "\n";
+      csvContent += "\n";
+
+      // Data Table Header
+      const headers = ["Product ID", "Product Name", "Category", "Total Stock", "Current Stock", "Total Sold", "Status"];
+      csvContent += headers.join(",") + "\n";
+
+      // Data rows
+      const csvData = items.map(item => {
+        const status = getStockStatus(item);
+        return [
+          item.id,
+          `"${item.name || item.productName || ""}"`,
+          item.category || "-",
+          item.totalStock || item.qty || 0,
+          item.currentStock !== undefined ? item.currentStock : item.qty || 0,
+          item.totalSold || 0,
+          status.label
+        ];
+      });
+
+      csvContent += csvData.map(row => row.join(",")).join("\n");
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Inventory_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      setShowExportDropdown(false);
+      alert("CSV report downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating CSV:", error);
+      alert("Failed to generate CSV report. Please try again.");
+      setShowExportDropdown(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -267,9 +467,30 @@ function ItemsInventory() {
                 <p className="inventory-page-subtitle">Manage your product stock and inventory</p>
               </div>
               <div className="inventory-header-actions">
-                <button className="inventory-report-btn" onClick={handleExportReport}>
-                  <BsDownload /> Export Report
-                </button>
+                <div className="reports-dropdown-wrapper" ref={dropdownRef}>
+                  <button
+                    className="inventory-report-btn"
+                    onClick={() => setShowExportDropdown(!showExportDropdown)}
+                  >
+                    <BsDownload /> Export
+                  </button>
+                  {showExportDropdown && (
+                    <div className="reports-dropdown-menu">
+                      <button
+                        className="dropdown-item"
+                        onClick={handleDownloadPDF}
+                      >
+                        <BsFilePdfFill /> Download as PDF
+                      </button>
+                      <button
+                        className="dropdown-item"
+                        onClick={handleDownloadCSV}
+                      >
+                        <BsFileEarmarkSpreadsheet /> Download as CSV
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -291,8 +512,11 @@ function ItemsInventory() {
                 <BsCashStack className="inventory-card-icon" />
               </div>
               <div className="inventory-card-content">
-                <h4>Stock Value</h4>
-                <p>₹ {totalStockValue.toFixed(2)}</p>
+                <h4>Total Current Stock</h4>
+                <p>{items.reduce((sum, item) => {
+                  const currentStock = item.currentStock !== undefined ? item.currentStock : item.qty || 0;
+                  return sum + currentStock;
+                }, 0)} PCS</p>
               </div>
             </div>
 
@@ -301,7 +525,7 @@ function ItemsInventory() {
                 <BsExclamationTriangle className="inventory-card-icon" />
               </div>
               <div className="inventory-card-content">
-                <h4>Low Stock Items</h4>
+                <h4>Total Low Stock Items</h4>
                 <p>{lowStockCount}</p>
               </div>
             </div>
@@ -377,7 +601,16 @@ function ItemsInventory() {
                 </tr>
               </thead>
               <tbody>
-                {filteredItems.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="9" className="inventory-empty-state">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p style={{ marginTop: '10px' }}>Loading products...</p>
+                    </td>
+                  </tr>
+                ) : filteredItems.length === 0 ? (
                   <tr>
                     <td colSpan="9" className="inventory-empty-state">
                       <BsBoxSeam className="inventory-empty-icon" />
@@ -412,7 +645,7 @@ function ItemsInventory() {
                         </td>
                         <td className="product-id-cell">#{item.id}</td>
                         <td className="item-name-cell">
-                          <BsBoxSeam className="item-row-icon" /> {item.name}
+                          <BsBoxSeam className="item-row-icon" /> {item.name || item.productName || '-'}
                         </td>
                         <td>
                           <span className="category-badge">{item.category || "-"}</span>
@@ -431,17 +664,7 @@ function ItemsInventory() {
                             title="Stock History"
                             onClick={() => handleViewHistory(item)}
                           >
-                            <BsClockHistory />
-                          </button>
-                          <button className="inventory-action-btn edit-btn" title="Edit Item">
-                            <BsPencilSquare />
-                          </button>
-                          <button
-                            className="inventory-action-btn delete-btn"
-                            onClick={() => handleDeleteItem(item.id)}
-                            title="Delete Item"
-                          >
-                            <BsTrash />
+                            <BsClockHistory /> View History
                           </button>
                         </td>
                       </tr>
@@ -500,49 +723,79 @@ function ItemsInventory() {
               </button>
             </div>
             <div className="stock-history-modal-body">
-              {selectedItemHistory.history.length === 0 ? (
-                <div className="stock-history-empty">
-                  <BsClockHistory className="empty-icon" />
-                  <p>No transaction history available</p>
-                </div>
-              ) : (
-                <table className="stock-history-table">
-                  <thead>
+              <table className="stock-history-table">
+                <thead>
+                  <tr>
+                    <th>Sr No</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Transaction Type</th>
+                    <th>Total Stock</th>
+                    <th>Total Buy</th>
+                    <th>Total Sell</th>
+                    <th>Remaining Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedItemHistory.history.length === 0 ? (
                     <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Quantity</th>
-                      <th>Balance</th>
+                      <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: '#999' }}>
+                        <BsClockHistory style={{ fontSize: '2rem', marginBottom: '10px' }} />
+                        <p style={{ margin: '10px 0 0 0' }}>No transactions found</p>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {selectedItemHistory.history.map((transaction) => (
-                      <tr key={transaction.id}>
-                        <td>{new Date(transaction.date).toLocaleDateString('en-IN', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}</td>
-                        <td>
-                          <span className={`transaction-type-badge ${transaction.type}`}>
-                            {transaction.type === 'purchase' ? 'Purchase' : 'Sale'}
-                          </span>
-                        </td>
-                        <td className={`quantity-cell ${transaction.type}`}>
-                          {transaction.type === 'purchase' ? '+' : '-'}{transaction.quantity} PCS
-                        </td>
-                        <td className="balance-cell">{transaction.balance} PCS</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+                  ) : (
+                    selectedItemHistory.history.map((transaction, index) => {
+                      const transDate = new Date(transaction.date);
+                      const totalBuy = selectedItemHistory.history
+                        .slice(0, index + 1)
+                        .filter(t => t.type === 'purchase')
+                        .reduce((sum, t) => sum + t.quantity, 0);
+                      const totalSell = selectedItemHistory.history
+                        .slice(0, index + 1)
+                        .filter(t => t.type === 'sale')
+                        .reduce((sum, t) => sum + t.quantity, 0);
+                      const totalStock = selectedItemHistory.item.totalStock || 0;
+
+                      return (
+                        <tr key={transaction.id}>
+                          <td style={{ textAlign: 'center' }}>{index + 1}</td>
+                          <td>{transDate.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}</td>
+                          <td>{transDate.toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                          })}</td>
+                          <td>
+                            <span className={`transaction-type-badge ${transaction.type}`}>
+                              {transaction.type === 'purchase' ? 'Purchase' : 'Sell'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', fontWeight: '500' }}>{totalStock} PCS</td>
+                          <td className="quantity-cell purchase" style={{ textAlign: 'center' }}>
+                            {totalBuy} PCS
+                          </td>
+                          <td className="quantity-cell sale" style={{ textAlign: 'center' }}>
+                            {totalSell} PCS
+                          </td>
+                          <td className="balance-cell" style={{ textAlign: 'center', fontWeight: 'bold' }}>
+                            {transaction.balance} PCS
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </div>
-      )}
+          </div >
+        </div >
+      )
+      }
     </>
   );
 }

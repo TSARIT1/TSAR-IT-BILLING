@@ -17,7 +17,9 @@ import {
   BsEyeSlashFill,
   BsPencilSquare,
   BsXCircle,
-  BsCheck
+  BsCheck,
+  BsSearch,
+  BsPersonPlus
 } from "react-icons/bs";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
@@ -25,7 +27,7 @@ import "../dashboard.css";
 import "../salesInvoice.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { createInvoice, getInvoices, deleteInvoice, updateInvoice, updateInvoiceItem, deleteInvoiceItem, getInvoiceItems, getAllProducts } from "../../services/api";
+import { createInvoice, getInvoices, deleteInvoice, updateInvoice, updateInvoiceItem, deleteInvoiceItem, getInvoiceItems, getAllProducts, confirmSaleFromInvoice, searchCustomers, getCustomerByPhone } from "../../services/api";
 
 function CreateSalesInvoice() {
   const [party, setParty] = useState("");
@@ -38,7 +40,16 @@ function CreateSalesInvoice() {
   const [invoices, setInvoices] = useState([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
   const [availableProducts, setAvailableProducts] = useState([]);
+  const [showConfirmSaleModal, setShowConfirmSaleModal] = useState(false);
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const userId = localStorage.getItem("userId");
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [customerSuggestions, setCustomerSuggestions] = useState([]);
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all"); // all, sold, notSold
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -129,6 +140,8 @@ function CreateSalesInvoice() {
         });
       } else {
         // Manual entry
+        updated[index].productId = null;
+        updated[index].godownId = null;
         updated[index][field] = value;
       }
     } else {
@@ -159,10 +172,20 @@ function CreateSalesInvoice() {
       alert("Please enter Customer Name");
       return;
     }
+    if (!selectedCustomerId) {
+      alert("Please select a customer from the list");
+      return;
+    }
+    const invalidItems = items.filter(i => !i.productId);
+    if (invalidItems.length > 0) {
+      alert("Please select a product for all items before saving.");
+      return;
+    }
 
     const invoiceData = {
       userId: userId,
       customerName: party,
+      customerId: selectedCustomerId,
       mobileNo: mobile || "-",
       city: city || "-",
       invoiceDate: invoiceDate,
@@ -170,6 +193,8 @@ function CreateSalesInvoice() {
       totalAmount: total,
       items: items.map(i => ({
         itemNo: i.itemNo,
+        productId: i.productId,
+        godownId: i.godownId,
         itemName: i.itemName,
         qty: i.qty,
         price: i.price,
@@ -200,7 +225,13 @@ function CreateSalesInvoice() {
       if (showHistory) fetchInvoices();
     } catch (err) {
       console.error(err);
-      alert(editingInvoiceId ? "Error updating invoice." : "Error saving invoice.");
+      const backendMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Something went wrong";
+
+      alert(backendMessage);
+      console.log("Backend response:", err.response?.data);
     }
   };
 
@@ -228,6 +259,12 @@ function CreateSalesInvoice() {
   };
 
   const handleEdit = async (invoice) => {
+    // Prevent editing sold invoices
+    if (invoice.saled) {
+      alert("Cannot edit a sold invoice. This invoice has already been confirmed as a sale.");
+      return;
+    }
+
     setEditingInvoiceId(invoice.invoiceId);
     setParty(invoice.customerName);
     setMobile(invoice.mobileNo);
@@ -241,6 +278,8 @@ function CreateSalesInvoice() {
       const mappedItems = itemsData.map(item => ({
         itemId: item.itemId,
         itemNo: item.itemNo,
+        productId: item.productId,
+        godownId: item.godownId,
         itemName: item.itemName,
         qty: item.qty,
         price: item.price,
@@ -261,6 +300,14 @@ function CreateSalesInvoice() {
   };
 
   const handleDelete = async (invoiceId) => {
+    // Find the invoice to check if it's sold
+    const invoice = invoices.find(inv => inv.invoiceId === invoiceId);
+
+    if (invoice && invoice.saled) {
+      alert("Cannot delete a sold invoice. This invoice has already been confirmed as a sale.");
+      return;
+    }
+
     const confirmed = window.confirm("Are you sure you want to delete this invoice? This action cannot be undone.");
 
     if (confirmed) {
@@ -301,14 +348,16 @@ function CreateSalesInvoice() {
     }
 
     // For editing existing invoices
-    if (!item.id) {
+    if (!item.itemId) {
       alert("This is a new item. Please save the entire invoice to add new items.");
       return;
     }
 
     try {
-      await updateInvoiceItem(editingInvoiceId, item.id, {
+      await updateInvoiceItem(editingInvoiceId, item.itemId, {
         itemNo: item.itemNo,
+        productId: item.productId,
+        godownId: item.godownId,
         itemName: item.itemName,
         qty: item.qty,
         price: item.price,
@@ -327,6 +376,188 @@ function CreateSalesInvoice() {
     } catch (err) {
       console.error(err);
       alert("Error saving item: " + (err.message || "Unknown error"));
+    }
+  };
+
+  // Confirm Sale handlers
+  const handleConfirmSaleClick = async () => {
+    // Always fetch fresh invoice data to ensure we have the latest saled status
+    await fetchInvoices();
+    setShowConfirmSaleModal(true);
+    setSelectedInvoices([]);
+    setSelectAll(false);
+  };
+
+  const handleSelectInvoice = (invoiceId) => {
+    setSelectedInvoices(prev => {
+      if (prev.includes(invoiceId)) {
+        return prev.filter(id => id !== invoiceId);
+      } else {
+        return [...prev, invoiceId];
+      }
+    });
+  };
+  const handleSelectCustomer = (customer) => {
+
+    const name =
+      customer.customerName ||
+      customer.name ||
+      "";
+
+    const phone =
+      customer.mobileNo ||
+      customer.phone ||
+      "";
+
+    const cityValue =
+      customer.city ||
+      "";
+
+    const id =
+      customer.customerId ||
+      customer.id ||
+      null;
+
+    setParty(name);
+    setMobile(phone);
+    setCity(cityValue);
+    setSelectedCustomerId(id);
+
+    setCustomerSuggestions([]);
+    setShowCustomerDropdown(false);
+    setCustomerQuery("");
+  };
+
+  const handleCustomerInputChange = async (e) => {
+    const value = e.target.value;
+    setParty(value);
+    setCustomerQuery(value);
+    setSelectedCustomerId(null);
+
+    if (value.trim().length === 0) {
+      setCustomerSuggestions([]);
+      setShowCustomerDropdown(false);
+      setIsSearching(false);
+      return;
+    }
+    // Show dropdown immediately when typing
+    setShowCustomerDropdown(true);
+    setIsSearching(true);
+
+    try {
+      const results = await searchCustomers(value);
+      setCustomerSuggestions(Array.isArray(results) ? results : []);
+      setIsSearching(false);
+    } catch (error) {
+      console.error("Error searching customers:", error);
+      setCustomerSuggestions([]);
+      setIsSearching(false);
+    }
+  }
+
+  const handleMobileChange = async (e) => {
+    const value = e.target.value;
+    setMobile(value);
+
+    if (value.trim().length >= 10) {
+      try {
+        const customer = await getCustomerByPhone(value);
+        if (customer) {
+          setParty(customer.customerName);
+          setCity(customer.city || "");
+          setSelectedCustomerId(customer.customerId);
+        }
+        else {
+          // Customer not found
+          const confirmAdd = window.confirm("Customer not found. Would you like to add a new customer?");
+          if (confirmAdd) {
+            handleAddNewParty();
+          }
+        }
+
+      } catch (err) {
+        console.error("Error fetching customer by phone:", err);
+        // Show popup for customer not found
+        const confirmAdd = window.confirm("Customer not found. Would you like to add a new customer?");
+        if (confirmAdd) {
+          handleAddNewParty();
+        }
+      }
+    }
+  };
+
+  const handleAddNewParty = () => {
+    // Store current form data before navigation
+    sessionStorage.setItem('pendingInvoiceData', JSON.stringify({
+      items,
+      invoiceDate,
+      customerQuery: party
+    }));
+    navigate("/edit-party");
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedInvoices([]);
+      setSelectAll(false);
+    } else {
+      // Only select unsold invoices
+      const unsoldInvoiceIds = invoices
+        .filter(inv => !inv.saled)
+        .map(inv => inv.invoiceId);
+      setSelectedInvoices(unsoldInvoiceIds);
+      setSelectAll(true);
+    }
+  };
+
+  const handleConfirmSale = async () => {
+    if (selectedInvoices.length === 0) {
+      alert("Please select at least one invoice to confirm sale.");
+      return;
+    }
+
+    try {
+      const confirmMessage = `Are you sure you want to confirm sale for ${selectedInvoices.length} invoice(s)? This will deduct stock from inventory.`;
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      // Process all invoices
+      for (const invoiceId of selectedInvoices) {
+        try {
+          await confirmSaleFromInvoice(invoiceId);
+          successCount++;
+        } catch (error) {
+          errorCount++;
+          errors.push(`Invoice ${invoiceId.substring(0, 8)}: ${error.message || error}`);
+        }
+      }
+
+      // Close modal first
+      setShowConfirmSaleModal(false);
+      setSelectedInvoices([]);
+      setSelectAll(false);
+
+      // Wait a bit for backend to complete database updates
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Refresh invoices to get updated status
+      await fetchInvoices();
+
+      // Show results after refresh
+      let resultMessage = `Sale confirmation completed!\n\nSuccess: ${successCount}\nFailed: ${errorCount}`;
+      if (errors.length > 0) {
+        resultMessage += `\n\nErrors:\n${errors.join('\n')}`;
+      }
+      alert(resultMessage);
+
+    } catch (error) {
+      console.error("Error confirming sales:", error);
+      alert("Error confirming sales: " + (error.message || error));
     }
   };
 
@@ -350,20 +581,16 @@ function CreateSalesInvoice() {
         await deleteInvoiceItem(editingInvoiceId, item.itemId);
         alert(`${itemName} is deleted successfully!`);
 
-        // Clear the row content instead of removing it
-        const updated = [...items];
-        updated[index] = {
-          itemNo: index + 1,
-          productId: "",
-          godownId: "",
-          itemName: "",
-          qty: 1,
-          price: 0,
-          discount: 0,
-          tax: 0,
-          totalLineAmount: 0
-        };
-        setItems(updated);
+        // Remove the row completely from the array
+        const updated = items.filter((_, i) => i !== index);
+
+        // Renumber the remaining items
+        const renumbered = updated.map((item, idx) => ({
+          ...item,
+          itemNo: idx + 1
+        }));
+
+        setItems(renumbered);
 
         // Refresh invoice history to get updated totals
         if (showHistory) {
@@ -374,21 +601,19 @@ function CreateSalesInvoice() {
         alert("Error deleting item: " + (err.message || "Unknown error"));
       }
     } else {
-      // For new items (not saved to backend), just clear the row
+      // For new items (not saved to backend), just remove the row
       alert(`${itemName} is deleted successfully!`);
-      const updated = [...items];
-      updated[index] = {
-        itemNo: index + 1,
-        productId: "",
-        godownId: "",
-        itemName: "",
-        qty: 1,
-        price: 0,
-        discount: 0,
-        tax: 0,
-        totalLineAmount: 0
-      };
-      setItems(updated);
+
+      // Remove the row completely from the array
+      const updated = items.filter((_, i) => i !== index);
+
+      // Renumber the remaining items
+      const renumbered = updated.map((item, idx) => ({
+        ...item,
+        itemNo: idx + 1
+      }));
+
+      setItems(renumbered);
     }
   };
 
@@ -418,6 +643,13 @@ function CreateSalesInvoice() {
                   </button>
                 )}
                 <button
+                  className="confirm-sale-btn"
+                  onClick={handleConfirmSaleClick}
+                  title="Confirm Sale from Invoice"
+                >
+                  <BsCheck /> Confirm Sale
+                </button>
+                <button
                   className={`history-toggle-btn ${showHistory ? 'active' : ''}`}
                   onClick={handleViewHistory}
                 >
@@ -432,6 +664,21 @@ function CreateSalesInvoice() {
             <div className="invoice-history-container">
               <div className="invoice-history-header">
                 <h3><BsListUl /> Invoice History</h3>
+                <div className="invoice-filter-section">
+                  <label htmlFor="statusFilter" className="filter-label">
+                    Filter by Status:
+                  </label>
+                  <select
+                    id="statusFilter"
+                    className="status-filter-dropdown"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="all">All Invoices</option>
+                    <option value="sold">Sold</option>
+                    <option value="notSold">Not Sold</option>
+                  </select>
+                </div>
               </div>
               <div className="invoice-history-table-wrapper">
                 <table className="invoice-history-table">
@@ -444,20 +691,41 @@ function CreateSalesInvoice() {
                       <th><BsCalendar3 /> Date</th>
                       <th>Total Items</th>
                       <th><BsCashStack /> Amount</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {invoices.length === 0 ? (
-                      <tr>
-                        <td colSpan="8" className="empty-history">
-                          <BsListUl className="empty-history-icon" />
-                          <p>No invoices found</p>
-                        </td>
-                      </tr>
-                    ) : (
-                      invoices.map((inv) => (
-                        <tr key={inv.invoiceId} className={editingInvoiceId === inv.invoiceId ? 'editing-row' : ''}>
+                    {(() => {
+                      // Filter invoices based on selected status
+                      const filteredInvoices = invoices.filter(inv => {
+                        // Handle null/undefined saled values - treat as false (not sold)
+                        const isSold = inv.saled === true;
+
+                        if (statusFilter === "sold") return isSold;
+                        if (statusFilter === "notSold") return !isSold;
+                        return true; // "all" shows everything
+                      });
+
+                      // Show appropriate empty message based on filter
+                      if (filteredInvoices.length === 0) {
+                        let emptyMessage = "No invoices found";
+                        if (statusFilter === "sold") emptyMessage = "No sold invoices found";
+                        if (statusFilter === "notSold") emptyMessage = "No unsold invoices found";
+
+                        return (
+                          <tr>
+                            <td colSpan="9" className="empty-history">
+                              <BsListUl className="empty-history-icon" />
+                              <p>{emptyMessage}</p>
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      // Render filtered invoices
+                      return filteredInvoices.map((inv) => (
+                        <tr key={inv.invoiceId} className={`${editingInvoiceId === inv.invoiceId ? 'editing-row' : ''} ${inv.saled ? 'sold-row' : ''}`}>
                           <td>#{inv.invoiceId.substring(0, 8)}</td>
                           <td>{inv.customerName}</td>
                           <td>{inv.mobileNo}</td>
@@ -466,26 +734,35 @@ function CreateSalesInvoice() {
                           <td>{inv.totalItems}</td>
                           <td className="amount-cell">₹{inv.totalAmount}</td>
                           <td>
+                            {inv.saled ? (
+                              <span className="status-badge sold">Sold</span>
+                            ) : (
+                              <span className="status-badge not-sold">Not Sold</span>
+                            )}
+                          </td>
+                          <td>
                             <div className="action-buttons">
                               <button
                                 className="edit-btn"
                                 onClick={() => handleEdit(inv)}
-                                title="Edit Invoice"
+                                title={inv.saled ? "Cannot edit sold invoice" : "Edit Invoice"}
+                                disabled={inv.saled}
                               >
                                 <BsPencilSquare /> Edit
                               </button>
                               <button
                                 className="delete-btn"
                                 onClick={() => handleDelete(inv.invoiceId)}
-                                title="Delete Invoice"
+                                title={inv.saled ? "Cannot delete sold invoice" : "Delete Invoice"}
+                                disabled={inv.saled}
                               >
                                 <BsTrash /> Delete
                               </button>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -522,16 +799,60 @@ function CreateSalesInvoice() {
                     <BsPersonFill className="label-icon-invoice" /> Customer Name *
                   </label>
                   <div className="invoice-input-wrapper">
-                    <BsPersonFill className="invoice-field-icon" />
+                    <BsSearch className="invoice-field-icon" />
                     <input
                       type="text"
-                      placeholder="Enter customer name"
+                      placeholder="Search by name, phone or ID"
                       value={party}
-                      onChange={(e) => setParty(e.target.value)}
+                      onChange={handleCustomerInputChange}
                       className="invoice-input icon-padded-invoice"
                       required
                     />
                   </div>
+
+                  {/* Customer suggestions dropdown */}
+                  {showCustomerDropdown && (
+                    <div className="customer-suggestions-dropdown">
+                      {isSearching ? (
+                        <div className="customer-suggestion-item searching-state">
+                          <BsSearch /> Searching...
+                        </div>
+                      ) : customerSuggestions.length > 0 ? (
+                        <>
+                          {customerSuggestions.map((cust) => (
+                            <div
+                              key={cust.customerId}
+                              className="customer-suggestion-item"
+                              onClick={() => handleSelectCustomer(cust)}
+                            >
+                              <div className="customer-info">
+                                <BsPersonFill className="customer-icon" />
+                                <div>
+                                  <div className="customer-name">{cust.customerName || cust.name}</div>
+                                  <div className="customer-details">
+                                    {cust.mobileNo && <span><BsTelephoneFill /> {cust.mobileNo || cust.phone}</span>}
+                                    {cust.city && <span><BsGeoAltFill /> {cust.city}</span>}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <div className="customer-suggestion-item no-results">
+                          <div className="no-results-content">
+                            <p>No customer found</p>
+                            <button
+                              className="add-new-party-btn"
+                              onClick={handleAddNewParty}
+                            >
+                              <BsPersonPlus /> Add New Party
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="invoice-form-field">
@@ -544,8 +865,9 @@ function CreateSalesInvoice() {
                       type="text"
                       placeholder="Enter mobile number"
                       value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
+                      onChange={handleMobileChange}
                       className="invoice-input icon-padded-invoice"
+                      readOnly
                     />
                   </div>
                 </div>
@@ -729,7 +1051,7 @@ function CreateSalesInvoice() {
 
             {/* Action Buttons */}
             <div className="invoice-actions">
-              <Link to="/dashboard">
+              <Link to="/sales-invoices">
                 <button className="invoice-back-btn">
                   <BsArrowLeft /> Go Back
                 </button>
@@ -739,6 +1061,112 @@ function CreateSalesInvoice() {
               </button>
             </div>
           </div>
+
+          {/* Confirm Sale Modal */}
+          {showConfirmSaleModal && (
+            <div className="modal-overlay" onClick={() => setShowConfirmSaleModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3><BsCheck /> Confirm Sale from Invoice</h3>
+                  <button className="modal-close-btn" onClick={() => setShowConfirmSaleModal(false)}>
+                    <BsXCircle />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <p className="modal-description">
+                    Select unsold invoices to convert to sales. This will deduct stock from inventory.
+                  </p>
+
+                  {invoices.filter(inv => !inv.saled).length === 0 ? (
+                    <div className="empty-invoices-message">
+                      <BsListUl className="empty-icon" />
+                      <p>No unsold invoices available. All invoices have been confirmed as sales.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="select-all-container">
+                        <label className="checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={handleSelectAll}
+                          />
+                          <span>Select All ({invoices.filter(inv => !inv.saled).length} unsold invoices)</span>
+                        </label>
+                      </div>
+
+                      <div className="modal-table-wrapper">
+                        <table className="modal-invoice-table">
+                          <thead>
+                            <tr>
+                              <th style={{ width: '50px' }}>Select</th>
+                              <th>Invoice ID</th>
+                              <th>Customer</th>
+                              <th>Date</th>
+                              <th>Items</th>
+                              <th>Amount</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {invoices
+                              .filter(inv => !inv.saled)
+                              .map((inv) => (
+                                <tr key={inv.invoiceId} className="modal-invoice-row">
+                                  <td className="checkbox-cell">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedInvoices.includes(inv.invoiceId)}
+                                      onChange={() => handleSelectInvoice(inv.invoiceId)}
+                                      className="invoice-checkbox"
+                                    />
+                                  </td>
+                                  <td className="invoice-id-cell">
+                                    <span className="invoice-id-badge">#{inv.invoiceId.substring(0, 8)}</span>
+                                  </td>
+                                  <td className="customer-cell">
+                                    <div className="customer-info-cell">
+                                      <BsPersonFill className="cell-icon" />
+                                      <span>{inv.customerName}</span>
+                                    </div>
+                                  </td>
+                                  <td className="date-cell">
+                                    <div className="date-info-cell">
+                                      <BsCalendar3 className="cell-icon" />
+                                      <span>{inv.invoiceDate}</span>
+                                    </div>
+                                  </td>
+                                  <td className="items-cell">{inv.totalItems}</td>
+                                  <td className="amount-cell">₹{inv.totalAmount.toFixed(2)}</td>
+                                  <td className="status-cell">
+                                    <span className="status-badge not-sold">Not Sold</span>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="modal-cancel-btn"
+                    onClick={() => setShowConfirmSaleModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="modal-confirm-btn"
+                    onClick={handleConfirmSale}
+                    disabled={selectedInvoices.length === 0}
+                  >
+                    <BsCheck /> Confirm Sale ({selectedInvoices.length})
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
