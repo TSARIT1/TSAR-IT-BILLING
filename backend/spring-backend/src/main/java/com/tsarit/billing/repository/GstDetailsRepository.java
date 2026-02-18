@@ -8,5 +8,5 @@ import com.tsarit.billing.model.GstDetails;
 
 public interface GstDetailsRepository extends JpaRepository<GstDetails, String> {
 	  Optional<GstDetails> findByBusiness_Id(String businessId);
-	  
+	  Optional<GstDetails> findByBusinessId(String businessId);
 }

@@ -7,9 +7,8 @@ public class GodownRequestDto {
     private String location;
     private String managerName;
     private String contactNo;
-   private String userBusinessId;
-    
-    // Getters & Setters
+    private String userBusinessId;
+  
     public String getGodownId() {
         return godownId;
     }
@@ -57,8 +56,6 @@ public class GodownRequestDto {
 	public void setUserBusinessId(String userBusinessId) {
 		this.userBusinessId = userBusinessId;
 	}
-
-    
 	
 	}
     

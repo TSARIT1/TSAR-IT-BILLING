@@ -29,6 +29,15 @@ public class InvoiceItems {
     private double tax;
     private double totalLineAmount;
 
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+    
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
+    @Column(name = "is_saled", nullable = false)
+    private boolean isSaled = false;
 
 	public String getId() {
 		return id;
@@ -102,5 +111,30 @@ public class InvoiceItems {
 		this.totalLineAmount = totalLineAmount;
 	}
 
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public boolean isSaled() {
+		return isSaled;
+	}
+
+	public void setSaled(boolean isSaled) {
+		this.isSaled = isSaled;
+	}
+
+	
 }
 

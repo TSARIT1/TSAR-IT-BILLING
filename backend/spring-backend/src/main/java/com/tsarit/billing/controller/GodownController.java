@@ -50,6 +50,10 @@ public class GodownController {
     // Create Godown
     @PostMapping("/create")
     public ResponseEntity<?> createGodown(@RequestBody GodownRequestDto dto) {
+    	
+    	 if (dto.getUserBusinessId() == null || dto.getUserBusinessId().isBlank()) {
+    	        return ResponseEntity.badRequest().body("UserBusinessId is required");
+    	    }
 
     	UserBusiness business = userBusinessRepo
                 .findById(dto.getUserBusinessId())
@@ -60,7 +64,7 @@ public class GodownController {
         }
 
         Godown godown = new Godown();
-        godown.setGodownId(dto.getGodownId());
+      //  godown.setGodownId(dto.getGodownId());
         godown.setGodownName(dto.getGodownName());
         godown.setLocation(dto.getLocation());
         godown.setManagerName(dto.getManagerName());

@@ -26,5 +26,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             UserBusiness userBusiness
     );
     
+    Optional<Product> findByProductName(String productName);
     
+    List<Product> findByGodown_GodownIdAndActiveTrueAndDeletedFalseAndRemainingStockGreaterThan(
+            String godownId, int remainingStock
+    );
+    
+    List<Product> findByActiveTrueAndDeletedFalseAndRemainingStockGreaterThan(int remainingStock);
+    
+    List<Product> findByActiveTrueAndDeletedFalse();
 }

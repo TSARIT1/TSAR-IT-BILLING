@@ -14,6 +14,9 @@ public class ProductResponseDto {
     private Double sellingPrice;
 
     private Integer stockQuantity;
+    
+    private Integer remainingStock;
+    
     private Integer minStockLevel;
 
     private String barcode;
@@ -196,5 +199,14 @@ public class ProductResponseDto {
     public void setBusinessName(String businessName) {
         this.businessName = businessName;
     }
+
+	public Integer getRemainingStock() {
+		return remainingStock;
+	}
+
+	public void setRemainingStock(Integer remainingStock) {
+		this.remainingStock = remainingStock;
+	}
+	
 }
 

@@ -397,72 +397,629 @@
     border-width: 2px !important;
 }
 
-/* Table Card */
-.orders-table-card {
+/* ═══════════════════════════════════════════════════════════════════════════
+   FILTER BAR — Search, Date Range, Status
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Card Wrapper ────────────────────────────────────────────────────────── */
+.filter-bar-card {
     background: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 20px rgba(62, 78, 150, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    padding: 18px 22px 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-bar-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3e4e96 0%, #e8961b 50%, #10b981 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+/* ─── Header Row ──────────────────────────────────────────────────────────── */
+.filter-bar-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.filter-bar-icon {
+    color: #3e4e96;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.filter-bar-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1f2937;
+    letter-spacing: 0.2px;
+}
+
+.filter-bar-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.filter-bar-count-num {
+    color: #3e4e96;
+    font-weight: 800;
+}
+
+/* ─── Body / Fields Row ───────────────────────────────────────────────────── */
+.filter-bar-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+/* ─── Individual Field ────────────────────────────────────────────────────── */
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-field--search {
+    flex: 2 1 260px;
+}
+
+.filter-field--date {
+    flex: 1 1 160px;
+}
+
+.filter-field--custom-date {
+    flex: 1 1 140px;
+}
+
+.filter-field--status {
+    flex: 1 1 145px;
+}
+
+.filter-field--clear {
+    flex: 0 0 auto;
+}
+
+/* ─── Label ───────────────────────────────────────────────────────────────── */
+.filter-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+}
+
+.filter-label i {
+    font-size: 11px;
+    color: #3e4e96;
+}
+
+/* ─── Search Box ──────────────────────────────────────────────────────────── */
+.filter-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 14px;
+    pointer-events: none;
+    transition: color 0.2s;
+    z-index: 1;
+}
+
+.filter-search-input {
+    width: 100%;
+    padding: 9px 36px 9px 34px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #1f2937;
+    background: #f9fafb;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    font-family: inherit;
+}
+
+.filter-search-input::placeholder {
+    color: #b0b7c3;
+    font-size: 12.5px;
+}
+
+.filter-search-input:focus {
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.12);
+}
+
+.filter-search-input:focus~.filter-search-icon,
+.filter-search-wrap:focus-within .filter-search-icon {
+    color: #3e4e96;
+}
+
+/* Inline clear (×) button inside search */
+.filter-search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e5e7eb;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 0;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+}
+
+.filter-search-clear:hover {
+    background: #fecdd3;
+    color: #be123c;
+}
+
+/* ─── Select (Date Range & Status) ───────────────────────────────────────── */
+.filter-select {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233e4e96' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+    font-family: inherit;
+}
+
+.filter-select:hover {
+    border-color: #a5b4fc;
+    background-color: #f0f4ff;
+}
+
+.filter-select:focus {
+    border-color: #3e4e96;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.12);
+}
+
+/* ─── Date Input ──────────────────────────────────────────────────────────── */
+.filter-date-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    background: #f9fafb;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    font-family: inherit;
+}
+
+.filter-date-input:hover {
+    border-color: #a5b4fc;
+    background: #f0f4ff;
+}
+
+.filter-date-input:focus {
+    border-color: #3e4e96;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.12);
+}
+
+/* ─── Clear All Button ────────────────────────────────────────────────────── */
+.filter-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #fee2e2, #fecdd3);
+    border: 1.5px solid #fca5a5;
+    border-radius: 10px;
+    color: #be123c;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.filter-clear-btn:hover {
+    background: linear-gradient(135deg, #fecdd3, #fda4af);
+    border-color: #f87171;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(190, 18, 60, 0.2);
+}
+
+.filter-clear-btn i {
+    font-size: 13px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .filter-bar-body {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-field--search,
+    .filter-field--date,
+    .filter-field--custom-date,
+    .filter-field--status,
+    .filter-field--clear {
+        flex: 1 1 100%;
+    }
+
+    .filter-clear-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filter-bar-count {
+        display: none;
+    }
+}
+
+/* ─── All Orders Section Heading ─────────────────────────────────────────── */
+.orders-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+
+.orders-section-heading h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.orders-section-heading h4 i {
+    color: #3e4e96;
+    font-size: 18px;
+}
+
+.orders-section-heading .order-count-badge {
+    background: linear-gradient(135deg, #3e4e96, #5a6fb8);
+    color: #fff;
+    border-radius: 20px;
+    padding: 3px 13px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* ─── Table Card Wrapper ──────────────────────────────────────────────────── */
+.orders-table-card {
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 6px 30px rgba(62, 78, 150, 0.10), 0 1px 4px rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
-/* Table Header */
+/* ─── Table Header Row ────────────────────────────────────────────────────── */
 .orders-table-card .table-header-row {
     display: grid;
-    grid-template-columns: 1fr 1.2fr 1.3fr 1fr 1fr 1.2fr 0.8fr;
-    gap: 15px;
-    padding: 18px 25px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 2px solid #e5e7eb;
+    gap: 12px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #3e4e96 0%, #2d3a7a 100%);
+    border-bottom: none;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .orders-table-card .table-header-row .header-cell {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
-    color: #374151;
+    color: rgba(255, 255, 255, 0.85);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
 }
 
 .orders-table-card .table-header-row .header-cell i {
-    color: #3e4e96;
-    font-size: 14px;
+    color: #e8961b;
+    font-size: 13px;
+    opacity: 0.95;
 }
 
-/* Empty State */
+/* ─── Data Rows ───────────────────────────────────────────────────────────── */
+.orders-table-card .order-row {
+    display: grid;
+    gap: 12px;
+    padding: 13px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: center;
+    transition: background 0.18s ease, box-shadow 0.18s ease, border-left 0.18s ease;
+    border-left: 3px solid transparent;
+    animation: rowFadeIn 0.3s ease both;
+}
+
+@keyframes rowFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.orders-table-card .order-row:last-child {
+    border-bottom: none;
+}
+
+.orders-table-card .order-row:nth-child(even) {
+    background: #f8faff;
+}
+
+.orders-table-card .order-row:nth-child(odd) {
+    background: #ffffff;
+}
+
+.orders-table-card .order-row:hover {
+    background: #eef1fb !important;
+    border-left: 3px solid #3e4e96;
+    box-shadow: inset 0 0 0 1px rgba(62, 78, 150, 0.07);
+}
+
+/* ─── Cell Typography ─────────────────────────────────────────────────────── */
+.orders-table-card .cell-date {
+    font-size: 12.5px;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.orders-table-card .cell-order-num {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3e4e96;
+    letter-spacing: 0.2px;
+}
+
+.orders-table-card .cell-customer-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.3;
+}
+
+.orders-table-card .cell-customer-phone {
+    font-size: 11.5px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.orders-table-card .cell-amount {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.orders-table-card .cell-payment {
+    font-size: 12.5px;
+    color: #374151;
+    font-weight: 500;
+}
+
+/* ─── Status Badges ───────────────────────────────────────────────────────── */
+.orders-table-card .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.orders-table-card .status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.orders-table-card .status-badge.processing {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.orders-table-card .status-badge.completed {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.orders-table-card .status-badge.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* ─── Status Dropdown in Status Column ───────────────────────────────────── */
+.orders-table-card .status-select {
+    margin-top: 5px;
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    background: #f9fafb !important;
+    width: auto;
+    min-width: 95px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.orders-table-card .status-select:focus {
+    border-color: #3e4e96 !important;
+    box-shadow: 0 0 0 2px rgba(62, 78, 150, 0.12) !important;
+    outline: none;
+}
+
+/* ─── Action Buttons ──────────────────────────────────────────────────────── */
+.orders-table-card .action-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.orders-table-card .action-group .btn {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.orders-table-card .action-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.orders-table-card .action-group .btn-view {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1d4ed8 !important;
+}
+
+.orders-table-card .action-group .btn-view:hover {
+    background: #dbeafe !important;
+    border-color: #93c5fd !important;
+}
+
+.orders-table-card .action-group .btn-edit {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #92400e !important;
+}
+
+.orders-table-card .action-group .btn-edit:hover {
+    background: #fef3c7 !important;
+    border-color: #fcd34d !important;
+}
+
+.orders-table-card .action-group .btn-delete {
+    background: #fff1f2 !important;
+    border: 1px solid #fecdd3 !important;
+    color: #be123c !important;
+}
+
+.orders-table-card .action-group .btn-delete:hover {
+    background: #ffe4e6 !important;
+    border-color: #fda4af !important;
+}
+
+/* ─── Table Footer / Grand Total Row ─────────────────────────────────────── */
+.orders-table-card .table-footer-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8ecfa 100%);
+    border-top: 2px solid #e5e7eb;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.orders-table-card .table-footer-row .footer-total {
+    color: #3e4e96;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+/* ─── Empty State ─────────────────────────────────────────────────────────── */
 .orders-table-card .empty-state {
-    padding: 80px 40px;
+    padding: 70px 40px;
     text-align: center;
 }
 
 .orders-table-card .empty-state .empty-icon {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 25px;
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 22px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e5e7eb 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.10);
 }
 
 .orders-table-card .empty-state .empty-icon i {
-    font-size: 60px;
+    font-size: 52px;
     color: #9ca3af;
 }
 
 .orders-table-card .empty-state h4 {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 700;
     color: #1f2937;
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
 }
 
 .orders-table-card .empty-state p {
-    font-size: 15px;
+    font-size: 14px;
     color: #6b7280;
     margin: 0;
 }
@@ -470,15 +1027,18 @@
 .orders-table-card .empty-state .btn-primary {
     background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
     border: none !important;
-    padding: 12px 28px;
+    padding: 11px 26px;
     font-weight: 700;
+    border-radius: 10px;
     box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    transition: all 0.3s ease;
 }
 
 .orders-table-card .empty-state .btn-primary:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
 }
+
 
 /* Responsive Design */
 @media (max-width: 1200px) {
