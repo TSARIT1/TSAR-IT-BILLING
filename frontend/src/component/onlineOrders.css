@@ -732,6 +732,59 @@
     letter-spacing: 0.3px;
 }
 
+/* ─── Report PDF Button ───────────────────────────────────────────────────── */
+.report-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    background: linear-gradient(135deg, #3e4e96 0%, #2d3a7a 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 12px rgba(62, 78, 150, 0.30);
+    white-space: nowrap;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+}
+
+.report-download-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2d3a7a 0%, #1c2f6e 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.40);
+}
+
+.report-download-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(62, 78, 150, 0.25);
+}
+
+.report-download-btn:disabled {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.75;
+}
+
+.report-download-btn i.bi-hourglass-split {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* ─── Table Card Wrapper ──────────────────────────────────────────────────── */
 .orders-table-card {
     background: #ffffff;

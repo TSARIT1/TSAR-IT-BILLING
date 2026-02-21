@@ -4,7 +4,9 @@ import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import "../dashboard.css";
 import "../onlineOrders.css";
-import { FiSearch, FiShoppingCart, FiTrendingUp, FiPackage, FiPlus, FiX, FiEye, FiTrash2, FiEdit } from "react-icons/fi";
+import { FiSearch, FiShoppingCart, FiTrendingUp, FiPackage, FiPlus, FiX, FiEye, FiTrash2, FiEdit, FiDownload } from "react-icons/fi";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import {
   getAllProducts,
@@ -16,7 +18,9 @@ import {
   createOnlineStore,
   getOnlineStores,
   getOnlineStoreProducts,
-  deleteOnlineStore
+  deleteOnlineStore,
+  getBusinessDetails,
+  getBusinessSettings
 } from "../../services/api";
 
 function OnlineOrders() {
@@ -25,11 +29,16 @@ function OnlineOrders() {
   // ─── Orders State ────────────────────────────────────────────────────────────────
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState("Today");
+  const [dateFilter, setDateFilter] = useState("All Time");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [loading, setLoading] = useState(false);
   const [customDateFrom, setCustomDateFrom] = useState("");
   const [customDateTo, setCustomDateTo] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportDateFrom, setReportDateFrom] = useState("");
+  const [reportDateTo, setReportDateTo] = useState("");
+  const [orderPrintLoading, setOrderPrintLoading] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // ─── Products State ──────────────────────────────────────────────────────────
   const [products, setProducts] = useState([]);
@@ -383,6 +392,594 @@ function OnlineOrders() {
     }
   };
 
+  // ─── Download PDF Report ──────────────────────────────────────────────────────
+  const handleDownloadReport = async () => {
+    if (filteredOrders.length === 0) {
+      alert("No orders to export.");
+      return;
+    }
+
+    setReportLoading(true);
+    try {
+      // 1. Fetch business info using userId (maps to /api/business/user/{userId})
+      const userId = localStorage.getItem("userId");
+      let business = {};
+      try {
+        if (userId) {
+          business = await getBusinessSettings(userId);
+        }
+      } catch (e) {
+        console.warn("Could not fetch business details:", e);
+      }
+
+      // gstNo is now a direct field returned by the /user/{userId} endpoint
+      const gstNo = business.gstNo || "";
+
+      // 2. Fetch items for every order in parallel (filtered by reportDateFrom/To if set)
+      const reportOrders = filteredOrders.filter(order => {
+        if (!order.orderDate) return true;
+        const d = new Date(order.orderDate);
+        const from = reportDateFrom ? new Date(reportDateFrom) : null;
+        const to = reportDateTo ? new Date(reportDateTo + "T23:59:59") : null;
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      });
+
+      if (reportOrders.length === 0) {
+        alert("No orders found in the selected date range.");
+        setReportLoading(false);
+        return;
+      }
+
+      // Sort by orderDate ascending (oldest first)
+      const sortedOrders = [...reportOrders].sort((a, b) => {
+        const da = a.orderDate ? new Date(a.orderDate) : 0;
+        const db = b.orderDate ? new Date(b.orderDate) : 0;
+        return da - db;
+      });
+
+      const ordersWithItems = await Promise.all(
+        sortedOrders.map(async (order) => {
+          try {
+            const items = await getOnlineOrderItems(order.id);
+            return { ...order, items: Array.isArray(items) ? items : [] };
+          } catch { return { ...order, items: [] }; }
+        })
+      );
+
+      // 3. Build the PDF
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const PW = 210;
+      const MARGIN = 14;
+      const COL = PW - MARGIN * 2;
+      const NAVY = [28, 47, 110];
+      const AMBER = [232, 150, 27];
+      const GREY = [108, 117, 125];
+      const LIGHT = [245, 247, 255];
+      let y = 0;
+
+      const fmt = (d) => {
+        if (!d) return "-";
+        const dt = new Date(d);
+        return `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}/${dt.getFullYear()}`;
+      };
+      const cur = (v) => `Rs. ${(Number(v) || 0).toFixed(2)}`;
+
+      // ── HEADER BANNER ───────────────────────────────────────────────────────
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, PW, 36, "F");
+
+      // Logo: use actual image if available, otherwise initials in a circle
+      const LOGO_X = MARGIN + 10;
+      const LOGO_Y = 18;
+      const LOGO_R = 9;
+      if (business.logo) {
+        // Logo is base64 from backend — embed as image in a clipped circle area
+        try {
+          // Draw white circle background first
+          doc.setFillColor(255, 255, 255);
+          doc.circle(LOGO_X, LOGO_Y, LOGO_R, "F");
+          // Add the logo image (square crop inside the circle area)
+          const logoSize = LOGO_R * 2 - 2;
+          doc.addImage(
+            `data:image/jpeg;base64,${business.logo}`,
+            "JPEG",
+            LOGO_X - logoSize / 2,
+            LOGO_Y - logoSize / 2,
+            logoSize,
+            logoSize
+          );
+        } catch (imgErr) {
+          // Fallback to initials if image fails
+          doc.setFillColor(255, 255, 255);
+          doc.circle(LOGO_X, LOGO_Y, LOGO_R, "F");
+          doc.setTextColor(...NAVY);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text((business.businessName || "B").substring(0, 2).toUpperCase(), LOGO_X, LOGO_Y + 2, { align: "center" });
+        }
+      } else {
+        // No logo — show initials in white circle
+        doc.setFillColor(255, 255, 255);
+        doc.circle(LOGO_X, LOGO_Y, LOGO_R, "F");
+        doc.setTextColor(...NAVY);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text((business.businessName || "B").substring(0, 2).toUpperCase(), LOGO_X, LOGO_Y + 2, { align: "center" });
+      }
+
+      // Business name + details (right of logo)
+      const TEXT_X = MARGIN + 24;
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(business.businessName || "Online Store", TEXT_X, 11);
+
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "normal");
+      // Build details line with correct field names from /api/business/{id}
+      const addressFull = [business.address, business.city, business.state, business.pincode]
+        .filter(Boolean).join(", ");
+      const detailParts = [
+        business.phoneNo ? `Ph: ${business.phoneNo}` : "",
+        business.email ? `Email: ${business.email}` : "",
+        gstNo ? `GSTIN: ${gstNo}` : "",
+        addressFull || "",
+      ].filter(Boolean);
+      // Print line 1: phone + email + GST
+      const line1 = detailParts.slice(0, 3).join("   |   ");
+      if (line1) doc.text(line1, TEXT_X, 19, { maxWidth: COL - 32 });
+      // Print line 2: address
+      const line2 = detailParts[3] || "";
+      if (line2) doc.text(line2, TEXT_X, 25, { maxWidth: COL - 32 });
+
+      // Current date — top-right of header banner (dd/mm/yyyy)
+      const today = new Date();
+      const todayStr = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(200, 210, 255);
+      doc.text(todayStr, PW - MARGIN, 9, { align: "right" });
+
+      // Amber underline
+      doc.setDrawColor(...AMBER);
+      doc.setLineWidth(1);
+      doc.line(0, 36, PW, 36);
+
+      y = 44;
+
+      // ── DATE RANGE STRIP ────────────────────────────────────────────────────
+      const grandTotal = reportOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+      doc.setFillColor(240, 243, 255);
+      doc.rect(MARGIN, y, COL, 10, "F");
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...NAVY);
+      const rangeLabel = (reportDateFrom || reportDateTo)
+        ? `Report Period: ${reportDateFrom ? fmt(new Date(reportDateFrom)) : "Start"} — ${reportDateTo ? fmt(new Date(reportDateTo)) : fmt(today)}`
+        : `Report Period: All Orders  (Generated: ${fmt(today)})`;
+      doc.text(rangeLabel, MARGIN + 4, y + 6.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...GREY);
+      doc.text(`Total Orders: ${ordersWithItems.length}`, PW - MARGIN, y + 6.5, { align: "right" });
+      y += 14;
+
+      ordersWithItems.forEach((order, idx) => {
+        // Page break check — need at least 55mm for the order block header
+        if (y > 240) { doc.addPage(); y = 18; }
+
+        // Order header strip — taller to show customer details
+        doc.setFillColor(...LIGHT);
+        doc.setDrawColor(...NAVY);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(MARGIN, y, COL, 30, 2, 2, "FD");
+
+        // Left accent bar
+        doc.setFillColor(...NAVY);
+        doc.roundedRect(MARGIN, y, 3, 30, 1, 1, "F");
+
+        // ── ORDER NUMBER (top-left, bold) ─────────────────────────────────────
+        doc.setTextColor(...NAVY);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.text(`#${idx + 1}  ${order.orderNumber || ""}`, MARGIN + 6, y + 7);
+
+        // ── CUSTOMER DETAILS (left, below order number) ────────────────────────
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...NAVY);
+        doc.text("Customer Name:", MARGIN + 6, y + 14);
+        doc.setFont("helvetica", "normal");
+        doc.text(order.customerName || "-", MARGIN + 42, y + 14);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Phone No:", MARGIN + 6, y + 20);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...GREY);
+        doc.text(order.customerPhone || "-", MARGIN + 25, y + 20);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...NAVY);
+        doc.text("Total Items:", MARGIN + 6, y + 26);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...GREY);
+        doc.text(`${order.totalItems ?? order.items.length}`, MARGIN + 30, y + 26);
+
+        // ── DATE & PAYMENT (right section) ────────────────────────────────────
+        const RIGHT_INFO_X = PW - MARGIN - 2;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        doc.setTextColor(...GREY);
+        doc.text(`Date: ${fmt(order.orderDate)}`, RIGHT_INFO_X, y + 20, { align: "right" });
+        doc.text(`Payment: ${order.paymentMode || "-"}`, RIGHT_INFO_X, y + 26, { align: "right" });
+
+        // ── STATUS BADGE (top-right) ───────────────────────────────────────────
+        const statusColor = {
+          COMPLETED: [16, 185, 129],
+          PENDING: [232, 150, 27],
+          PROCESSING: [62, 78, 150],
+          CANCELLED: [239, 68, 68],
+        }[order.status] || GREY;
+        doc.setFillColor(...statusColor);
+        doc.roundedRect(PW - MARGIN - 32, y + 4, 30, 9, 2, 2, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "bold");
+        doc.text(order.status || "", PW - MARGIN - 17, y + 10, { align: "center" });
+
+        y += 34;
+
+        // Items table
+        if (order.items.length > 0) {
+          // ── helper: number → Indian words ───────────────────────────────────
+          const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+            "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+            "Seventeen", "Eighteen", "Nineteen"];
+          const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+          const toWords = (n) => {
+            n = Math.round(n);
+            if (n === 0) return "Zero";
+            if (n < 20) return ones[n];
+            if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "");
+            if (n < 1000) return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + toWords(n % 100) : "");
+            if (n < 100000) return toWords(Math.floor(n / 1000)) + " Thousand" + (n % 1000 ? " " + toWords(n % 1000) : "");
+            if (n < 10000000) return toWords(Math.floor(n / 100000)) + " Lakh" + (n % 100000 ? " " + toWords(n % 100000) : "");
+            return toWords(Math.floor(n / 10000000)) + " Crore" + (n % 10000000 ? " " + toWords(n % 10000000) : "");
+          };
+          const amountInWords = (amt) => {
+            const rupees = Math.floor(amt);
+            const paise = Math.round((amt - rupees) * 100);
+            let words = "Rupees " + toWords(rupees);
+            if (paise > 0) words += " and " + toWords(paise) + " Paise";
+            return words + " Only";
+          };
+
+          // ── per-order totals ─────────────────────────────────────────────────
+          let orderTaxTotal = 0;
+          let orderDiscTotal = 0;
+          order.items.forEach(item => {
+            const base = (item.quantity || 0) * (item.sellingPrice || 0);
+            orderTaxTotal += base * (item.taxRate || 0) / 100;
+            orderDiscTotal += base * (item.discount || 0) / 100;
+          });
+          const orderGross = order.items.reduce((s, item) =>
+            s + (item.quantity || 0) * (item.sellingPrice || 0), 0);
+
+          autoTable(doc, {
+            startY: y,
+            margin: { left: MARGIN, right: MARGIN },
+            head: [["#", "Product Name", "Code", "Qty", "Tax (%)", "Disc (%)", "Unit Price"]],
+            body: order.items.map((item, i) => [
+              i + 1,
+              item.productName || "-",
+              item.productCode || "-",
+              item.quantity ?? "-",
+              `${item.taxRate ?? 0}%`,
+              `${item.discount ?? 0}%`,
+              cur(item.sellingPrice),
+            ]),
+            headStyles: {
+              fillColor: NAVY, textColor: 255,
+              fontSize: 7.5, fontStyle: "bold", cellPadding: 2.5,
+            },
+            bodyStyles: { fontSize: 7.5, cellPadding: 2, textColor: 50 },
+            alternateRowStyles: { fillColor: [249, 250, 255] },
+            columnStyles: {
+              0: { cellWidth: 10 },
+              1: { cellWidth: 65 },
+              2: { cellWidth: 30 },
+              3: { cellWidth: 13, halign: "center" },
+              4: { cellWidth: 20, halign: "center" },
+              5: { cellWidth: 20, halign: "center" },
+              6: { cellWidth: 24, halign: "right" },
+            },
+            tableLineColor: [220, 225, 240],
+            tableLineWidth: 0.2,
+          });
+          y = doc.lastAutoTable.finalY + 2;
+
+          // ── Stacked summary rows ─────────────────────────────────────────
+          const ROW_H = 8;
+          const RIGHT_X = PW - MARGIN;
+          const LABEL_X = PW - MARGIN - 60;
+          const summaryRows = [
+            { label: "Tax (in Rs):", value: cur(orderTaxTotal), bold: false, color: NAVY },
+            { label: "Discount (in Rs):", value: cur(orderDiscTotal), bold: false, color: NAVY },
+            { label: "Grand Total:", value: cur(order.totalAmount), bold: true, color: [16, 120, 50] },
+            { label: "Total in Words:", value: amountInWords(order.totalAmount || 0), bold: false, color: GREY, italic: true, fullWidth: true },
+          ];
+
+          summaryRows.forEach((row, ri) => {
+            if (y + ROW_H > 280) { doc.addPage(); y = 18; }
+
+            // alternating row background
+            doc.setFillColor(ri % 2 === 0 ? 245 : 240, ri % 2 === 0 ? 247 : 242, 255);
+            doc.rect(MARGIN, y, COL, ROW_H, "F");
+
+            doc.setFontSize(7.5);
+
+            if (row.fullWidth) {
+              // Total in Words: label + value on one line, full width
+              doc.setFont("helvetica", "bold");
+              doc.setTextColor(...NAVY);
+              doc.text(row.label, MARGIN + 4, y + 5.5);
+              doc.setFont("helvetica", "italic");
+              doc.setTextColor(...GREY);
+              doc.text(row.value, MARGIN + 38, y + 5.5, { maxWidth: COL - 42 });
+            } else {
+              doc.setFont("helvetica", row.bold ? "bold" : "normal");
+              doc.setTextColor(...NAVY);
+              doc.text(row.label, LABEL_X, y + 5.5);
+              doc.setFont("helvetica", row.bold ? "bold" : "normal");
+              doc.setTextColor(...row.color);
+              doc.text(row.value, RIGHT_X, y + 5.5, { align: "right" });
+            }
+
+            // bottom border line
+            doc.setDrawColor(220, 225, 240); doc.setLineWidth(0.2);
+            doc.line(MARGIN, y + ROW_H, PW - MARGIN, y + ROW_H);
+
+            y += ROW_H;
+          });
+          y += 6;
+
+        } else {
+          doc.setFontSize(8);
+          doc.setTextColor(...GREY);
+          doc.setFont("helvetica", "italic");
+          doc.text("No items recorded for this order.", MARGIN + 4, y + 4);
+          y += 10;
+        }
+
+        // Separator between orders
+        if (idx < ordersWithItems.length - 1) {
+          doc.setDrawColor(220, 225, 240);
+          doc.setLineWidth(0.3);
+          doc.setLineDashPattern([2, 2], 0);
+          doc.line(MARGIN, y, PW - MARGIN, y);
+          doc.setLineDashPattern([], 0);
+          y += 6;
+        }
+      });
+
+      // ── FOOTER on each page ─────────────────────────────────────────────────
+      const totalPages = doc.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFillColor(...NAVY);
+        doc.rect(0, 287, PW, 10, "F");
+        doc.setTextColor(200, 210, 255);
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.text(business.businessName || "Online Store", MARGIN, 293);
+        doc.text(`Page ${p} of ${totalPages}`, PW / 2, 293, { align: "center" });
+        doc.text(`Grand Total: ${cur(grandTotal)}`, PW - MARGIN, 293, { align: "right" });
+      }
+
+      // 4. Save
+      const dateStr = `${String(today.getDate()).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
+      doc.save(`Online_Orders_Report_${dateStr}.pdf`);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      alert("Failed to generate PDF report. Please try again.");
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  // ─── Print Single Order PDF ───────────────────────────────────────────────────
+  const handlePrintOrderPDF = async () => {
+    if (!viewOrder) return;
+    setOrderPrintLoading(true);
+    try {
+      // Fetch business info
+      const userId = localStorage.getItem("userId");
+      let business = {};
+      try { if (userId) business = await getBusinessSettings(userId); } catch (e) { }
+      const gstNo = business.gstNo || "";
+
+      // Fetch items (use already-loaded viewItems if present)
+      let items = viewItems;
+      if (!items || items.length === 0) {
+        try { items = await getOnlineOrderItems(viewOrder.id); } catch (e) { items = []; }
+      }
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const PW = 210, MARGIN = 14, COL = PW - MARGIN * 2;
+      const NAVY = [28, 47, 110], AMBER = [232, 150, 27], GREY = [108, 117, 125];
+
+      const fmt = (d) => { if (!d) return "-"; const dt = new Date(d); return `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}/${dt.getFullYear()}`; };
+      const cur = (v) => `Rs. ${(Number(v) || 0).toFixed(2)}`;
+
+      // Number to words helper
+      const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const toWords = (n) => { n = Math.round(n); if (n === 0) return "Zero"; if (n < 20) return ones[n]; if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : ""); if (n < 1000) return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + toWords(n % 100) : ""); if (n < 100000) return toWords(Math.floor(n / 1000)) + " Thousand" + (n % 1000 ? " " + toWords(n % 1000) : ""); if (n < 10000000) return toWords(Math.floor(n / 100000)) + " Lakh" + (n % 100000 ? " " + toWords(n % 100000) : ""); return toWords(Math.floor(n / 10000000)) + " Crore" + (n % 10000000 ? " " + toWords(n % 10000000) : ""); };
+      const amountInWords = (amt) => { const r = Math.floor(amt), p = Math.round((amt - r) * 100); let w = "Rupees " + toWords(r); if (p > 0) w += " and " + toWords(p) + " Paise"; return w + " Only"; };
+
+      // ── HEADER BANNER ───────────────────────────────────────────────────────
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, PW, 36, "F");
+      const LOGO_X = MARGIN + 10, LOGO_Y = 18, LOGO_R = 9;
+      if (business.logo) {
+        try {
+          doc.setFillColor(255, 255, 255); doc.circle(LOGO_X, LOGO_Y, LOGO_R, "F");
+          const ls = LOGO_R * 2 - 2;
+          doc.addImage(`data:image/jpeg;base64,${business.logo}`, "JPEG", LOGO_X - ls / 2, LOGO_Y - ls / 2, ls, ls);
+        } catch { doc.setFillColor(255, 255, 255); doc.circle(LOGO_X, LOGO_Y, LOGO_R, "F"); doc.setTextColor(...NAVY); doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text((business.businessName || "B").substring(0, 2).toUpperCase(), LOGO_X, LOGO_Y + 2, { align: "center" }); }
+      } else {
+        doc.setFillColor(255, 255, 255); doc.circle(LOGO_X, LOGO_Y, LOGO_R, "F"); doc.setTextColor(...NAVY); doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text((business.businessName || "B").substring(0, 2).toUpperCase(), LOGO_X, LOGO_Y + 2, { align: "center" });
+      }
+      const TX = MARGIN + 24;
+      doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont("helvetica", "bold");
+      doc.text(business.businessName || "Online Store", TX, 11);
+      doc.setFontSize(7.5); doc.setFont("helvetica", "normal");
+      const addr = [business.address, business.city, business.state, business.pincode].filter(Boolean).join(", ");
+      const line1 = [business.phoneNo ? `Ph: ${business.phoneNo}` : "", business.email ? `Email: ${business.email}` : "", gstNo ? `GSTIN: ${gstNo}` : ""].filter(Boolean).join("   |   ");
+      if (line1) doc.text(line1, TX, 20, { maxWidth: COL - 32 });
+      if (addr) doc.text(addr, TX, 26, { maxWidth: COL - 32 });
+      // Right side
+      doc.setFontSize(8.5); doc.setTextColor(200, 210, 255);
+      doc.text("ORDER RECEIPT", PW - MARGIN, 9, { align: "right" });
+      doc.text(`Order: ${viewOrder.orderNumber || "-"}`, PW - MARGIN, 15, { align: "right" });
+      doc.text(`Date: ${fmt(viewOrder.orderDate)}`, PW - MARGIN, 21, { align: "right" });
+      doc.text(`Status: ${viewOrder.status || "-"}`, PW - MARGIN, 27, { align: "right" });
+      doc.setDrawColor(...AMBER); doc.setLineWidth(1); doc.line(0, 36, PW, 36);
+
+      let y = 44;
+
+      // ── ORDER INFO GRID ─────────────────────────────────────────────────────
+      doc.setFillColor(245, 247, 255); doc.setDrawColor(...NAVY); doc.setLineWidth(0.3);
+      doc.roundedRect(MARGIN, y, COL, 20, 2, 2, "FD");
+      const col = COL / 4;
+      const infoItems = [
+        ["Customer", viewOrder.customerName || "-"],
+        ["Phone", viewOrder.customerPhone || "-"],
+        ["Payment", viewOrder.paymentMode || "-"],
+        ["Total Items", String(viewOrder.totalItems ?? items.length)],
+      ];
+      infoItems.forEach(([label, val], i) => {
+        const ix = MARGIN + i * col + 4;
+        doc.setFontSize(6.5); doc.setFont("helvetica", "normal"); doc.setTextColor(...GREY);
+        doc.text(label, ix, y + 6);
+        doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(28, 47, 110);
+        doc.text(val, ix, y + 14);
+      });
+      y += 26;
+
+      // ── ITEMS TABLE ──────────────────────────────────────────────────────────
+      let taxTotal = 0, discTotal = 0;
+      items.forEach(item => {
+        const base = (item.quantity || 0) * (item.sellingPrice || 0);
+        taxTotal += base * (item.taxRate || 0) / 100;
+        discTotal += base * (item.discount || 0) / 100;
+      });
+
+      autoTable(doc, {
+        startY: y,
+        margin: { left: MARGIN, right: MARGIN },
+        head: [["#", "Product Name", "Code", "Qty", "Tax (%)", "Disc (%)", "Unit Price"]],
+        body: items.map((item, i) => [
+          i + 1,
+          item.productName || "-",
+          item.productCode || "-",
+          item.quantity ?? "-",
+          `${item.taxRate ?? 0}%`,
+          `${item.discount ?? 0}%`,
+          cur(item.sellingPrice),
+        ]),
+        headStyles: { fillColor: NAVY, textColor: 255, fontSize: 7.5, fontStyle: "bold", cellPadding: 2.5 },
+        bodyStyles: { fontSize: 7.5, cellPadding: 2, textColor: 50 },
+        alternateRowStyles: { fillColor: [249, 250, 255] },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 65 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 13, halign: "center" },
+          4: { cellWidth: 20, halign: "center" },
+          5: { cellWidth: 20, halign: "center" },
+          6: { cellWidth: 24, halign: "right" },
+        },
+        tableLineColor: [220, 225, 240], tableLineWidth: 0.2,
+      });
+      y = doc.lastAutoTable.finalY + 2;
+
+      // ── Stacked summary rows ─────────────────────────────────────────────
+      const ROW_H = 8;
+      const RIGHT_X = PW - MARGIN;
+      const LABEL_X = PW - MARGIN - 60;
+      const summaryRows = [
+        { label: "Tax (in Rs):", value: cur(taxTotal), bold: false, color: NAVY },
+        { label: "Discount (in Rs):", value: cur(discTotal), bold: false, color: NAVY },
+        { label: "Grand Total:", value: cur(viewOrder.totalAmount), bold: true, color: [16, 120, 50] },
+        { label: "Total in Words:", value: amountInWords(viewOrder.totalAmount || 0), bold: false, color: GREY, italic: true, fullWidth: true },
+      ];
+
+      summaryRows.forEach((row, ri) => {
+        if (y + ROW_H > 280) { doc.addPage(); y = 18; }
+        doc.setFillColor(ri % 2 === 0 ? 245 : 240, ri % 2 === 0 ? 247 : 242, 255);
+        doc.rect(MARGIN, y, COL, ROW_H, "F");
+        doc.setFontSize(7.5);
+        if (row.fullWidth) {
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(...NAVY);
+          doc.text(row.label, MARGIN + 4, y + 5.5);
+          doc.setFont("helvetica", "italic");
+          doc.setTextColor(...GREY);
+          doc.text(row.value, MARGIN + 38, y + 5.5, { maxWidth: COL - 42 });
+        } else {
+          doc.setFont("helvetica", row.bold ? "bold" : "normal");
+          doc.setTextColor(...NAVY);
+          doc.text(row.label, LABEL_X, y + 5.5);
+          doc.setFont("helvetica", row.bold ? "bold" : "normal");
+          doc.setTextColor(...row.color);
+          doc.text(row.value, RIGHT_X, y + 5.5, { align: "right" });
+        }
+        doc.setDrawColor(220, 225, 240); doc.setLineWidth(0.2);
+        doc.line(MARGIN, y + ROW_H, PW - MARGIN, y + ROW_H);
+        y += ROW_H;
+      });
+      y += 4;
+
+      // ── TERMS & NOTES ────────────────────────────────────────────────────────
+      if (viewOrder.termsAndConditions || viewOrder.notes) {
+        doc.setFontSize(7.5); doc.setFont("helvetica", "bold"); doc.setTextColor(...NAVY);
+        if (viewOrder.termsAndConditions) {
+          doc.text("Terms & Conditions:", MARGIN, y + 5);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(80, 80, 80);
+          doc.text(viewOrder.termsAndConditions, MARGIN, y + 11, { maxWidth: COL });
+          y += 18;
+        }
+        if (viewOrder.notes) {
+          doc.setFontSize(7.5); doc.setFont("helvetica", "bold"); doc.setTextColor(...NAVY);
+          doc.text("Notes:", MARGIN, y + 5);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(80, 80, 80);
+          doc.text(viewOrder.notes, MARGIN, y + 11, { maxWidth: COL });
+          y += 18;
+        }
+      }
+
+      // ── PAGE FOOTER ──────────────────────────────────────────────────────────
+      const tp = doc.getNumberOfPages();
+      for (let p = 1; p <= tp; p++) {
+        doc.setPage(p);
+        doc.setFillColor(...NAVY); doc.rect(0, 287, PW, 10, "F");
+        doc.setTextColor(200, 210, 255); doc.setFontSize(7.5); doc.setFont("helvetica", "normal");
+        doc.text(business.businessName || "Online Store", MARGIN, 293);
+        doc.text(`Page ${p} of ${tp}`, PW / 2, 293, { align: "center" });
+        doc.text(cur(viewOrder.totalAmount), PW - MARGIN, 293, { align: "right" });
+      }
+
+      doc.save(`Order_${viewOrder.orderNumber || viewOrder.id}.pdf`);
+    } catch (err) {
+      console.error("Order PDF error:", err);
+      alert("Failed to generate PDF.");
+    } finally {
+      setOrderPrintLoading(false);
+    }
+  };
+
   // ─── Status Badge ─────────────────────────────────────────────────────────────
   const getStatusBadge = (status) => {
     const map = {
@@ -697,7 +1294,7 @@ function OnlineOrders() {
                   <label className="filter-label" style={{ visibility: "hidden" }}>.</label>
                   <button
                     className="filter-clear-btn"
-                    onClick={() => { setSearchQuery(""); setDateFilter("Today"); setStatusFilter("All Status"); setCustomDateFrom(""); setCustomDateTo(""); }}
+                    onClick={() => { setSearchQuery(""); setDateFilter("All Time"); setStatusFilter("All Status"); setCustomDateFrom(""); setCustomDateTo(""); }}
                   >
                     <i className="bi bi-x-circle-fill"></i> Clear All
                   </button>
@@ -713,7 +1310,95 @@ function OnlineOrders() {
               All Orders
               <span className="order-count-badge">{filteredOrders.length}</span>
             </h4>
+            <button
+              className="report-download-btn"
+              onClick={() => { setReportDateFrom(""); setReportDateTo(""); setShowReportModal(true); }}
+              disabled={filteredOrders.length === 0}
+              title="Download PDF Report"
+            >
+              <><FiDownload /> Report PDF</>
+            </button>
           </div>
+
+          {/* ── Report Date-Range Modal ── */}
+          {showReportModal && (
+            <div style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+              zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+              <div style={{
+                background: "#fff", borderRadius: 14, width: 380, boxShadow: "0 20px 60px rgba(0,0,0,0.25)"
+              }}>
+                {/* Header */}
+                <div style={{
+                  background: "linear-gradient(135deg,#3e4e96,#e8961b)",
+                  padding: "16px 22px", borderRadius: "14px 14px 0 0",
+                  display: "flex", justifyContent: "space-between", alignItems: "center"
+                }}>
+                  <h6 style={{ color: "#fff", margin: 0, fontWeight: 700 }}>
+                    <i className="bi bi-calendar-range"></i> Select Report Date Range
+                  </h6>
+                  <button
+                    onClick={() => setShowReportModal(false)}
+                    style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 16 }}
+                  >
+                    <FiX />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: "22px 24px" }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                      <i className="bi bi-calendar-event"></i> From Date
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control form-control-sm"
+                      value={reportDateFrom}
+                      max={reportDateTo || new Date().toISOString().split("T")[0]}
+                      onChange={e => setReportDateFrom(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ marginBottom: 22 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                      <i className="bi bi-calendar-check"></i> To Date
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control form-control-sm"
+                      value={reportDateTo}
+                      min={reportDateFrom}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={e => setReportDateTo(e.target.value)}
+                    />
+                  </div>
+                  <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 20, background: "#f8f9fa", padding: "8px 12px", borderRadius: 8 }}>
+                    <i className="bi bi-info-circle"></i> Leave both blank to include all orders (respects the current table filter).
+                  </p>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                    <button
+                      className="btn btn-outline-secondary btn-sm"
+                      onClick={() => setShowReportModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="report-download-btn"
+                      disabled={reportLoading}
+                      onClick={() => { setShowReportModal(false); handleDownloadReport(); }}
+                    >
+                      {reportLoading
+                        ? <><i className="bi bi-hourglass-split"></i> Generating...</>
+                        : <><FiDownload /> Generate PDF</>
+                      }
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="orders-table-card">
             <div className="table-header-row" style={{ gridTemplateColumns: "1fr 1.2fr 1.3fr 1fr 1fr 1.2fr 0.8fr 1fr" }}>
               <div className="header-cell"><i className="bi bi-calendar-event"></i> Date</div>
@@ -1182,7 +1867,23 @@ function OnlineOrders() {
                     </div>
                   )}
 
-                  <div style={{ textAlign: "right", marginTop: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
+                    <button
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        background: "linear-gradient(135deg,#3e4e96,#e8961b)",
+                        color: "#fff", border: "none", borderRadius: 8,
+                        padding: "8px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                        opacity: orderPrintLoading ? 0.7 : 1,
+                      }}
+                      onClick={handlePrintOrderPDF}
+                      disabled={orderPrintLoading || loadingItems}
+                    >
+                      {orderPrintLoading
+                        ? <><i className="bi bi-hourglass-split"></i> Generating...</>
+                        : <><FiDownload /> Download PDF</>
+                      }
+                    </button>
                     <button
                       className="btn btn-outline-secondary"
                       onClick={() => { setShowViewModal(false); setViewOrder(null); setViewItems([]); }}
