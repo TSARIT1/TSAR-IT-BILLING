@@ -30,7 +30,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/customers")
 
-@CrossOrigin(origins = "*") // Allow frontend access
+@CrossOrigin(originPatterns = "*") // Allow frontend access
 public class CustomerController {
 
     private final CustomerRepository customerRepository;
@@ -72,7 +72,15 @@ public class CustomerController {
         customer.setPhone(customerDTO.getPhone());
         customer.setEmail(customerDTO.getEmail());
         customer.setCustomerType(customerDTO.getCustomerType());
-        customer.setStatus(Customer.Status.valueOf(customerDTO.getStatus()));
+        if (customerDTO.getStatus() != null && !customerDTO.getStatus().isBlank()) {
+            try {
+                customer.setStatus(Customer.Status.valueOf(customerDTO.getStatus().toUpperCase()));
+            } catch (Exception e) {
+                customer.setStatus(Customer.Status.ACTIVE);
+            }
+        } else {
+            customer.setStatus(Customer.Status.ACTIVE);
+        }
         customer.setStreetAddress(customerDTO.getStreetAddress());
         customer.setCity(customerDTO.getCity());
         customer.setState(customerDTO.getState());

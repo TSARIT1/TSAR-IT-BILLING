@@ -95,12 +95,12 @@ public class Product {
 
     // FK → godowns.godown_id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "godown_id", nullable = false)
+    @JoinColumn(name = "godown_id", nullable = true)
     private Godown godown;
 
     // FK → user_business.userBusiness_id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_business_id", nullable = false)
+    @JoinColumn(name = "user_business_id", nullable = true)
     private UserBusiness userBusiness;
 
     /* ================= LIFECYCLE ================= */

@@ -86,6 +86,23 @@ public class NotificationService {
         String encodedMessage = URLEncoder.encode(messageText, StandardCharsets.UTF_8);
         String whatsappUrl = "https://api.whatsapp.com/send?phone=" + cleanPhone + "&text=" + encodedMessage;
 
+        // Real-time dispatch to WhatsApp Bot Hub on port 9050
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            Map<String, String> waPayload = Map.of(
+                "phone", cleanPhone,
+                "purpose", "Invoice " + invoiceNo,
+                "otp", String.format("₹%.2f", amount)
+            );
+            org.springframework.http.HttpEntity<Map<String, String>> entity = new org.springframework.http.HttpEntity<>(waPayload, headers);
+            restTemplate.postForEntity("http://127.0.0.1:9050/otp/send", entity, Map.class);
+            response.put("botDispatched", true);
+        } catch (Exception e) {
+            response.put("botDispatched", false);
+        }
+
         response.put("success", true);
         response.put("invoiceId", invoiceId);
         response.put("phone", cleanPhone);

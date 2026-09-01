@@ -9,7 +9,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai-assistant")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class AIAssistantController {
 
     @Autowired

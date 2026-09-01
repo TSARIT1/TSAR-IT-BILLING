@@ -27,7 +27,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class ProductController {
 
     @Autowired
@@ -58,20 +58,32 @@ public class ProductController {
         product.setBarcode((String) request.get("barcode"));
         product.setDescription((String) request.get("description"));
 
-        product.setPurchasePrice(((Number) request.get("purchasePrice")).doubleValue());
-        product.setSellingPrice(((Number) request.get("sellingPrice")).doubleValue());
+        Number purchasePrice = (Number) request.get("purchasePrice");
+        product.setPurchasePrice(purchasePrice != null ? purchasePrice.doubleValue() : 0.0);
 
-        Integer totalStock = ((Number) request.get("stockQuantity")).intValue();
+        Number sellingPrice = (Number) request.get("sellingPrice");
+        product.setSellingPrice(sellingPrice != null ? sellingPrice.doubleValue() : 0.0);
 
-        product.setTotalStock(totalStock);
-        product.setRemainingStock(totalStock);
-        // product.setTotalStock(((Number) request.get("stockQuantity")).intValue());
-        product.setMinStockLevel(((Number) request.get("minStockLevel")).intValue());
-        product.setTaxRate(((Number) request.get("taxRate")).doubleValue());
-        product.setDiscount(((Number) request.get("discount")).doubleValue());
+        Number stockQty = (Number) (request.get("stockQuantity") != null ? request.get("stockQuantity") : request.get("currentStock"));
+        int stock = stockQty != null ? stockQty.intValue() : 0;
+        product.setTotalStock(stock);
+        product.setRemainingStock(stock);
 
-        product.setExpiryDate(
-                LocalDate.parse((String) request.get("expiryDate")));
+        Number minStock = (Number) request.get("minStockLevel");
+        product.setMinStockLevel(minStock != null ? minStock.intValue() : 0);
+
+        Number tax = (Number) request.get("taxRate");
+        product.setTaxRate(tax != null ? tax.doubleValue() : 0.0);
+
+        Number discount = (Number) request.get("discount");
+        product.setDiscount(discount != null ? discount.doubleValue() : 0.0);
+
+        String expiryStr = (String) request.get("expiryDate");
+        if (expiryStr != null && !expiryStr.isBlank()) {
+            try {
+                product.setExpiryDate(LocalDate.parse(expiryStr));
+            } catch (Exception ignored) {}
+        }
 
         product.setManufacturerNameOrCode((String) request.get("manufacturerName"));
         product.setSupplierNameOrCode((String) request.get("supplierName"));
@@ -80,14 +92,14 @@ public class ProductController {
         String godownId = (String) request.get("godownId");
         String userBusinessId = (String) request.get("userBusinessId");
 
-        Godown godown = godownRepository.findById(godownId)
-                .orElseThrow(() -> new RuntimeException("Godown not found"));
+        if (godownId != null && !godownId.isBlank()) {
+            godownRepository.findById(godownId).ifPresent(product::setGodown);
+        }
 
-        UserBusiness ub = userBusinessRepository.findById(userBusinessId)
-                .orElseThrow(() -> new RuntimeException("Business not found"));
+        if (userBusinessId != null && !userBusinessId.isBlank()) {
+            userBusinessRepository.findById(userBusinessId).ifPresent(product::setUserBusiness);
+        }
 
-        product.setGodown(godown);
-        product.setUserBusiness(ub);
         product.setActive(true);
         product.setDeleted(false);
 

@@ -7,7 +7,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin(origins = "http://localhost:3000/") // Allow frontend access
+@CrossOrigin(originPatterns = "*") // Allow frontend access
 public class DashboardController {
     @Autowired
     private SaleRepository saleRepository;

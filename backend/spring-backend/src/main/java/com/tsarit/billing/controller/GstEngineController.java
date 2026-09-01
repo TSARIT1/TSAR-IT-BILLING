@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/gst-engine")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class GstEngineController {
 
     @Autowired

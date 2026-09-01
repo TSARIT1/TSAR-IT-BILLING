@@ -27,7 +27,7 @@ import com.tsarit.billing.service.BusinessService;
 
 @RestController
 @RequestMapping("/api/business")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class BusinessController {
 
         @Autowired

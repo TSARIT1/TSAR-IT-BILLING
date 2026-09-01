@@ -8,6 +8,11 @@ import com.tsarit.billing.repository.InvoiceRepository;
 import com.tsarit.billing.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -119,8 +124,37 @@ public class AIAssistantService {
             response.put("answer", "TSAR IT Billing supports automated WhatsApp Invoice Dispatch and bulk Promotional SMS campaigns. Invoices can be shared instantly with payment links directly to customer WhatsApp numbers.");
             response.put("actionLink", "/sms-promotion");
         } else {
-            response.put("intent", "GENERAL_ASSISTANT");
-            response.put("answer", "I can help you analyze Sales Revenue, Top Customers, Low Stock Reorders, Outstanding Receivables, GST Liability, Profit & Loss, and WhatsApp billing bot. Try asking: 'What are my pending dues?' or 'How much did we sell this month?'");
+            response.put("intent", "RAKI_AI_LLM");
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("model", "raki-master:latest");
+                payload.put("messages", List.of(
+                    Map.of("role", "system", "content", "You are RAKI AI, an intelligent business and GST billing copilot for TSAR IT Billing. Provide concise, expert, practical advice."),
+                    Map.of("role", "user", "content", question)
+                ));
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+                ResponseEntity<Map> llmRes = restTemplate.postForEntity("http://127.0.0.1:8000/v1/chat/completions", entity, Map.class);
+                if (llmRes.getStatusCode().is2xxSuccessful() && llmRes.getBody() != null) {
+                    List<?> choices = (List<?>) llmRes.getBody().get("choices");
+                    if (choices != null && !choices.isEmpty()) {
+                        Map<?, ?> firstChoice = (Map<?, ?>) choices.get(0);
+                        Map<?, ?> msg = (Map<?, ?>) firstChoice.get("message");
+                        if (msg != null && msg.get("content") != null) {
+                            response.put("answer", msg.get("content").toString());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("[RAKI AI ENGINE CALL] " + e.getMessage());
+            }
+
+            if (!response.containsKey("answer")) {
+                response.put("answer", "I can help you analyze Sales Revenue, Top Customers, Low Stock Reorders, Outstanding Receivables, GST Liability, Profit & Loss, and WhatsApp billing bot. Try asking: 'What are my pending dues?' or 'How much did we sell this month?'");
+            }
         }
 
         return response;

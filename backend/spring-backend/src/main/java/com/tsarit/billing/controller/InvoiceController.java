@@ -45,7 +45,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/invoices")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class InvoiceController {
 
     @Autowired
@@ -135,21 +135,23 @@ public class InvoiceController {
             InvoiceItems item = new InvoiceItems();
             item.setItemNo(dto.getItemNo());
             item.setProduct(product);
-            item.setItemName(product.getProductName());
-            item.setQty(dto.getQty());
-            item.setPrice(dto.getPrice());
-            item.setDiscount(dto.getDiscount());
-            item.setTax(dto.getTax());
-            item.setTotalLineAmount(dto.getTotalLineAmount());
+            item.setItemName(dto.getItemName() != null ? dto.getItemName() : product.getProductName());
+            item.setQty(dto.getQty() != null ? dto.getQty() : 1);
+            item.setPrice(dto.getPrice() != null ? dto.getPrice() : product.getSellingPrice());
+            item.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
+            item.setTax(dto.getTax() != null ? dto.getTax() : (product.getTaxRate() != null ? product.getTaxRate() : 0.0));
+            item.setTotalLineAmount(dto.getTotalLineAmount() != null ? dto.getTotalLineAmount() : (item.getQty() * item.getPrice()));
 
             item.setInvoice(savedInvoice); // foreign key setup
 
             itemRepo.save(item);
         }
-        // CREATE SALE FROM INVOICE
-        // saleService.createSaleFromInvoice(savedInvoice.getInvoiceId());
 
-        return ResponseEntity.ok("Invoice created successfully.");
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "Invoice created successfully");
+        result.put("invoiceId", savedInvoice.getInvoiceId());
+        result.put("totalAmount", savedInvoice.getTotalAmount());
+        return ResponseEntity.ok(result);
     }
 
     // Get invoices by user ID

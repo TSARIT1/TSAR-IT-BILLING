@@ -19,7 +19,7 @@
 //
 //@RestController
 //@RequestMapping("/api/user-business")
-//@CrossOrigin(origins = "*")
+//@CrossOrigin(originPatterns = "*")
 //public class UserBusinessController {
 //
 //    @Autowired

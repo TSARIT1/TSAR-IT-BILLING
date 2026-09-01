@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/purchase-returns")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class PurchaseReturnController {
 
     @Autowired

@@ -15,7 +15,7 @@
 //
 //@RestController
 //@RequestMapping("/api/gst")
-//@CrossOrigin(origins = "*")
+//@CrossOrigin(originPatterns = "*")
 //public class GstController {
 //
 //    @Autowired
