@@ -72,6 +72,19 @@ fi
 # 4. Configure Host Nginx
 echo "[3/6] Configuring Nginx reverse proxy for ${DOMAIN}..."
 
+# Remove old conflicting SmartQR or legacy billing configurations
+rm -f /etc/nginx/sites-enabled/*billing*
+rm -f /etc/nginx/sites-enabled/*smartqr*
+
+# Ensure SSL helper files exist
+if [ ! -f "/etc/letsencrypt/options-ssl-nginx.conf" ]; then
+    mkdir -p /etc/letsencrypt
+    curl -sSL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf -o /etc/letsencrypt/options-ssl-nginx.conf || true
+fi
+if [ ! -f "/etc/letsencrypt/ssl-dhparams.pem" ]; then
+    openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048 || true
+fi
+
 # Initial HTTP config to allow Certbot ACME challenge
 cat <<EOF > /etc/nginx/sites-available/${DOMAIN}
 server {
