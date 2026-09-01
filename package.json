@@ -15,10 +15,11 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "cmd /c start-project.bat",
+    "start:backend": "cd backend/spring-backend && mvn spring-boot:run",
+    "start:frontend": "cd frontend && npm start",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "cd frontend && npm test"
   },
   "eslintConfig": {
     "extends": [

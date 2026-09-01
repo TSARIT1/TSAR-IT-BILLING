@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
+import PortalLayout from "./PortalLayout";
 import "./dashboard.css";
 import "./createPaymentIn.css";
 import { FiArrowLeft, FiSettings, FiSave, FiX } from "react-icons/fi";
@@ -49,11 +48,9 @@ function CreatePaymentIn() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content create-payment" style={{ marginTop: "2%" }}>
+    <PortalLayout title="Create Payment In">
+      <div className="create-payment-in-page-container animate-fade-in">
+        <div className="dashboard-content create-payment" style={{ marginTop: "1rem" }}>
           {/* Enhanced Header with Icons */}
           <div className="payment-header">
             <div className="left">
@@ -267,7 +264,7 @@ function CreatePaymentIn() {
           </div>
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

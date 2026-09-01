@@ -19,14 +19,27 @@ import {
   BsBoxSeam,
   BsFileText,
   BsFileEarmarkPdf,
-  BsDownload,
-  BsFileEarmarkSpreadsheet
+  BsFileEarmarkSpreadsheet,
+  BsArrowLeftRight
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../godown.css";
-import { createGodown, getGodowns, getGodownById, updateGodown, deleteGodown, createProduct, getProductsByGodown, updateProduct, deleteProduct, downloadGodownReport } from "../../services/api";
+import { 
+  createGodown, 
+  getGodowns, 
+  getGodownById, 
+  updateGodown, 
+  deleteGodown, 
+  createProduct, 
+  getProductsByGodown, 
+  updateProduct, 
+  deleteProduct, 
+  downloadGodownReport,
+  createWarehouseTransfer,
+  getWarehouseTransfers
+} from "../../services/api";
+import Swal from "sweetalert2";
 
 function Godown() {
   const navigate = useNavigate();
@@ -767,11 +780,8 @@ function Godown() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Multi-Godown Warehouse Hub">
+      <div className="godown-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="godown-page-header">
@@ -853,6 +863,69 @@ function Godown() {
                     </div>
                   )}
                 </div>
+                <button 
+                  className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 px-3 py-2 rounded-3 fw-bold" 
+                  onClick={async () => {
+                    if (godowns.length < 2) {
+                      Swal.fire("Minimum 2 Godowns Required", "You need at least 2 godown warehouses to initiate an inter-facility transfer.", "info");
+                      return;
+                    }
+                    const { value: formValues } = await Swal.fire({
+                      title: "Inter-Godown Stock Transfer Challan",
+                      html: `
+                        <label class="swal2-label text-start d-block mb-1 small fw-bold">From Source Godown:</label>
+                        <select id="swal-trf-from" class="swal2-select w-100 mb-2">
+                          ${godowns.map(g => `<option value="${g.godownId}">${g.godownName} (${g.city || 'Location'})</option>`).join('')}
+                        </select>
+                        <label class="swal2-label text-start d-block mb-1 small fw-bold">To Destination Godown:</label>
+                        <select id="swal-trf-to" class="swal2-select w-100 mb-2">
+                          ${godowns.map(g => `<option value="${g.godownId}">${g.godownName} (${g.city || 'Location'})</option>`).join('')}
+                        </select>
+                        <input id="swal-trf-product" class="swal2-input" placeholder="Product Name / Code">
+                        <input id="swal-trf-qty" type="number" class="swal2-input" placeholder="Transfer Quantity Units">
+                        <input id="swal-trf-vehicle" class="swal2-input" placeholder="Dispatch Vehicle Number (e.g. TS09EA4412)">
+                      `,
+                      focusConfirm: false,
+                      showCancelButton: true,
+                      confirmButtonText: "Issue Transfer Challan",
+                      preConfirm: () => {
+                        const fromId = document.getElementById('swal-trf-from').value;
+                        const toId = document.getElementById('swal-trf-to').value;
+                        if (fromId === toId) {
+                          Swal.showValidationMessage("Source and destination godowns cannot be identical.");
+                          return false;
+                        }
+                        const fromG = godowns.find(g => g.godownId === fromId);
+                        const toG = godowns.find(g => g.godownId === toId);
+                        return {
+                          fromGodownId: fromId,
+                          fromGodownName: fromG ? fromG.godownName : "Main Warehouse",
+                          toGodownId: toId,
+                          toGodownName: toG ? toG.godownName : "Secondary Warehouse",
+                          productName: document.getElementById('swal-trf-product').value || "Inventory Item",
+                          quantity: document.getElementById('swal-trf-qty').value || 10,
+                          vehicleNumber: document.getElementById('swal-trf-vehicle').value || "TS09EA1234",
+                          notes: "Standard Inter-Godown Stock Transfer"
+                        };
+                      }
+                    });
+
+                    if (formValues) {
+                      try {
+                        await createWarehouseTransfer(formValues);
+                        Swal.fire({
+                          icon: "success",
+                          title: "Transfer Challan Generated!",
+                          text: `Stock dispatched from ${formValues.fromGodownName} to ${formValues.toGodownName} under vehicle ${formValues.vehicleNumber}.`
+                        });
+                      } catch (e) {
+                        Swal.fire("Error", "Could not process stock transfer.", "error");
+                      }
+                    }
+                  }}
+                >
+                  <BsArrowLeftRight /> Transfer Stock
+                </button>
                 <button className="godown-add-btn" onClick={() => setShowModal(true)}>
                   <BsPlus /> Add Godown
                 </button>
@@ -1616,8 +1689,7 @@ function Godown() {
             </div>
           )}
         </div>
-      </div>
-    </>
+    </PortalLayout>
   );
 }
 

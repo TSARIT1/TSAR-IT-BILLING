@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../expenses.css";
 import { FiSearch, FiDownload, FiFilter } from "react-icons/fi";
@@ -14,13 +13,8 @@ function Expenses() {
   const [categoryFilter, setCategoryFilter] = useState("All Expenses Categories");
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content expenses-page" style={{ marginTop: "2%" }}>
+    <PortalLayout title="Business Expenses Tracker">
+      <div className="expenses-page-container animate-fade-in">
 
           {/* Enhanced Header */}
           <div className="expenses-header">
@@ -189,11 +183,9 @@ function Expenses() {
               </button>
             </div>
           </div>
-
         </div>
-      </div>
-    </>
-  );
-}
+      </PortalLayout>
+    );
+  }
 
-export default Expenses;
+  export default Expenses;

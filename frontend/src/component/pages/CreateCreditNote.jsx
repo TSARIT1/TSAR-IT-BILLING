@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BsQrCodeScan } from "react-icons/bs";
+import "../dashboard.css";
 import "../allPart.css";
 
-export default function CreateCreditNote() {
+function CreateCreditNote() {
   const navigate = useNavigate();
 
   const [noteNo, setNoteNo] = useState(1);
@@ -144,11 +144,9 @@ export default function CreateCreditNote() {
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content create-credit" style={{ marginTop: "5%" }}>
+    <PortalLayout title="Create Credit Note">
+      <div className="create-credit-note-page-container animate-fade-in">
+        <div className="dashboard-content create-credit" style={{ marginTop: "1rem" }}>
           <div className="create-topbar">
             <div className="left">
               <Link to="/credit-note"><FiArrowLeft className="back" /></Link>
@@ -329,6 +327,8 @@ export default function CreateCreditNote() {
           )}
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
+
+export default CreateCreditNote;

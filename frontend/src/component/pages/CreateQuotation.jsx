@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../createQuotation.css";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
@@ -154,10 +153,8 @@ function CreateQuotation() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
+    <PortalLayout title="Create Quotation / Estimate">
+      <div className="create-quotation-page-container animate-fade-in">
         <div className="dashboard-content create-quotation">
           <div className="quotation-top-bar">
             <div className="left-bar">
@@ -455,7 +452,7 @@ function CreateQuotation() {
           )}
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

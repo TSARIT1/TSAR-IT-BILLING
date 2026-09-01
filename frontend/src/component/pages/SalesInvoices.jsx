@@ -26,12 +26,12 @@ import {
   BsFileEarmarkPdf,
   BsFileEarmarkSpreadsheet
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesInvoicesList.css";
 import { Link } from "react-router-dom";
 import { getSales, markSaleAsPaid, getSaleItems, downloadSalesSlip } from "../../services/api";
+import { printEnterpriseInvoice, exportInvoiceToWord, exportInvoicesToExcel } from "../../utils/invoicePrintUtil";
 
 function SalesInvoices() {
   const [invoices, setInvoices] = useState([]);
@@ -932,11 +932,8 @@ function SalesInvoices() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Sales Invoices">
+      <div className="sales-invoices-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="sales-invoices-page-header">
@@ -1320,8 +1317,6 @@ function SalesInvoices() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
 
       {/* View Items Modal */}
       {showItemsModal && selectedSale && (
@@ -1491,37 +1486,75 @@ function SalesInvoices() {
                   </table>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={handleDownloadSlip}
-                  disabled={loadingItems || saleItems.length === 0}
-                  style={{ marginRight: '10px' }}
-                >
-                  <BsDownload /> Download Slip
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handlePrintPDF}
-                  disabled={loadingItems || saleItems.length === 0}
-                >
-                  <BsPrinter /> Print / PDF
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCloseModal}
-                >
-                  <BsX /> Close
-                </button>
+              <div className="modal-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="small fw-bold text-muted">Print Size:</span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => printEnterpriseInvoice({ invoice: selectedSale, items: saleItems, printSize: "A4" })}
+                    disabled={loadingItems || saleItems.length === 0}
+                  >
+                    <BsPrinter className="me-1" /> A4 GST Tax Invoice
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => printEnterpriseInvoice({ invoice: selectedSale, items: saleItems, printSize: "A5" })}
+                    disabled={loadingItems || saleItems.length === 0}
+                  >
+                    A5 Half
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => printEnterpriseInvoice({ invoice: selectedSale, items: saleItems, printSize: "80mm" })}
+                    disabled={loadingItems || saleItems.length === 0}
+                  >
+                    80mm Thermal
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => printEnterpriseInvoice({ invoice: selectedSale, items: saleItems, printSize: "58mm" })}
+                    disabled={loadingItems || saleItems.length === 0}
+                  >
+                    58mm POS
+                  </button>
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-info"
+                    onClick={() => exportInvoiceToWord(selectedSale, saleItems)}
+                    disabled={loadingItems || saleItems.length === 0}
+                  >
+                    <BsFileEarmarkText className="me-1" /> Word (.doc)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-success"
+                    onClick={() => exportInvoicesToExcel([selectedSale], `Invoice_${selectedSale.invoiceId}.csv`)}
+                    disabled={loadingItems || saleItems.length === 0}
+                  >
+                    <BsFileEarmarkSpreadsheet className="me-1" /> Excel (.csv)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    onClick={handleCloseModal}
+                  >
+                    <BsX /> Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
-    </>
+      </div>
+    </PortalLayout>
   );
 }
 

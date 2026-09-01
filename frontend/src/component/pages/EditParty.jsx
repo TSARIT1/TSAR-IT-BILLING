@@ -13,13 +13,13 @@ import {
   BsCalendar3,
   BsPerson
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "../dashboard.css";
 import "../editParty.css";
 import { createCustomer, getCustomerById, updateCustomer } from "../../services/api";
 
-export default function EditParty() {
+function EditParty() {
   const navigate = useNavigate();
   const { id } = useParams(); // Get customer ID from URL
   const isEditMode = Boolean(id); // Determine if we're editing or creating
@@ -220,11 +220,9 @@ export default function EditParty() {
   };
 
   return (
-    <>
-      <Navbar />
-      <Sidebar />
-
-      <div className="edit-party-container">
+    <PortalLayout title={isEditMode ? 'Edit Party Profile' : 'Add New Party'}>
+      <div className="edit-party-page-wrapper animate-fade-in">
+        <div className="edit-party-container">
 
         <div className="page-header">
           <h2 className="page-title">
@@ -582,6 +580,9 @@ export default function EditParty() {
           </form>
         </div>
       </div>
-    </>
+      </div>
+    </PortalLayout>
   );
 }
+
+export default EditParty;

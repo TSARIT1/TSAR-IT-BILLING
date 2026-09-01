@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import "../dashboard.css";
@@ -59,12 +58,8 @@ function CreateDebitNote() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dn-layout">
-        <Sidebar />
-
+    <PortalLayout title="Create Debit Note">
+      <div className="create-debit-note-page-container animate-fade-in">
         <div className="dn-main">
           <div className="dn-wrap">
 
@@ -190,7 +185,7 @@ function CreateDebitNote() {
           </div>
         </div>
       )}
-    </>
+    </PortalLayout>
   );
 }
 

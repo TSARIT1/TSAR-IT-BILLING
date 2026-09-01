@@ -21,8 +21,7 @@ import {
   BsSearch,
   BsPersonPlus
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesInvoice.css";
 import { Link } from "react-router-dom";
@@ -50,6 +49,16 @@ function CreateSalesInvoice() {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all"); // all, sold, notSold
+
+  // Transport & E-Way Bill Details (Indian Logistics / Waybills)
+  const [showTransportDetails, setShowTransportDetails] = useState(false);
+  const [ewayBillNo, setEwayBillNo] = useState("");
+  const [vehicleNo, setVehicleNo] = useState("");
+  const [transporterId, setTransporterId] = useState("");
+  const [distanceKm, setDistanceKm] = useState("");
+  const [lrNumber, setLrNumber] = useState("");
+  const [dispatchFrom, setDispatchFrom] = useState("Main Godown / Hub");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -618,11 +627,8 @@ function CreateSalesInvoice() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Create Sales Invoice">
+      <div className="create-sales-invoice-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="invoice-page-header">
@@ -888,6 +894,86 @@ function CreateSalesInvoice() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Transport, Logistics & E-Way Bill Section (Indian Waybills & Logistics) */}
+            <div className="invoice-form-section" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '15px', marginBottom: '20px' }}>
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h5 className="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                  🚛 Transport & E-Way Bill Details <span className="badge bg-secondary-subtle text-secondary small fw-normal">Optional / Logistics</span>
+                </h5>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-primary"
+                  onClick={() => setShowTransportDetails(!showTransportDetails)}
+                >
+                  {showTransportDetails ? "▲ Hide Transport Fields" : "▼ Add Vehicle / E-Way Bill / LR"}
+                </button>
+              </div>
+
+              {showTransportDetails && (
+                <div className="row g-3 mt-1 animate-fade-in">
+                  <div className="col-md-4">
+                    <label className="small text-muted fw-bold">E-Way Bill Number</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      placeholder="12-digit EWB (e.g. 231004567891)"
+                      value={ewayBillNo}
+                      onChange={(e) => setEwayBillNo(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="small text-muted fw-bold">Vehicle Number</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      placeholder="e.g. AP 04 TX 4567"
+                      value={vehicleNo}
+                      onChange={(e) => setVehicleNo(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="small text-muted fw-bold">LR / Bilty / Consignment No</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      placeholder="e.g. LR-9842"
+                      value={lrNumber}
+                      onChange={(e) => setLrNumber(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="small text-muted fw-bold">Transporter ID / TRANSIN</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      placeholder="15-digit GSTIN / TRANSIN"
+                      value={transporterId}
+                      onChange={(e) => setTransporterId(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="small text-muted fw-bold">Approx Distance (KM)</label>
+                    <input
+                      type="number"
+                      className="form-control form-control-sm"
+                      placeholder="Distance in KM"
+                      value={distanceKm}
+                      onChange={(e) => setDistanceKm(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="small text-muted fw-bold">Dispatch From Godown</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      value={dispatchFrom}
+                      onChange={(e) => setDispatchFrom(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Items Section */}
@@ -1168,8 +1254,7 @@ function CreateSalesInvoice() {
             </div>
           )}
         </div>
-      </div>
-    </>
+    </PortalLayout>
   );
 }
 

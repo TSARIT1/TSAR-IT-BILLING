@@ -1,158 +1,227 @@
 import React, { useState } from "react";
-import "../login.css";
 import { useNavigate, Link } from "react-router-dom";
+import { 
+  BsShieldLockFill, 
+  BsEnvelopeFill, 
+  BsKeyFill, 
+  BsEyeFill, 
+  BsEyeSlashFill, 
+  BsArrowRight,
+  BsCheckCircleFill,
+  BsRocketTakeoffFill,
+  BsReceiptCutoff
+} from "react-icons/bs";
 import Navbar from "../Navbar";
 import { loginUser } from "../../services/api";
 import Swal from "sweetalert2";
+import "../login.css";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     password: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setErrorMsg(""); // Clear error when user types
-  };
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      Swal.fire({
-        icon: "warning",
-        title: "Missing Fields",
-        text: "Please enter email and password!",
-      });
-      return;
-    }
-
-    Swal.fire({
-      icon: "success",
-      title: "Login Successful!",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1500);
+    setErrorMsg("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your login logic here (API call)
-    try {
-      // 1. Call Backend
-      const response = await loginUser(formData);
-      console.log("FULL LOGIN API RESPONSE => ", response);
-
-      // 2. Save Token/User to LocalStorage (Adjust based on your Spring Boot response)
-      // Example: If Spring Boot returns { token: "abc", user: {...} }
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-      }
-      if (response.user) {
-        localStorage.setItem("user", JSON.stringify(response.user));
-      }
-      // Save userId separately
-      if (response.userId) {
-        localStorage.setItem("userId", response.userId);
-        console.log("User ID Stored:", response.userId);
-      } else {
-        console.error("ERROR: userId not found in response");
-      }
-      // 3. Redirect to Dashboard
-      navigate("/dashboard"); // Or navigate("/dashboard")
-
-    } catch (error) {
-      console.error("Login Failed:", error);
-      setErrorMsg("Invalid username or password.");
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setErrorMsg("Please enter both email/mobile and password.");
+      return;
     }
-    console.log("Login Data:", formData);
 
-    // For demo purposes, navigate to dashboard
-    // navigate("/dashboard");
+    setLoading(true);
+    try {
+      const response = await loginUser(formData);
+
+      if (response && response.token) {
+        localStorage.setItem("token", response.token);
+        if (response.user) {
+          localStorage.setItem("user", JSON.stringify(response.user));
+        }
+        if (response.userId) {
+          localStorage.setItem("userId", response.userId);
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Login Successful",
+          text: `Welcome back to TSAR IT Billing!`,
+          timer: 1200,
+          showConfirmButton: false
+        });
+
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1200);
+      } else {
+        setErrorMsg("Authentication failed. Please check your credentials.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      // api.js throws error.response.data directly (not the full Axios error)
+      // so err IS the data object — access .error or .message directly
+      const serverMsg = (err && (err.error || err.message)) || "Invalid email/mobile or password. Please try again.";
+      setErrorMsg(serverMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
+    <div className="auth-page-container">
       <Navbar />
-      <div className="login-container">
 
-        {/* LEFT SIDE - Branding & Theme */}
-        <div className="login-banner">
-          <div className="banner-content">
-            <h1>Welcome Back!</h1>
-            <p>
-              Manage your Invoices, Inventory, and GST Billing all in one place.
+      <div className="auth-split-wrapper">
+        {/* Left Side: Brand Showcase */}
+        <div className="auth-brand-side">
+          <div className="brand-side-content">
+            <div className="brand-pill">
+              <BsRocketTakeoffFill className="text-warning me-2" />
+              <span>TSAR IT Enterprise Billing</span>
+            </div>
+
+            <h1 className="brand-heading">
+              Manage GST Bills, Stock & Payroll with Complete Precision
+            </h1>
+
+            <p className="brand-subtext">
+              Log in to access your business ledger, multi-godown inventory, POS terminals, and audit-ready tax reports.
             </p>
-            {/* You can add an <img> tag here for a billing illustration */}
-            <div className="decoration-circle"></div>
+
+            <div className="brand-feature-list">
+              <div className="brand-feature-item">
+                <BsCheckCircleFill className="text-success fs-5" />
+                <div>
+                  <strong>GST Compliant Invoicing</strong>
+                  <div className="text-muted small">Automatic tax calculations & PDF exports</div>
+                </div>
+              </div>
+
+              <div className="brand-feature-item">
+                <BsCheckCircleFill className="text-success fs-5" />
+                <div>
+                  <strong>Real-Time Stock Sync</strong>
+                  <div className="text-muted small">Multi-warehouse & barcode scanner support</div>
+                </div>
+              </div>
+
+              <div className="brand-feature-item">
+                <BsCheckCircleFill className="text-success fs-5" />
+                <div>
+                  <strong>Staff Payroll & Attendance</strong>
+                  <div className="text-muted small">Automated deductions and monthly salary slips</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="brand-side-footer">
+              <BsShieldLockFill className="me-2 text-primary" />
+              <span>Bank-grade 256-bit encryption • 99.99% cloud uptime</span>
+            </div>
           </div>
         </div>
 
-        {/* RIGHT SIDE - Login Form */}
-        <div className="login-form-wrapper">
-          <div className="login-box">
-            <h2>Login to BillingBook</h2>
-            <p className="sub-text">Please enter your details to continue.</p>
-            {errorMsg && <p style={{ color: 'red', marginBottom: '15px' }}>{errorMsg}</p>}
-            <form onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label htmlFor="username">Email Address</label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  placeholder="Enter your email"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
-                <i className="bi bi-envelope-fill"></i>
+        {/* Right Side: Auth Form */}
+        <div className="auth-form-side">
+          <div className="auth-card-box shadow-lg animate-fade-in">
+            <div className="auth-card-header">
+              <h2>Welcome Back</h2>
+              <p>Enter your registered email or mobile number to log in</p>
+            </div>
+
+            {errorMsg && (
+              <div className="alert alert-danger py-2 px-3 small rounded-3 mb-4" role="alert">
+                {errorMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              {/* Email / Mobile Field */}
+              <div className="form-group mb-3">
+                <label className="form-label">Email or Mobile Number</label>
+                <div className="input-with-icon">
+                  <BsEnvelopeFill className="input-icon" />
+                  <input
+                    type="text"
+                    name="username"
+                    className="form-control auth-input"
+                    placeholder="e.g. admin@tsarit.com or 9876543210"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="input-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <i className="bi bi-lock-fill"></i>
+              {/* Password Field */}
+              <div className="form-group mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <label className="form-label mb-0">Password</label>
+                  <Link to="/forgot-password" className="small text-primary text-decoration-none fw-semibold">
+                    Forgot Password?
+                  </Link>
+                </div>
+                <div className="input-with-icon">
+                  <BsKeyFill className="input-icon" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    className="form-control auth-input"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
+                  </button>
+                </div>
               </div>
 
-              <div className="form-actions">
-                <label className="remember-me">
-                  <input type="checkbox" /> Remember me
+              {/* Remember Me */}
+              <div className="form-check mb-4">
+                <input className="form-check-input" type="checkbox" id="rememberMe" defaultChecked />
+                <label className="form-check-label small text-muted" htmlFor="rememberMe">
+                  Remember this device for 30 days
                 </label>
-                <a href="#" className="forgot-password">Forgot Password?</a>
               </div>
 
-              <button type="submit" className="login-submit-btn">
-                <i className="bi bi-box-arrow-in-right me-2"></i>Login
+              {/* Submit Button */}
+              <button 
+                type="submit" 
+                className="btn-saas-primary w-100 py-3 mb-3"
+                disabled={loading}
+              >
+                {loading ? "Verifying Credentials..." : "Sign In to Portal"} <BsArrowRight />
               </button>
+
             </form>
 
-            <div className="register-link">
-              <p>
-                Don't have an account?{" "}
-                <Link to="/register">Register Here</Link>
+            <div className="auth-card-footer text-center">
+              <p className="text-muted small mb-0">
+                Don't have an account yet?{" "}
+                <Link to="/register" className="text-primary fw-bold text-decoration-none">
+                  Register Business Free
+                </Link>
               </p>
             </div>
           </div>
         </div>
+
       </div>
-    </>
+    </div>
   );
-};
-
-
-
+}

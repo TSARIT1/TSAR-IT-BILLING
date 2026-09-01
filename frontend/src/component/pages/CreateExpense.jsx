@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../createExpense.css";
 import { FiArrowLeft, FiSettings, FiSave, FiX, FiPlus } from "react-icons/fi";
@@ -24,13 +23,9 @@ function CreateExpense() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content create-expense-page" style={{ marginTop: "2%" }}>
+    <PortalLayout title="Create Business Expense">
+      <div className="create-expense-page-container animate-fade-in">
+        <div className="dashboard-content create-expense-page" style={{ marginTop: "1rem" }}>
 
           {/* Enhanced Header */}
           <div className="expense-header">
@@ -223,11 +218,10 @@ function CreateExpense() {
                 <span className="amount">{totalAmount.toFixed(2)}</span>
               </div>
             </div>
-
           </div>
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

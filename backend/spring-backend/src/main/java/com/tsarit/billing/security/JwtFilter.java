@@ -33,11 +33,21 @@ public class JwtFilter extends OncePerRequestFilter {
              // 1. Check if Token exists and is valid
              if (jwt != null && jwtUtil.validateToken(jwt)) {
                  
-                 // 2. Extract Email
-                 String email = jwtUtil.getEmailFromToken(jwt);
+                 // 2. Extract Identifier (email, mobile, or userId)
+                 String identifier = jwtUtil.getEmailFromToken(jwt);
 
-                 // 3. Load User from DB
-                 User user = userRepository.findByEmail(email).orElse(null);
+                 // 3. Load User from DB (check email, mobile, and id)
+                 User user = null;
+                 if (identifier != null) {
+                     if (identifier.contains("@")) {
+                         user = userRepository.findByEmail(identifier).orElse(null);
+                     } else {
+                         user = userRepository.findByMobileNo(identifier).orElse(null);
+                     }
+                     if (user == null) {
+                         user = userRepository.findById(identifier).orElse(null);
+                     }
+                 }
 
                  // 4. THIS IS THE MISSING PART: Tell Spring Security the user is authenticated
                  if (user != null) {

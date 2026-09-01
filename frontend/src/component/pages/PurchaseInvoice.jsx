@@ -24,8 +24,7 @@ import {
   BsGear,
   BsPrinter
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesInvoicesList.css";
 import { Link } from "react-router-dom";
@@ -499,11 +498,8 @@ function PurchaseInvoices() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Purchase Invoices">
+      <div className="sales-invoices-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="sales-invoices-page-header">
@@ -821,7 +817,6 @@ function PurchaseInvoices() {
             </table>
           </div>
         </div>
-      </div>
 
       {/* View Items Modal */}
       {showItemsModal && selectedPurchase && (
@@ -1014,7 +1009,7 @@ function PurchaseInvoices() {
           </div>
         </div>
       )}
-    </>
+    </PortalLayout>
   );
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
+import "../dashboard.css";
 import "../nextpart.css";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
@@ -139,13 +139,10 @@ function CreateProformaInvoice() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-
+    <PortalLayout title="Create Proforma Invoice">
+      <div className="create-proforma-page-container animate-fade-in">
         <div className="dashboard-content proforma-create">
-          <div className="pc-top" style={{marginTop:"5%"}}>
+          <div className="pc-top" style={{ marginTop: "1rem" }}>
             <FiArrowLeft className="back-icon" onClick={() => navigate("/proforma-invoice")} />
             <h2>Create Proforma Invoice</h2>
 
@@ -396,10 +393,9 @@ function CreateProformaInvoice() {
               </div>
             </div>
           )}
-
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

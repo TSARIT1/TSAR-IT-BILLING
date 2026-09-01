@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../staffAttendance.css";
 import { FiUsers, FiCalendar, FiDollarSign, FiClock } from "react-icons/fi";
@@ -760,13 +759,8 @@ function StaffAttendance() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content staff-attendance-page" style={{ marginTop: "2%" }}>
+    <PortalLayout title="Staff Attendance & Payroll">
+      <div className="staff-attendance-page-container animate-fade-in">
 
           {/* Enhanced Header */}
           <div className="staff-header">
@@ -1388,10 +1382,8 @@ function StaffAttendance() {
               </div>
             </div>
           )}
-
-        </div >
-      </div >
-    </>
+        </div>
+    </PortalLayout>
   );
 }
 

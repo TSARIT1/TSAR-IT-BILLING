@@ -1,15 +1,13 @@
-// CreateSalesReturn.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../createSalesReturn.css";
 import { FiArrowLeft, FiSettings, FiSave, FiX } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BsQrCodeScan } from "react-icons/bs";
 
-export default function CreateSalesReturn() {
+function CreateSalesReturn() {
   const navigate = useNavigate();
   const [returnNo, setReturnNo] = useState(1);
   const [returnDate, setReturnDate] = useState(() => new Date().toISOString().split("T")[0]);
@@ -122,11 +120,9 @@ export default function CreateSalesReturn() {
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content create-sales-return" style={{ marginTop: "2%" }}>
+    <PortalLayout title="Create Sales Return (Credit Note)">
+      <div className="create-sales-return-page-container animate-fade-in">
+        <div className="dashboard-content create-sales-return" style={{ marginTop: "1rem" }}>
           {/* Enhanced Header */}
           <div className="top-bar">
             <div className="left-bar">
@@ -342,6 +338,8 @@ export default function CreateSalesReturn() {
           </div>
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
+
+export default CreateSalesReturn;

@@ -10,8 +10,7 @@ import {
   BsInboxFill,
   BsDownload
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../paymentIn.css";
 
@@ -60,11 +59,8 @@ function PaymentIn() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Payment In (Customer Receipts)">
+      <div className="payment-in-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="payment-in-page-header">
@@ -158,9 +154,8 @@ function PaymentIn() {
             )}
           </div>
         </div>
-      </div>
-    </>
-  );
-}
+      </PortalLayout>
+    );
+  }
 
-export default PaymentIn;
+  export default PaymentIn;

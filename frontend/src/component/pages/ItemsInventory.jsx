@@ -16,8 +16,7 @@ import {
   BsX,
   BsFilePdfFill
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../itemInventory.css";
 import { getProductStockSummary, createProduct, updateProduct, deleteProduct, downloadInventoryReport } from "../../services/api";
@@ -451,11 +450,8 @@ function ItemsInventory() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Items & Inventory Stock">
+      <div className="inventory-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="inventory-page-header">
@@ -705,9 +701,8 @@ function ItemsInventory() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Stock History Modal */}
+        {/* Stock History Modal */}
       {showHistoryModal && selectedItemHistory && (
         <div className="stock-history-modal-overlay" onClick={() => setShowHistoryModal(false)}>
           <div className="stock-history-modal" onClick={(e) => e.stopPropagation()}>
@@ -792,11 +787,10 @@ function ItemsInventory() {
                 </tbody>
               </table>
             </div>
-          </div >
-        </div >
-      )
-      }
-    </>
+          </div>
+        </div>
+      )}
+    </PortalLayout>
   );
 }
 

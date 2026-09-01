@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
 import "../dashboard.css";
 import "../createPurchaseOrder.css";
 import { useNavigate } from "react-router-dom";
 
-export default function CreatePurchaseOrder() {
+function CreatePurchaseOrder() {
   const [partyModal, setPartyModal] = useState(false);
   const [parties, setParties] = useState([]);
   const [selectedParty, setSelectedParty] = useState(null);
@@ -84,14 +83,10 @@ export default function CreatePurchaseOrder() {
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="po-layout">
-        <Sidebar />
-        <main className="po-main">
-          <div className="po-wrap po-create-wrap">
-
-            <div className="create-header" style={{ marginTop: "3%" }}>
+    <PortalLayout title="Create Purchase Order">
+      <div className="create-po-page-container animate-fade-in">
+        <div className="po-wrap po-create-wrap">
+          <div className="create-header" style={{ marginTop: "1rem" }}>
               <div className="create-left">
                 <button className="back-btn" onClick={() => navigate("/purchase-orders")}><FiArrowLeft /> Back</button>
                 <h3>Create Purchase Order</h3>
@@ -197,33 +192,34 @@ export default function CreatePurchaseOrder() {
               </aside>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
 
-      {partyModal && (
-        <div className="party-modal">
-          <div className="party-box">
-            <h3>Add Party</h3>
-            <input placeholder="Name" id="pname" />
-            <input placeholder="Mobile" id="pmobile" />
+        {partyModal && (
+          <div className="party-modal">
+            <div className="party-box">
+              <h3>Add Party</h3>
+              <input placeholder="Name" id="pname" />
+              <input placeholder="Mobile" id="pmobile" />
 
-            <div className="modal-actions">
-              <button onClick={() => setPartyModal(false)} className="modal-cancel">Cancel</button>
-              <button
-                className="modal-add"
-                onClick={() => {
-                  const name = document.getElementById('pname').value;
-                  const mobile = document.getElementById('pmobile').value;
-                  if (!name) return;
-                  addParty({ id: Date.now(), name, mobile });
-                }}
-              >
-                Add
-              </button>
+              <div className="modal-actions">
+                <button onClick={() => setPartyModal(false)} className="modal-cancel">Cancel</button>
+                <button
+                  className="modal-add"
+                  onClick={() => {
+                    const name = document.getElementById('pname').value;
+                    const mobile = document.getElementById('pmobile').value;
+                    if (!name) return;
+                    addParty({ id: Date.now(), name, mobile });
+                  }}
+                >
+                  Add
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+    </PortalLayout>
   );
 }
+
+export default CreatePurchaseOrder;

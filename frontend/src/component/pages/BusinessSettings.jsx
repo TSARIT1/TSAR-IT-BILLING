@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
+import "../dashboard.css";
 import "../businessSettings.css";
 import { useNavigate } from "react-router-dom";
 import {
@@ -61,15 +61,16 @@ function BusinessSettings() {
         if (!data) return;
 
         setBusinessName(data.businessName || "");
-        setCompanyPhone(data.companyPhone || "");
-        setCompanyEmail(data.companyEmail || "");
-        setBillingAddress(data.billingAddress || "");
+        setCompanyPhone(data.phoneNo || data.companyPhone || "");
+        setCompanyEmail(data.email || data.companyEmail || "");
+        setBillingAddress(data.address || data.billingAddress || "");
         setStateName(data.state || "");
         setCity(data.city || "");
         setPincode(data.pincode || "");
-        setIsGstRegistered(data.gstRegistered || "Yes");
+        setIsGstRegistered(data.gstNo ? "Yes" : (data.gstRegistered || "Yes"));
+        setGstNumber(data.gstNo || data.gstNumber || "");
         setEnableEInvoicing(data.enableEInvoicing || false);
-        setPanNumber(data.panNumber || "");
+        setPanNumber(data.panCardNo || data.panNumber || "");
         setEnableTds(data.enableTds || false);
         setEnableTcs(data.enableTcs || false);
         setBusinessType(data.businessType || "");
@@ -269,11 +270,8 @@ function BusinessSettings() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content business-settings-page">
+    <PortalLayout title="Business & GST Settings">
+      <div className="business-settings-page-container animate-fade-in">
           <div className="page-toolbar">
             <h2>Business Settings</h2>
             <div className="toolbar-actions">
@@ -506,14 +504,28 @@ function BusinessSettings() {
               </div>
 
               <div className="field-group">
-                <label>Industry Type</label>
-                <select value={industryType} onChange={(e) => setIndustryType(e.target.value)}>
-                  <option value="">Select Industry Type</option>
-                  <option value="Retail">Retail</option>
-                  <option value="Education">Education</option>
-                  <option value="IT Services">IT Services</option>
-                  <option value="OTHERS">Others</option>
+                <label>Industry Type & Business Sector</label>
+                <select value={industryType} onChange={(e) => setIndustryType(e.target.value)} className="form-select fw-bold">
+                  <option value="">-- Select Indian Business Sector --</option>
+                  <option value="Supermarket & FMCG Retail">🛒 Supermarket, Grocery & FMCG Retail (Barcode & Weighing Scale)</option>
+                  <option value="Clothing, Garments & Footwear">👗 Clothing, Garments & Footwear (Size, Color & Fabric)</option>
+                  <option value="Electronics, Mobile & Hardware">📱 Electronics, Mobiles & Appliances (IMEI, Serial & Warranty)</option>
+                  <option value="Fertilizers, Seeds & Agro Chemicals">🌾 Fertilizers, Seeds & Agro Chemicals (Batch, NPK & Subsidy)</option>
+                  <option value="Transport, Logistics & Waybills">🚛 Transport, Logistics & E-Way Bills (LR, Vehicle & Distance)</option>
+                  <option value="Pharmacy, Medical & Healthcare">💊 Pharmacy, Medical & Healthcare (Batch, Expiry & Drug Lic)</option>
+                  <option value="Hardware, Sanitary & Building Materials">🔨 Hardware, Sanitary & Building Materials</option>
+                  <option value="Automobile Spare Parts & Workshop">🚗 Automobile Spare Parts & Service Center</option>
+                  <option value="Jewellery & Precious Metals">💍 Jewellery & Precious Metals (Purity & Hallmarking)</option>
+                  <option value="General Wholesale & Distribution">📦 General Wholesale & Distribution (B2B Bulk)</option>
+                  <option value="Manufacturing & Job Work">🏭 Manufacturing & Job Work (BOM & Production)</option>
+                  <option value="IT, Consulting & Professional Services">💼 IT, Consulting & Professional Services</option>
+                  <option value="OTHERS">🌐 Other Business Sector</option>
                 </select>
+                {industryType && (
+                  <div className="mt-2 p-2 rounded-3 bg-light border text-muted small">
+                    ✨ <strong>Active Sector Preset:</strong> {industryType} — Special custom fields (Batch, IMEI, Size/Color, Waybills, Weighing scale, and GST rules) are automatically enabled across all billing, POS, and godown screens.
+                  </div>
+                )}
               </div>
 
               <div className="field-group">
@@ -602,9 +614,7 @@ function BusinessSettings() {
           </div>
           */}
         </div>
-
-      </div>
-    </>
+    </PortalLayout>
   );
 }
 

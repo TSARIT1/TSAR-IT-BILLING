@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: tsar-it-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  namespace: tsar-it-production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tsar-secrets
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              value: billing_db
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: tsar-it-production
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: mysql

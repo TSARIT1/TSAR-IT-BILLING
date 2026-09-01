@@ -1,207 +1,232 @@
-import React from 'react';
-import "./style.css";
-import { useNavigate } from 'react-router-dom';
-import img from "../asstes/billbook.png";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { 
+  BsRocketTakeoffFill, 
+  BsPlayCircleFill, 
+  BsShieldCheck, 
+  BsLightningChargeFill,
+  BsArrowRight,
+  BsPrinter,
+  BsQrCodeScan,
+  BsStars,
+  BsCheck2Circle,
+  BsAndroid2,
+  BsAwardFill
+} from 'react-icons/bs';
+import tsarItLogo from '../asstes/tsar_it_logo.jpg';
 
-function Hero() {
+export default function Hero() {
   const navigate = useNavigate();
 
-  const handleGetStarted = () => {
-    navigate('/register');
-  };
+  // Real-time counter simulation
+  const [invoicesCount, setInvoicesCount] = useState(48);
+  const [todayRevenue, setTodayRevenue] = useState(184250);
 
-  const handleBookDemo = () => {
-    // Add demo booking logic
-    alert('Demo booking feature coming soon!');
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setInvoicesCount(prev => prev + 1);
+      setTodayRevenue(prev => prev + Math.floor(Math.random() * 1200 + 450));
+    }, 9000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <>
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
-          <h1>BillingBook: Powering SMEs with Smart Solutions</h1>
-          <p className="hero-subtitle">
-            Empower your business with BillingBook! Streamline operations, generate insightful reports,
-            and manage your products effortlessly. Start optimizing today!
-          </p>
-          <ul>
-            <li><i className="bi bi-check-circle-fill"></i> Create GST bill in 8 seconds</li>
-            <li><i className="bi bi-check-circle-fill"></i> Increase stock rotation 2.8x faster</li>
-            <li><i className="bi bi-check-circle-fill"></i> Collect 97% payments on time</li>
-          </ul>
-          <div className="buttons">
-            <button className="start-free" onClick={handleGetStarted}>
-              <i className="bi bi-rocket-takeoff-fill me-2"></i>Sign Up
-            </button>
-            <button className="book-demo" onClick={handleBookDemo}>
-              <i className="bi bi-calendar-check me-2"></i>Get Demo
-            </button>
-          </div>
-        </div>
-
-        <div className="hero-image">
-          <img src={img} alt="BillingBook Product Tour" />
-          <button className="play-button">
-            <i className="fa-solid fa-play"></i>
-          </button>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="features-section">
-        <div className="section-header">
-          <h2>Powerful Billing Features</h2>
-          <p>BillingBook provides comprehensive billing solutions for SMEs, streamlining invoicing and payment processes efficiently and effectively.</p>
-        </div>
-
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon orange">
-              <i className="bi bi-lightning-charge-fill"></i>
+    <section className="hero-saas-section">
+      <div className="hero-grid-pattern"></div>
+      <div className="hero-glow-bg"></div>
+      
+      <div className="container hero-container">
+        <div className="row align-items-center g-5">
+          {/* Left Column: Authentic Enterprise Value Proposition */}
+          <div className="col-lg-6 hero-text-col">
+            <div className="hero-announcement-badge">
+              <span className="live-status-pulse"></span>
+              <span className="badge-new">TSAR IT BILLING</span>
+              <span className="hero-badge-txt">GST Invoicing, Multi-Godown Hub & Thermal POS</span>
+              <BsArrowRight className="ms-1" />
             </div>
-            <h3>Easy Setup</h3>
-            <p>Quickly set up your account and start managing your business in minutes. Simplify onboarding!</p>
-          </div>
 
-          <div className="feature-card">
-            <div className="feature-icon blue">
-              <i className="bi bi-cloud-check-fill"></i>
-            </div>
-            <h3>Cloud Access</h3>
-            <p>Access your data from anywhere, anytime with our secure cloud platform. Stay connected!</p>
-          </div>
+            <h1 className="hero-headline">
+              India’s Most Reliable <span className="headline-gradient">GST Billing & POS</span> Software
+            </h1>
 
-          <div className="feature-card">
-            <div className="feature-icon orange">
-              <i className="bi bi-people-fill"></i>
-            </div>
-            <h3>User Roles</h3>
-            <p>Assign roles and permissions to team members for enhanced security. Control access now!</p>
-          </div>
+            <p className="hero-subheading">
+              Built for growing retail shops, distributors, wholesalers, manufacturers, and multi-branch enterprises. Generate audit-ready GST bills, sync godown stocks, print on 80mm/58mm thermal rolls, and run offline counter billing seamlessly.
+            </p>
 
-          <div className="feature-card">
-            <div className="feature-icon blue">
-              <i className="bi bi-bell-fill"></i>
-            </div>
-            <h3>Automated Reminders</h3>
-            <p>Send automated payment reminders to customers and reduce late payments. Get paid faster!</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon orange">
-              <i className="bi bi-shield-fill-check"></i>
-            </div>
-            <h3>Data Security</h3>
-            <p>Your data is safe with us. We employ robust security measures. Protect your business!</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon blue">
-              <i className="bi bi-file-earmark-text-fill"></i>
-            </div>
-            <h3>Customizable Templates</h3>
-            <p>Create professional invoices and reports with customizable templates. Enhance your brand image!</p>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="about-section">
-        <div className="about-content">
-          <h2>About BillingBook: Our Story</h2>
-          <p className="about-description">
-            BillingBook empowers SMEs with user-friendly solutions for streamlined billing, reporting, and product management.
-          </p>
-
-          <div className="mission-vision">
-            <div className="mission-card">
-              <div className="mv-icon">
-                <i className="bi bi-bullseye"></i>
+            {/* Value bullets */}
+            <div className="hero-value-chips-grid">
+              <div className="value-chip-card">
+                <div className="chip-icon-box bg-success-subtle text-success">
+                  <BsCheck2Circle />
+                </div>
+                <div>
+                  <strong>8-Second GST Billing</strong>
+                  <p className="text-muted mb-0 small">Automated HSN & CGST/SGST/IGST splits</p>
+                </div>
               </div>
-              <h3>Our Mission</h3>
-              <p>Empowering SMEs with innovative, user-friendly solutions.</p>
-            </div>
 
-            <div className="vision-card">
-              <div className="mv-icon">
-                <i className="bi bi-eye-fill"></i>
+              <div className="value-chip-card">
+                <div className="chip-icon-box bg-primary-subtle text-primary">
+                  <BsPrinter />
+                </div>
+                <div>
+                  <strong>Multi-Size Thermal Print</strong>
+                  <p className="text-muted mb-0 small">A4, A5, 80mm & 58mm POS slips</p>
+                </div>
               </div>
-              <h3>Our Vision</h3>
-              <p>To be the leading billing solution for SMEs.</p>
+
+              <div className="value-chip-card">
+                <div className="chip-icon-box bg-warning-subtle text-warning">
+                  <BsQrCodeScan />
+                </div>
+                <div>
+                  <strong>e-Way & IRN QR Ready</strong>
+                  <p className="text-muted mb-0 small">Direct statutory compliance gateway</p>
+                </div>
+              </div>
+
+              <div className="value-chip-card">
+                <div className="chip-icon-box bg-info-subtle text-info">
+                  <BsStars />
+                </div>
+                <div>
+                  <strong>RAKI AI Copilot</strong>
+                  <p className="text-muted mb-0 small">Real-time business intelligence & alerts</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Action CTAs */}
+            <div className="hero-cta-group">
+              <button className="btn-saas-primary hero-main-cta shadow-lg" onClick={() => navigate('/register')}>
+                <BsRocketTakeoffFill /> Start 15-Day Free Trial
+              </button>
+              <button className="btn-saas-secondary hero-secondary-cta" onClick={() => navigate('/login')}>
+                <BsPlayCircleFill className="text-primary" /> Launch Portal Demo
+              </button>
+              <Link to="/download-app" className="btn btn-outline-dark d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none">
+                <BsAndroid2 className="text-success fs-5" /> Download App
+              </Link>
+            </div>
+
+            {/* Trust Badges Bar */}
+            <div className="hero-trust-note">
+              <span className="trust-item"><BsShieldCheck className="text-success" /> 100% Data Confidentiality</span>
+              <span className="bullet-sep">•</span>
+              <span className="trust-item">No credit card required</span>
+              <span className="bullet-sep">•</span>
+              <span className="trust-item">Full Excel/Tally data import</span>
             </div>
           </div>
 
-          <button className="cta-button" onClick={handleGetStarted}>
-            <i className="bi bi-arrow-right-circle-fill me-2"></i>Get Started
-          </button>
-        </div>
+          {/* Right Column: Workstation Mockup with Brand Image Asset */}
+          <div className="col-lg-6 hero-mockup-col">
+            <div className="hero-mockup-card glass-panel shadow-2xl animate-fade-in">
+              {/* Window Frame Bar */}
+              <div className="mockup-window-header">
+                <div className="window-dots">
+                  <span className="dot red"></span>
+                  <span className="dot yellow"></span>
+                  <span className="dot green"></span>
+                </div>
+                <div className="window-address-bar">
+                  <span className="lock-icon">🔒</span> https://billing.tsaritservices.com/pos-counter/terminal-01
+                </div>
+                <div className="window-status-pill">
+                  <span className="status-dot online"></span> Active Gateway
+                </div>
+              </div>
 
-        <div className="about-image">
-          <div className="image-placeholder">
-            <i className="bi bi-building"></i>
-            <p>We Founders</p>
-          </div>
-        </div>
-      </section>
+              {/* Workstation Dashboard Body */}
+              <div className="mockup-window-body">
+                {/* Real-time Business Metrics Strip */}
+                <div className="mock-stat-row">
+                  <div className="mock-stat-tile primary">
+                    <span className="stat-label">TODAY'S REVENUE</span>
+                    <h4 className="stat-number">₹ {todayRevenue.toLocaleString('en-IN')}.00</h4>
+                    <span className="stat-growth text-success">↑ +21.4% vs yesterday</span>
+                  </div>
+                  <div className="mock-stat-tile success">
+                    <span className="stat-label">BILLS PROCESSED</span>
+                    <h4 className="stat-number">{invoicesCount} Invoices</h4>
+                    <span className="stat-growth text-success">100% Tax Compliant</span>
+                  </div>
+                </div>
 
-      {/* Services Section */}
-      <section className="services-section">
-        <div className="section-header">
-          <h2>Discover more about us</h2>
-          <p>
-            At billingbook, we focus on empowering small businesses with robust billing solutions. From managing
-            product inventories to generating detailed revenue reports, our dedicated team is here to support your
-            growth and success in the marketplace.
-          </p>
-        </div>
+                {/* Live Real-time Tax Invoice Preview Card */}
+                <div className="mock-invoice-box">
+                  <div className="mock-invoice-head d-flex justify-content-between align-items-start">
+                    <div className="d-flex align-items-center gap-2">
+                      <img 
+                        src={tsarItLogo} 
+                        alt="TSAR IT BILLING" 
+                        style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
+                        className="rounded border p-1 bg-white"
+                      />
+                      <div>
+                        <span className="badge bg-primary text-white mb-1" style={{ fontSize: '9px' }}>TAX INVOICE #TSAR-2026-104</span>
+                        <strong className="d-block text-dark small">Party: Shri Krishna Enterprise</strong>
+                        <div className="text-muted" style={{ fontSize: '11px' }}>GSTIN: 36AABCU9603R1ZM</div>
+                      </div>
+                    </div>
+                    <span className="badge-status paid">PAID VIA UPI</span>
+                  </div>
 
-        <div className="services-grid">
-          <div className="service-card">
-            <div className="service-icon">
-              <i className="bi bi-receipt-cutoff"></i>
+                  <div className="mock-invoice-table mt-2">
+                    <div className="mock-table-row header">
+                      <span>Item / HSN</span>
+                      <span>Qty</span>
+                      <span>Rate</span>
+                      <span className="text-end">Total</span>
+                    </div>
+                    <div className="mock-table-row">
+                      <span>Cisco SG350 Gigabit Switch (8517)</span>
+                      <span>2 pcs</span>
+                      <span>₹ 28,500</span>
+                      <span className="text-end">₹ 57,000.00</span>
+                    </div>
+                    <div className="mock-table-row">
+                      <span>Thermal Billing Paper 80mm (4811)</span>
+                      <span>50 rolls</span>
+                      <span>₹ 65</span>
+                      <span className="text-end">₹ 3,250.00</span>
+                    </div>
+                  </div>
+
+                  <div className="mock-invoice-totals">
+                    <div className="total-line">
+                      <span>Taxable Amount</span>
+                      <span>₹ 60,250.00</span>
+                    </div>
+                    <div className="total-line">
+                      <span>CGST (9%) + SGST (9%)</span>
+                      <span>₹ 10,845.00</span>
+                    </div>
+                    <div className="total-line grand-total">
+                      <span>Grand Total (Rounded)</span>
+                      <span className="amount-highlight">₹ 71,095.00</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Instant Automation Micro Bar */}
+                <div className="floating-badge-bottom mt-3">
+                  <div className="floating-icon">
+                    <BsLightningChargeFill />
+                  </div>
+                  <div>
+                    <strong>Instant E-Way Bill & QR Code Attached</strong>
+                    <div className="small text-muted">IRN: e9148b... | Print Ready: A4, A5, 80mm & 58mm Thermal</div>
+                  </div>
+                </div>
+
+              </div>
             </div>
-            <h3>Invoice Generation</h3>
-            <p>
-              Our platform allows you to create customized invoices effortlessly, ensuring you bill your clients
-              accurately and professionally, while maintaining a clear record of your transactions.
-            </p>
-            <a href="#" className="service-link">
-              Contact <i className="bi bi-arrow-right"></i>
-            </a>
           </div>
 
-          <div className="service-card">
-            <div className="service-icon">
-              <i className="bi bi-graph-up-arrow"></i>
-            </div>
-            <h3>Comprehensive Reporting</h3>
-            <p>
-              We provide insightful reporting features that help you analyze your sales, track revenue, and make
-              informed decisions to drive your business forward, all in one place.
-            </p>
-            <a href="#" className="service-link">
-              Contact <i className="bi bi-arrow-right"></i>
-            </a>
-          </div>
-
-          <div className="service-card">
-            <div className="service-icon">
-              <i className="bi bi-box-seam"></i>
-            </div>
-            <h3>Product Management</h3>
-            <p>
-              At billingbook, you can easily add and manage your products, including inventory details and categories,
-              ensuring you have a clear overview of your offerings and sales performance.
-            </p>
-            <a href="#" className="service-link">
-              Contact <i className="bi bi-arrow-right"></i>
-            </a>
-          </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
-
-export default Hero;

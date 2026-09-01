@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../applyLoan.css";
 import { FiArrowLeft, FiArrowRight, FiCheck } from "react-icons/fi";
@@ -82,13 +81,8 @@ function ApplyLoan() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content apply-loan-page" style={{ marginTop: "2%" }}>
+    <PortalLayout title="Instant Business Loans">
+      <div className="apply-loan-page-container animate-fade-in">
 
           {/* Enhanced Header */}
           <div className="loan-header">
@@ -544,10 +538,8 @@ function ApplyLoan() {
               )}
             </div>
           )}
-
         </div>
-      </div >
-    </>
+    </PortalLayout>
   );
 }
 

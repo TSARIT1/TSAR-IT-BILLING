@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../createPaymentOut.css";
 import { useNavigate } from "react-router-dom";
@@ -50,12 +49,9 @@ function CreatePaymentOut() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content create-payment-out-page">
+    <PortalLayout title="Record Payment Out">
+      <div className="create-payment-out-page-container animate-fade-in">
+        <div className="dashboard-content create-payment-out-page" style={{ marginTop: "1rem" }}>
 
           <div className="paymentout-header" style={{ marginTop: "3%" }}>
             <h2>Record Payment Out #{paymentNo}</h2>
@@ -120,12 +116,10 @@ function CreatePaymentOut() {
                 onChange={(e) => setNotes(e.target.value)}
               ></textarea>
             </div>
-
           </div>
-
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

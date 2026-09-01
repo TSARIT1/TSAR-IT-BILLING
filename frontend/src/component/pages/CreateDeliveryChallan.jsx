@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
+import "../dashboard.css";
 import "../nextpart.css";
 
 function CreateDeliveryChallan() {
@@ -23,6 +23,14 @@ function CreateDeliveryChallan() {
   const [receivedIn, setReceivedIn] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Transport & Waybill Logistics
+  const [vehicleNo, setVehicleNo] = useState("");
+  const [lrNo, setLrNo] = useState("");
+  const [transporterName, setTransporterName] = useState("");
+  const [transporterId, setTransporterId] = useState("");
+  const [ewayBillNo, setEwayBillNo] = useState("");
+  const [distanceKm, setDistanceKm] = useState("");
 
   const subtotal = items.reduce((s, it) => s + Number(it.qty) * Number(it.price), 0);
   const tax = subtotal * 0.00;
@@ -92,12 +100,8 @@ function CreateDeliveryChallan() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dashboard-layout">
-        <Sidebar />
-
+    <PortalLayout title="Create Delivery Challan">
+      <div className="create-delivery-page-container animate-fade-in">
         <div className="dashboard-content create-delivery">
 
           <div className="dc-header">
@@ -133,6 +137,29 @@ function CreateDeliveryChallan() {
                 <div>
                   <label>Date</label>
                   <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                </div>
+              </div>
+
+              {/* Transport & Logistics Section */}
+              <div className="mt-3 p-3 bg-light rounded-3 border">
+                <h6 className="fw-bold mb-2 text-dark">🚛 Transport & Waybill Dispatch Details</h6>
+                <div className="grid-2">
+                  <div>
+                    <label>Vehicle Number</label>
+                    <input type="text" placeholder="e.g. AP 04 TX 4567" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} />
+                  </div>
+                  <div>
+                    <label>LR / Bilty / Consignment No</label>
+                    <input type="text" placeholder="e.g. LR-10294" value={lrNo} onChange={(e) => setLrNo(e.target.value)} />
+                  </div>
+                  <div>
+                    <label>Transporter Name / ID</label>
+                    <input type="text" placeholder="Transporter Name or TRANSIN" value={transporterName} onChange={(e) => setTransporterName(e.target.value)} />
+                  </div>
+                  <div>
+                    <label>E-Way Bill No / Distance (KM)</label>
+                    <input type="text" placeholder="12-digit EWB or Distance" value={ewayBillNo} onChange={(e) => setEwayBillNo(e.target.value)} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -248,11 +275,10 @@ function CreateDeliveryChallan() {
                 <span>₹ {total.toFixed(2)}</span>
               </div>
             </div>
-
           </div>
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

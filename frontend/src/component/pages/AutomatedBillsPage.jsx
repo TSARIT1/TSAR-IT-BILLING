@@ -1,21 +1,15 @@
 import React from "react";
-import Navbar from "../Navbar";        
-import Sidebar from "../Sidebar";      
-import "../payment.css";        
+import PortalLayout from "../PortalLayout";
+import "../payment.css";
 
 function AutomatedBillsPage() {
   return (
-    <>
-      <Navbar />
-
-      <div className="layout-container">
-        <Sidebar />
-
+    <PortalLayout title="Automated Recurring Bills">
+      <div className="auto-bills-page-container animate-fade-in">
         <div className="auto-bills-container">
-          <h2 className="page-title">Automated Bills</h2>
+          <h2 className="page-title">Automated Bills & Recurring Invoices</h2>
 
           <div className="cards-wrapper">
-
             {/* Card 1 */}
             <div className="auto-card">
               <img src="/images/auto1.png" className="auto-img" alt="" />
@@ -36,16 +30,14 @@ function AutomatedBillsPage() {
               <h3>Easy Reminders & Payment</h3>
               <p>Automatically receive notifications and collect payments</p>
             </div>
-
           </div>
 
           <div className="btn-container">
-            <button className="create-btn">Create Automated Bill</button>
+            <button className="create-btn">+ Create Automated Recurring Bill</button>
           </div>
-
         </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }
 

@@ -12,8 +12,7 @@ import {
   BsCheckCircleFill,
   BsXCircleFill
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesReturn.css";
 
@@ -65,12 +64,8 @@ function SalesReturn() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content">
+    <PortalLayout title="Sales Returns (Credit Notes)">
+      <div className="sales-return-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="sales-return-page-header">
@@ -190,9 +185,8 @@ function SalesReturn() {
             )}
           </div>
         </div>
-      </div>
-    </>
-  );
-}
+      </PortalLayout>
+    );
+  }
 
-export default SalesReturn;
+  export default SalesReturn;

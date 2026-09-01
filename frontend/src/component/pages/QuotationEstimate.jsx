@@ -12,8 +12,7 @@ import {
   BsInboxFill,
   BsClipboardCheck
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../quotationEstimate.css";
 import { Link } from "react-router-dom";
@@ -71,11 +70,8 @@ function QuotationEstimate() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Quotations & Estimates">
+      <div className="quotation-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="quotation-page-header">
@@ -232,9 +228,8 @@ function QuotationEstimate() {
             </table>
           </div>
         </div>
-      </div>
-    </>
-  );
-}
+      </PortalLayout>
+    );
+  }
 
-export default QuotationEstimate;
+  export default QuotationEstimate;

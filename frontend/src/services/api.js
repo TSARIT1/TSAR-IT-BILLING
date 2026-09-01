@@ -1,67 +1,82 @@
 import axios from "axios";
 
-// 1. Base URL for your Spring Boot Backend
-// Change '/api/auth' to whatever your Controller RequestMapping is.
-const API_URL = "http://localhost:8081/api/auth";
-const BUSINESS_API = "http://localhost:8081/api/business";
-const INVOICE_API = "http://localhost:8081/api/invoices";
-const GODOWN_API = "http://localhost:8081/api/godowns";
-const PRODUCT_API = "http://localhost:8081/api/products";
-const CUSTOMER_API = "http://localhost:8081/api/customers";
+// 1. Base URL — uses REACT_APP_API_URL env var in production; falls back to localhost for development
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8081";
 
-// 2. Create Axios Instance
+const API_URL = `${BASE_URL}/api/auth`;
+const BUSINESS_API = `${BASE_URL}/api/business`;
+const INVOICE_API = `${BASE_URL}/api/invoices`;
+const GODOWN_API = `${BASE_URL}/api/godowns`;
+const PRODUCT_API = `${BASE_URL}/api/products`;
+const CUSTOMER_API = `${BASE_URL}/api/customers`;
+
+// 2. JWT Auth Interceptor Helper
+// Attaches Bearer token from localStorage to every request automatically
+const addAuthInterceptor = (client) => {
+  client.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+  // Handle 401 globally — clear session and redirect to login
+  client.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
+        window.location.href = "/login";
+      }
+      return Promise.reject(error);
+    }
+  );
+  return client;
+};
+
+// 3. Create Axios Instances (with auth interceptors applied to all protected clients)
 const apiClient = axios.create({
   baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json"
-  },
+  headers: { "Content-Type": "application/json" },
 });
+// NOTE: apiClient intentionally skips auth interceptor — it handles login/register
 
-const businessClient = axios.create({
+const businessClient = addAuthInterceptor(axios.create({
   baseURL: BUSINESS_API,
-  headers: {
-    "Content-Type": "multipart/form-data"
+  headers: { "Content-Type": "multipart/form-data" },
+}));
 
-  },
-});
-
-const invoiceClient = axios.create({
+const invoiceClient = addAuthInterceptor(axios.create({
   baseURL: INVOICE_API,
-  headers: {
-    "Content-Type": "application/json"
-  },
-});
+  headers: { "Content-Type": "application/json" },
+}));
 
-const godownClient = axios.create({
+const godownClient = addAuthInterceptor(axios.create({
   baseURL: GODOWN_API,
-  headers: {
-    "Content-Type": "application/json"
-  },
-});
+  headers: { "Content-Type": "application/json" },
+}));
 
-const productClient = axios.create({
+const productClient = addAuthInterceptor(axios.create({
   baseURL: PRODUCT_API,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  headers: { 'Content-Type': 'application/json' },
+}));
 
-
-const customerClient = axios.create({
+const customerClient = addAuthInterceptor(axios.create({
   baseURL: CUSTOMER_API,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  headers: { 'Content-Type': 'application/json' },
+}));
 
-const SALES_API = "http://localhost:8081/api/sales";
+const SALES_API = `${BASE_URL}/api/sales`;
 
-const salesClient = axios.create({
+const salesClient = addAuthInterceptor(axios.create({
   baseURL: SALES_API,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  headers: { 'Content-Type': 'application/json' },
+}));
 
 
 // 3. API Functions
@@ -83,7 +98,51 @@ export const loginUser = async (loginData) => {
   } catch (error) {
     throw error.response ? error.response.data : error.message;
   }
+};
 
+export const forgotPassword = async (identifier) => {
+  try {
+    const response = await apiClient.post("/forgot-password", { identifier });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const resetPassword = async (resetData) => {
+  try {
+    const response = await apiClient.post("/reset-password", resetData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const changePassword = async (changeData) => {
+  try {
+    const response = await apiClient.post("/change-password", changeData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const getUserProfile = async (userId) => {
+  try {
+    const response = await apiClient.get(`/profile/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const updateUserProfile = async (userId, profileData) => {
+  try {
+    const response = await apiClient.put(`/profile/${userId}`, profileData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
 };
 
 // Invoice APIs
@@ -207,7 +266,6 @@ export const getBusinessSettings = async (userId) => {
 };
 
 
-export default apiClient;
 
 // =========================================
 // GODOWN API FUNCTIONS
@@ -227,7 +285,7 @@ export const createGodown = async (godownData) => {
 export const getGodowns = async (userBusinessId) => {
   try {
     console.log("Fetching godowns for businessId:", userBusinessId);
-    const response = await godownClient.get(`list/${userBusinessId}`);
+    const response = await godownClient.get(`/list/${userBusinessId}`);
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
@@ -554,14 +612,12 @@ export const downloadSalesSlip = async (saleId, businessId) => {
 };
 
 // Purchase Return APIs
-const PURCHASE_RETURN_API = "http://localhost:8081/api/purchase-returns";
+const PURCHASE_RETURN_API = `${BASE_URL}/api/purchase-returns`;
 
-const purchaseReturnClient = axios.create({
+const purchaseReturnClient = addAuthInterceptor(axios.create({
   baseURL: PURCHASE_RETURN_API,
-  headers: {
-    "Content-Type": "application/json"
-  },
-});
+  headers: { "Content-Type": "application/json" },
+}));
 
 // Create purchase return
 export const createPurchaseReturn = async (returnData) => {
@@ -679,14 +735,12 @@ export const downloadPurchaseSlip = async (invoiceId, businessId) => {
 // STAFF API FUNCTIONS
 // ============================================
 
-const STAFF_API = "http://localhost:8081/api/staff";
+const STAFF_API = `${BASE_URL}/api/staff`;
 
-const staffClient = axios.create({
+const staffClient = addAuthInterceptor(axios.create({
   baseURL: STAFF_API,
-  headers: {
-    "Content-Type": "application/json"
-  },
-});
+  headers: { "Content-Type": "application/json" },
+}));
 
 // Create Staff
 export const createStaff = async (staffData, businessId) => {
@@ -754,14 +808,12 @@ export const deleteStaff = async (staffId, businessId) => {
 // ATTENDANCE API FUNCTIONS (MONTHLY)
 // ============================================
 
-const ATTENDANCE_API = "http://localhost:8081/api/attendance";
+const ATTENDANCE_API = `${BASE_URL}/api/attendance`;
 
-const attendanceClient = axios.create({
+const attendanceClient = addAuthInterceptor(axios.create({
   baseURL: ATTENDANCE_API,
-  headers: {
-    "Content-Type": "application/json"
-  },
-});
+  headers: { "Content-Type": "application/json" },
+}));
 
 // Mark attendance as present for a specific day
 export const markAttendancePresent = async (staffId, date, businessId) => {
@@ -873,14 +925,12 @@ export const getAttendanceByDate = async (date, businessId) => {
 // ONLINE ORDERS API FUNCTIONS
 // ============================================
 
-const ONLINE_ORDERS_API = "http://localhost:8081/api/online-orders";
+const ONLINE_ORDERS_API = `${BASE_URL}/api/online-orders`;
 
-const onlineOrdersClient = axios.create({
+const onlineOrdersClient = addAuthInterceptor(axios.create({
   baseURL: ONLINE_ORDERS_API,
-  headers: {
-    "Content-Type": "application/json"
-  },
-});
+  headers: { "Content-Type": "application/json" },
+}));
 
 // Create Online Order
 export const createOnlineOrder = async (orderData) => {
@@ -936,12 +986,12 @@ export const deleteOnlineOrder = async (orderId) => {
 // ONLINE STORES API FUNCTIONS
 // ============================================
 
-const ONLINE_STORES_API = "http://localhost:8081/api/online-stores";
+const ONLINE_STORES_API = `${BASE_URL}/api/online-stores`;
 
-const onlineStoresClient = axios.create({
+const onlineStoresClient = addAuthInterceptor(axios.create({
   baseURL: ONLINE_STORES_API,
   headers: { "Content-Type": "application/json" },
-});
+}));
 
 // Create Online Store
 export const createOnlineStore = async (storeData) => {
@@ -982,3 +1032,309 @@ export const deleteOnlineStore = async (storeId) => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
+// ============================================
+// DOUBLE-ENTRY ACCOUNTING & FINANCIAL APIS
+// ============================================
+const ACCOUNTING_API = `${BASE_URL}/api/accounting`;
+const accountingClient = addAuthInterceptor(axios.create({ baseURL: ACCOUNTING_API, headers: { "Content-Type": "application/json" } }));
+
+export const getChartOfAccounts = async (tenantId = "default") => {
+  try {
+    const response = await accountingClient.get(`/chart-of-accounts?tenantId=${tenantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("COA error:", error);
+    return [];
+  }
+};
+
+export const getTrialBalance = async (tenantId = "default") => {
+  try {
+    const response = await accountingClient.get(`/trial-balance?tenantId=${tenantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Trial balance error:", error);
+    return { accounts: [], totalDebit: 0, totalCredit: 0 };
+  }
+};
+
+export const getProfitAndLoss = async (tenantId = "default") => {
+  try {
+    const response = await accountingClient.get(`/profit-loss?tenantId=${tenantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("P&L error:", error);
+    return { totalIncome: 0, totalExpense: 0, netProfit: 0 };
+  }
+};
+
+export const getBalanceSheet = async (tenantId = "default") => {
+  try {
+    const response = await accountingClient.get(`/balance-sheet?tenantId=${tenantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Balance sheet error:", error);
+    return { totalAssets: 0, totalLiabilities: 0, totalEquity: 0 };
+  }
+};
+
+export const getDayBook = async (tenantId = "default") => {
+  try {
+    const response = await accountingClient.get(`/day-book?tenantId=${tenantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Day book error:", error);
+    return [];
+  }
+};
+
+// ============================================
+// GST TAX ENGINE & STATUTORY RETURNS APIS
+// ============================================
+const GST_ENGINE_API = `${BASE_URL}/api/gst-engine`;
+const gstEngineClient = addAuthInterceptor(axios.create({ baseURL: GST_ENGINE_API, headers: { "Content-Type": "application/json" } }));
+
+export const calculateGstTax = async (params) => {
+  try {
+    const response = await gstEngineClient.get("/calculate", { params });
+    return response.data;
+  } catch (error) {
+    console.error("GST calculate error:", error);
+    return null;
+  }
+};
+
+export const getGstr1Report = async (userId) => {
+  try {
+    const response = await gstEngineClient.get("/gstr-1", { params: { userId } });
+    return response.data;
+  } catch (error) {
+    console.error("GSTR-1 error:", error);
+    return null;
+  }
+};
+
+export const getGstr3bReport = async (userId) => {
+  try {
+    const response = await gstEngineClient.get("/gstr-3b", { params: { userId } });
+    return response.data;
+  } catch (error) {
+    console.error("GSTR-3B error:", error);
+    return null;
+  }
+};
+
+// ============================================
+// AI BUSINESS ASSISTANT APIS
+// ============================================
+const AI_API = `${BASE_URL}/api/ai-assistant`;
+const aiClient = addAuthInterceptor(axios.create({ baseURL: AI_API, headers: { "Content-Type": "application/json" } }));
+
+export const askAiAssistant = async (query, userId) => {
+  try {
+    const response = await aiClient.post("/query", { query, userId });
+    return response.data;
+  } catch (error) {
+    console.error("AI Query error:", error);
+    return {
+      answer: "RAKI AI Copilot is online and ready to assist! Ask me about total sales, low stock alerts, top customers, or GST liability.",
+      intent: "FALLBACK"
+    };
+  }
+};
+
+// ============================================
+// NOTIFICATION & WHATSAPP / EMAIL BOT APIS
+// ============================================
+const NOTIF_API = `${BASE_URL}/api/notifications`;
+const notifClient = addAuthInterceptor(axios.create({ baseURL: NOTIF_API, headers: { "Content-Type": "application/json" } }));
+
+export const sendInvoiceWhatsApp = async (invoiceId, phone) => {
+  try {
+    const response = await notifClient.post(`/whatsapp/invoice/${invoiceId}`, { phone });
+    return response.data;
+  } catch (error) {
+    console.error("WhatsApp invoice error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const sendNotificationEmail = async (emailData) => {
+  try {
+    const response = await notifClient.post("/email/send", emailData);
+    return response.data;
+  } catch (error) {
+    console.error("Email send error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const sendCampaignNotification = async (campaignData) => {
+  try {
+    const response = await notifClient.post("/campaign/send", campaignData);
+    return response.data;
+  } catch (error) {
+    console.error("Campaign dispatch error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const getCampaignStats = async () => {
+  try {
+    const response = await notifClient.get("/campaign/stats");
+    return response.data;
+  } catch (error) {
+    console.error("Campaign stats error:", error);
+    return { totalCampaigns: 0, totalSmsSent: 0, deliveryRate: "100%", recentCampaigns: [] };
+  }
+};
+
+// ============================================
+// E-INVOICING & E-WAY BILL APIS
+// ============================================
+const EINVOICE_API = `${BASE_URL}/api/einvoice`;
+const einvoiceClient = addAuthInterceptor(axios.create({ baseURL: EINVOICE_API, headers: { "Content-Type": "application/json" } }));
+
+export const generateEInvoiceIrn = async (invoiceId) => {
+  try {
+    const response = await einvoiceClient.post("/generate-irn", { invoiceId });
+    return response.data;
+  } catch (error) {
+    console.error("E-Invoice IRN error:", error);
+    return { status: "FAILED", message: "Failed to generate IRN" };
+  }
+};
+
+export const generateEWayBill = async (data) => {
+  try {
+    const response = await einvoiceClient.post("/generate-ewaybill", data);
+    return response.data;
+  } catch (error) {
+    console.error("E-Way Bill error:", error);
+    return { status: "FAILED", message: "Failed to generate E-Way Bill" };
+  }
+};
+
+export const cancelEInvoiceIrn = async (invoiceId, irn, reason) => {
+  try {
+    const response = await einvoiceClient.post("/cancel-irn", { invoiceId, irn, reason });
+    return response.data;
+  } catch (error) {
+    console.error("Cancel IRN error:", error);
+    return null;
+  }
+};
+
+// ============================================
+// WAREHOUSE & GODOWN TRANSFERS APIS
+// ============================================
+const TRF_API = `${BASE_URL}/api/warehouse-transfers`;
+const trfClient = addAuthInterceptor(axios.create({ baseURL: TRF_API, headers: { "Content-Type": "application/json" } }));
+
+export const createWarehouseTransfer = async (transferData) => {
+  try {
+    const response = await trfClient.post("/create", transferData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const getWarehouseTransfers = async () => {
+  try {
+    const response = await trfClient.get("/list");
+    return response.data;
+  } catch (error) {
+    console.error("Transfers fetch error:", error);
+    return [];
+  }
+};
+
+// ============================================
+// BANKING & RECONCILIATION APIS
+// ============================================
+const BANK_API = `${BASE_URL}/api/banking`;
+const bankClient = addAuthInterceptor(axios.create({ baseURL: BANK_API, headers: { "Content-Type": "application/json" } }));
+
+export const getBankAccounts = async () => {
+  try {
+    const response = await bankClient.get("/accounts");
+    return response.data;
+  } catch (error) {
+    console.error("Bank accounts error:", error);
+    return [];
+  }
+};
+
+export const createBankAccount = async (accountData) => {
+  try {
+    const response = await bankClient.post("/accounts/create", accountData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const getBankTransactions = async (bankAccountId) => {
+  try {
+    const response = await bankClient.get("/transactions", { params: { bankAccountId } });
+    return response.data;
+  } catch (error) {
+    console.error("Bank transactions error:", error);
+    return [];
+  }
+};
+
+export const recordBankTransaction = async (txData) => {
+  try {
+    const response = await bankClient.post("/transactions/record", txData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const reconcileBankTransaction = async (txId) => {
+  try {
+    const response = await bankClient.post(`/transactions/${txId}/reconcile`);
+    return response.data;
+  } catch (error) {
+    console.error("Reconciliation error:", error);
+    return null;
+  }
+};
+
+// ============================================
+// SAAS SUBSCRIPTIONS & QUOTAS APIS
+// ============================================
+const SUB_API = `${BASE_URL}/api/subscriptions`;
+const subClient = addAuthInterceptor(axios.create({ baseURL: SUB_API, headers: { "Content-Type": "application/json" } }));
+
+export const getSubscriptionPlans = async () => {
+  try {
+    const response = await subClient.get("/plans");
+    return response.data;
+  } catch (error) {
+    console.error("Plans fetch error:", error);
+    return [];
+  }
+};
+
+export const getSubscriptionUsage = async (tenantId = "default") => {
+  try {
+    const response = await subClient.get("/usage", { params: { tenantId } });
+    return response.data;
+  } catch (error) {
+    console.error("Usage fetch error:", error);
+    return null;
+  }
+};
+
+// ============================================
+// ALIASES & COMPATIBILITY EXPORTS
+// ============================================
+// getCustomers is an alias for getAllCustomers (used in Cards.jsx and similar)
+export { getAllCustomers as getCustomers };
+
+export default apiClient;

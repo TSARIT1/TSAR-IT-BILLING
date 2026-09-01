@@ -12,8 +12,7 @@ import {
   BsXCircleFill,
   BsFilter
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../proformaInvoice.css";
 
@@ -70,12 +69,8 @@ function ProformaInvoice() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content">
+    <PortalLayout title="Proforma Invoices">
+      <div className="proforma-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="proforma-page-header">
@@ -225,11 +220,9 @@ function ProformaInvoice() {
               </table>
             )}
           </div>
-
         </div>
-      </div>
-    </>
-  );
-}
+      </PortalLayout>
+    );
+  }
 
-export default ProformaInvoice;
+  export default ProformaInvoice;

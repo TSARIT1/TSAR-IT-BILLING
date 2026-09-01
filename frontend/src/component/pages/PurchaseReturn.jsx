@@ -18,8 +18,7 @@ import {
   BsExclamationCircleFill,
   BsPrinterFill
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../purchaseReturn.css";
 import { useNavigate } from "react-router-dom";
@@ -940,12 +939,8 @@ function PurchaseReturn() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content">
+    <PortalLayout title="Purchase Returns (Debit Notes)">
+      <div className="purchase-return-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="purchase-return-page-header">
@@ -1568,9 +1563,8 @@ function PurchaseReturn() {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Item Selection Modal */}
+        {/* Item Selection Modal */}
       {showItemsModal && (
         <div className="modal-overlay" onClick={() => setShowItemsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', width: '90%' }}>
@@ -3545,7 +3539,7 @@ function PurchaseReturn() {
           </div>
         </div>
       )}
-    </>
+    </PortalLayout>
   );
 }
 

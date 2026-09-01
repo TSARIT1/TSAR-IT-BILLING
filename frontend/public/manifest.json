@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "TSAR IT Billing",
+  "name": "TSAR IT Billing — Enterprise GST Billing, POS & Inventory Platform",
+  "description": "India's premier enterprise GST billing, multi-godown inventory management, and POS thermal counter billing software.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#4f46e5",
+  "background_color": "#090d16"
 }

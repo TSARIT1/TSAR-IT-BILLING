@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../smsMarketing.css";
 import { FiSend, FiMessageSquare, FiUsers, FiTrendingUp } from "react-icons/fi";
-import { getCustomersByBusinessId } from "../../services/api";
+import { getCustomersByBusinessId, sendCampaignNotification, getCampaignStats } from "../../services/api";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 function SmsPromotion() {
@@ -20,27 +19,29 @@ function SmsPromotion() {
   const [selectedMessageOption, setSelectedMessageOption] = useState("");
   const [customers, setCustomers] = useState([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [sendingCampaign, setSendingCampaign] = useState(false);
+  const [stats, setStats] = useState({ totalCampaigns: 0, totalSmsSent: 0, deliveryRate: "100%", recentCampaigns: [] });
 
   // Template Data
   const CATEGORY_TEMPLATES = {
     festival: [
-      { id: "fest1", text: "🎉 Festival Special! Get 30% OFF on all products. Valid till 31st Oct. Visit us today! - MyBillBook" },
-      { id: "fest2", text: "✨ Happy Holidays! Season's greetings from MyBillBook. Enjoy exclusive discounts this week!" },
-      { id: "fest3", text: "🏮 Diwali Celebration! Special gift on every purchase above ₹5000. Shop now! - MyBillBook" }
+      { id: "fest1", text: "🎉 Festival Special! Get 30% OFF on all products. Valid till 31st Oct. Visit us today! - TSAR IT BILLING" },
+      { id: "fest2", text: "✨ Happy Holidays! Season's greetings from TSAR IT BILLING. Enjoy exclusive discounts this week!" },
+      { id: "fest3", text: "🏮 Diwali Celebration! Special gift on every purchase above ₹5000. Shop now! - TSAR IT BILLING" }
     ],
     payment: [
-      { id: "pay1", text: "Dear Customer, Your invoice of ₹[Amount] is due. Please clear payment at the earliest. - MyBillBook" },
+      { id: "pay1", text: "Dear Customer, Your invoice of ₹[Amount] is due. Please clear payment at the earliest. - TSAR IT BILLING" },
       { id: "pay2", text: "Friendly reminder: Payment for your recent purchase is pending. Please pay by the due date. Thanks!" },
       { id: "pay3", text: "Payment request: An amount of ₹[Amount] is outstanding on your account. Please settle soon." }
     ],
     product: [
-      { id: "prod1", text: "🚀 New Arrival! Check out our latest collection. First 50 customers get 20% OFF. Shop now! - MyBillBook" },
+      { id: "prod1", text: "🚀 New Arrival! Check out our latest collection. First 50 customers get 20% OFF. Shop now! - TSAR IT BILLING" },
       { id: "prod2", text: "Fashion Alert! Our new summer collection is here. Visit our store to explore the trends." },
       { id: "prod3", text: "Exclusive Launch! We're excited to introduce our new premium line. Limited stock available!" }
     ],
     thanks: [
-      { id: "thx1", text: "Thank you for your purchase! We appreciate your business. Visit again for exclusive offers. - MyBillBook" },
-      { id: "thx2", text: "We love having you as a customer! Thanks for choosing MyBillBook. Here's a 10% discount for next time." },
+      { id: "thx1", text: "Thank you for your purchase! We appreciate your business. Visit again for exclusive offers. - TSAR IT BILLING" },
+      { id: "thx2", text: "We love having you as a customer! Thanks for choosing TSAR IT BILLING. Here's a 10% discount for next time." },
       { id: "thx3", text: "Heartfelt thanks for your support. Your feedback helps us grow. Tell us about your experience!" }
     ]
   };
@@ -59,6 +60,7 @@ function SmsPromotion() {
   const MAX_CHARS = 160;
 
   useEffect(() => {
+    fetchStats();
     if (showModal && (audience === "all" || audience === "individual" || (audience === "groups" && groupSubMode === "create"))) {
       fetchCustomers();
     }
@@ -67,6 +69,40 @@ function SmsPromotion() {
   useEffect(() => {
     localStorage.setItem("sms_groups", JSON.stringify(groups));
   }, [groups]);
+
+  const fetchStats = async () => {
+    try {
+      const data = await getCampaignStats();
+      if (data) setStats(data);
+    } catch (e) {
+      console.error("Failed to load campaign stats:", e);
+    }
+  };
+
+  const handleSendCampaign = async () => {
+    if (!message.trim()) {
+      alert("Please compose a message before sending.");
+      return;
+    }
+    const businessId = localStorage.getItem("userBusinessId") || "";
+    setSendingCampaign(true);
+    try {
+      await sendCampaignNotification({
+        title: campaignTitle || "Marketing Blast",
+        category: smsCategory || "Promotional",
+        message: message.trim(),
+        audience,
+        businessId
+      });
+      alert("Campaign Sent Successfully! SMS & WhatsApp messages dispatched.");
+      setShowModal(false);
+      fetchStats();
+    } catch (e) {
+      alert("Campaign dispatch failed: " + (e.message || "Unknown error"));
+    } finally {
+      setSendingCampaign(false);
+    }
+  };
 
   const fetchCustomers = async () => {
     try {
@@ -85,10 +121,10 @@ function SmsPromotion() {
 
   const handleTemplateSelect = (templateType) => {
     const templates = {
-      payment: "Dear Customer, Your invoice of ₹[Amount] is due. Please clear payment at the earliest. - MyBillBook",
-      festival: "🎉 Festival Special! Get 30% OFF on all products. Valid till 31st Oct. Visit us today! - MyBillBook",
-      product: "🚀 New Arrival! Check out our latest collection. First 50 customers get 20% OFF. Shop now! - MyBillBook",
-      thanks: "Thank you for your purchase! We appreciate your business. Visit again for exclusive offers. - MyBillBook"
+      payment: "Dear Customer, Your invoice of ₹[Amount] is due. Please clear payment at the earliest. - TSAR IT BILLING",
+      festival: "🎉 Festival Special! Get 30% OFF on all products. Valid till 31st Oct. Visit us today! - TSAR IT BILLING",
+      product: "🚀 New Arrival! Check out our latest collection. First 50 customers get 20% OFF. Shop now! - TSAR IT BILLING",
+      thanks: "Thank you for your purchase! We appreciate your business. Visit again for exclusive offers. - TSAR IT BILLING"
     };
 
     const categories = {
@@ -176,13 +212,8 @@ function SmsPromotion() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="dashboard-layout">
-        <Sidebar />
-
-        <div className="dashboard-content sms-marketing-page" style={{ marginTop: "2%" }}>
+    <PortalLayout title="SMS & WhatsApp Marketing Engine">
+      <div className="sms-marketing-page-container animate-fade-in">
 
           {/* Enhanced Header */}
           <div className="sms-header">
@@ -216,9 +247,9 @@ function SmsPromotion() {
                 <i className="bi bi-send"></i>
               </div>
               <div className="card-content">
-                <h4>SMS Sent</h4>
-                <p className="amount">0</p>
-                <span className="subtitle">This Month</span>
+                <h4>SMS & WhatsApp Sent</h4>
+                <p className="amount">{stats.totalSmsSent || 0}</p>
+                <span className="subtitle">Total Delivered</span>
               </div>
             </div>
 
@@ -228,8 +259,8 @@ function SmsPromotion() {
               </div>
               <div className="card-content">
                 <h4>Delivered</h4>
-                <p className="amount">0</p>
-                <span className="subtitle">100% Success Rate</span>
+                <p className="amount">{stats.totalSmsSent || 0}</p>
+                <span className="subtitle">{stats.deliveryRate || "100%"} Success Rate</span>
               </div>
             </div>
 
@@ -239,7 +270,7 @@ function SmsPromotion() {
               </div>
               <div className="card-content">
                 <h4>Total Customers</h4>
-                <p className="amount">0</p>
+                <p className="amount">{customers.length || 0}</p>
                 <span className="subtitle">Active Contacts</span>
               </div>
             </div>
@@ -249,9 +280,9 @@ function SmsPromotion() {
                 <i className="bi bi-graph-up-arrow"></i>
               </div>
               <div className="card-content">
-                <h4>Engagement</h4>
-                <p className="amount">0%</p>
-                <span className="subtitle">Response Rate</span>
+                <h4>Total Campaigns</h4>
+                <p className="amount">{stats.totalCampaigns || 0}</p>
+                <span className="subtitle">Dispatched</span>
               </div>
             </div>
           </div>
@@ -291,7 +322,7 @@ function SmsPromotion() {
                   <p>Send automated payment reminders to customers with pending invoices</p>
                   <div className="template-preview">
                     <i className="bi bi-chat-left-quote"></i>
-                    <span>Dear Customer, Your invoice #INV001 of ₹5,000 is due. Please clear payment at the earliest. - MyBillBook</span>
+                    <span>Dear Customer, Your invoice #INV001 of ₹5,000 is due. Please clear payment at the earliest. - TSAR IT BILLING</span>
                   </div>
                   <ul className="template-features">
                     <li><i className="bi bi-check2"></i> Automated reminders</li>
@@ -317,7 +348,7 @@ function SmsPromotion() {
                   <p>Increase sales during festival season with special offers and discounts</p>
                   <div className="template-preview">
                     <i className="bi bi-chat-left-quote"></i>
-                    <span>🎉 Diwali Special! Get 30% OFF on all products. Valid till 31st Oct. Visit us today! - MyBillBook</span>
+                    <span>🎉 Diwali Special! Get 30% OFF on all products. Valid till 31st Oct. Visit us today! - TSAR IT BILLING</span>
                   </div>
                   <ul className="template-features">
                     <li><i className="bi bi-check2"></i> Festival-themed messages</li>
@@ -343,7 +374,7 @@ function SmsPromotion() {
                   <p>Announce new products or services to your customer base effectively</p>
                   <div className="template-preview">
                     <i className="bi bi-chat-left-quote"></i>
-                    <span>🚀 New Arrival! Check out our latest collection. First 50 customers get 20% OFF. Shop now! - MyBillBook</span>
+                    <span>🚀 New Arrival! Check out our latest collection. First 50 customers get 20% OFF. Shop now! - TSAR IT BILLING</span>
                   </div>
                   <ul className="template-features">
                     <li><i className="bi bi-check2"></i> Product highlights</li>
@@ -368,7 +399,7 @@ function SmsPromotion() {
                   <p>Show appreciation to customers after purchase and build loyalty</p>
                   <div className="template-preview">
                     <i className="bi bi-chat-left-quote"></i>
-                    <span>Thank you for your purchase! We appreciate your business. Visit again for exclusive offers. - MyBillBook</span>
+                    <span>Thank you for your purchase! We appreciate your business. Visit again for exclusive offers. - TSAR IT BILLING</span>
                   </div>
                   <ul className="template-features">
                     <li><i className="bi bi-check2"></i> Customer appreciation</li>
@@ -424,11 +455,9 @@ function SmsPromotion() {
               </div>
             </div>
           </div>
-
         </div>
-      </div>
 
-      {/* Campaign Creation Modal */}
+        {/* Campaign Creation Modal */}
       {showModal && (
         <div className="sms-modal-overlay">
           <div className="sms-modal-container">
@@ -734,18 +763,19 @@ function SmsPromotion() {
             </div> {/* End sms-modal-body */}
 
             <div className="sms-modal-footer">
-              <button className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="btn-send" onClick={() => {
-                alert("Campaign Created Successfully!");
-                setShowModal(false);
-              }}>
-                <i className="bi bi-send-fill"></i> Send Campaign
+              <button className="btn-cancel" onClick={() => setShowModal(false)} disabled={sendingCampaign}>Cancel</button>
+              <button className="btn-send" onClick={handleSendCampaign} disabled={sendingCampaign}>
+                {sendingCampaign ? (
+                  <span><i className="bi bi-arrow-repeat spin"></i> Sending...</span>
+                ) : (
+                  <span><i className="bi bi-send-fill"></i> Send Campaign</span>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </PortalLayout>
   );
 }
 

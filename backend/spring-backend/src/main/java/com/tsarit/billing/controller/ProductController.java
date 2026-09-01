@@ -27,6 +27,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
+@CrossOrigin(origins = "*")
 public class ProductController {
 
     @Autowired
@@ -188,13 +189,6 @@ public class ProductController {
             product.setManufacturerNameOrCode(data.getManufacturerNameOrCode());
             product.setSupplierNameOrCode(data.getSupplierNameOrCode());
             product.setDescription(data.getDescription());
-
-            if (data.getAddedStock() != null && data.getAddedStock() > 0) {
-                product.setTotalStock(
-                        product.getTotalStock() + data.getAddedStock());
-                product.setRemainingStock(
-                        product.getRemainingStock() + data.getAddedStock());
-            }
 
             if (!product.getActive() || product.getDeleted()) {
                 return ResponseEntity.badRequest().body(

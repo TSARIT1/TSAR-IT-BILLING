@@ -21,8 +21,7 @@ import {
   BsSearch,
   BsPersonPlus
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesInvoice.css";
 import { Link } from "react-router-dom";
@@ -552,11 +551,8 @@ function CreatePurchaseInvoice() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Create Purchase Invoice">
+      <div className="create-purchase-invoice-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="invoice-page-header">
@@ -993,8 +989,7 @@ function CreatePurchaseInvoice() {
             </div>
           </div>
         </div>
-      </div>
-    </>
+    </PortalLayout>
   );
 }
 

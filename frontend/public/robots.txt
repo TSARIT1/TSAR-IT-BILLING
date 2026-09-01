@@ -1,3 +1,25 @@
-# https://www.robotstxt.org/robotstxt.html
+# Robots.txt for TSAR IT Billing
 User-agent: *
-Disallow:
+Allow: /
+Allow: /features
+Allow: /solutions
+Allow: /pricing
+Allow: /download-app
+Allow: /contact
+
+# Disallow private user portal and authentication state from search indexing
+Disallow: /dashboard
+Disallow: /sales-invoices
+Disallow: /create-sales-invoice
+Disallow: /parties
+Disallow: /inventory
+Disallow: /godown
+Disallow: /pos-billing
+Disallow: /e-invoicing
+Disallow: /business-settings
+Disallow: /manage-users
+Disallow: /staff-attendance
+Disallow: /sms-promotion
+Disallow: /forgot-password
+
+Sitemap: https://billing.tsaritservices.com/sitemap.xml

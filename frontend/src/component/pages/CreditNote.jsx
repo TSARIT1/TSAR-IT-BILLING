@@ -12,8 +12,7 @@ import {
   BsCheckCircleFill,
   BsXCircleFill
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../creditNote.css";
 
@@ -64,125 +63,120 @@ export default function CreditNote() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
-
-          {/* Modern Page Header */}
-          <div className="credit-note-page-header">
-            <div className="credit-note-header-content">
-              <div className="credit-note-title-section">
-                <h2 className="credit-note-page-title">
-                  <BsFileEarmarkMinus className="credit-note-title-icon" /> Credit Note
-                </h2>
-                <p className="credit-note-page-subtitle">Manage credit notes and adjustments</p>
-              </div>
-              <div className="credit-note-header-actions">
-                <button className="credit-note-report-btn" onClick={handleExportReport}>
-                  <BsDownload /> Export Report
-                </button>
-                <button className="credit-note-create-btn" onClick={() => navigate("/create-credit-note")}>
-                  <BsPlus /> Create Credit Note
-                </button>
-              </div>
+    <PortalLayout title="Credit Notes">
+      <div className="credit-note-page-container animate-fade-in">
+        {/* Modern Page Header */}
+        <div className="credit-note-page-header">
+          <div className="credit-note-header-content">
+            <div className="credit-note-title-section">
+              <h2 className="credit-note-page-title">
+                <BsFileEarmarkMinus className="credit-note-title-icon" /> Credit Note
+              </h2>
+              <p className="credit-note-page-subtitle">Manage credit notes and adjustments</p>
             </div>
-          </div>
-
-          {/* Summary Cards */}
-          <div className="credit-note-summary-row">
-            <div className="credit-note-summary-card total-notes">
-              <div className="credit-note-card-icon-wrapper total-notes-icon">
-                <BsFileEarmarkMinus className="credit-note-card-icon" />
-              </div>
-              <div className="credit-note-card-content">
-                <h4>Total Credit Notes</h4>
-                <p>{totalNotes}</p>
-              </div>
+            <div className="credit-note-header-actions">
+              <button className="credit-note-report-btn" onClick={handleExportReport}>
+                <BsDownload /> Export Report
+              </button>
+              <button className="credit-note-create-btn" onClick={() => navigate("/create-credit-note")}>
+                <BsPlus /> Create Credit Note
+              </button>
             </div>
-
-            <div className="credit-note-summary-card total-amount">
-              <div className="credit-note-card-icon-wrapper total-amount-icon">
-                <BsCashStack className="credit-note-card-icon" />
-              </div>
-              <div className="credit-note-card-content">
-                <h4>Total Amount</h4>
-                <p>₹ {totalAmount.toFixed(2)}</p>
-              </div>
-            </div>
-
-            <div className="credit-note-summary-card open-notes">
-              <div className="credit-note-card-icon-wrapper open-notes-icon">
-                <BsXCircleFill className="credit-note-card-icon" />
-              </div>
-              <div className="credit-note-card-content">
-                <h4>Open</h4>
-                <p>{openNotes}</p>
-              </div>
-            </div>
-
-            <div className="credit-note-summary-card closed-notes">
-              <div className="credit-note-card-icon-wrapper closed-notes-icon">
-                <BsCheckCircleFill className="credit-note-card-icon" />
-              </div>
-              <div className="credit-note-card-content">
-                <h4>Closed</h4>
-                <p>{closedNotes}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Credit Note Table */}
-          <div className="credit-note-table-container">
-            {notes.length === 0 ? (
-              <div className="credit-note-empty-state">
-                <BsInboxFill className="credit-note-empty-icon" />
-                <h3>No Credit Notes Found</h3>
-                <p>Start tracking credit notes and adjustments</p>
-                <button
-                  className="credit-note-empty-add-btn"
-                  onClick={() => navigate("/create-credit-note")}
-                >
-                  <BsPlus /> Create Your First Credit Note
-                </button>
-              </div>
-            ) : (
-              <table className="credit-note-table">
-                <thead>
-                  <tr>
-                    <th><BsCalendar3 /> Date</th>
-                    <th>Credit Note Number</th>
-                    <th><BsPeopleFill /> Party Name</th>
-                    <th><BsFileEarmarkText /> Invoice No</th>
-                    <th><BsCashStack /> Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {notes.map((n, i) => (
-                    <tr key={i}>
-                      <td>{n.date}</td>
-                      <td className="note-number-cell">{`CN-${n.number}`}</td>
-                      <td className="party-name-cell">
-                        <BsPeopleFill className="party-icon" /> {n.party || "-"}
-                      </td>
-                      <td>{n.invoice || "-"}</td>
-                      <td className="amount-cell">₹ {Number(n.total).toFixed(2)}</td>
-                      <td>
-                        <span className={`credit-note-status-badge ${n.status === "Closed" ? "closed" : "open"}`}>
-                          {n.status === "Closed" ? <BsCheckCircleFill /> : <BsXCircleFill />}
-                          {n.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
           </div>
         </div>
+
+        {/* Summary Cards */}
+        <div className="credit-note-summary-row">
+          <div className="credit-note-summary-card total-notes">
+            <div className="credit-note-card-icon-wrapper total-notes-icon">
+              <BsFileEarmarkMinus className="credit-note-card-icon" />
+            </div>
+            <div className="credit-note-card-content">
+              <h4>Total Credit Notes</h4>
+              <p>{totalNotes}</p>
+            </div>
+          </div>
+
+          <div className="credit-note-summary-card total-amount">
+            <div className="credit-note-card-icon-wrapper total-amount-icon">
+              <BsCashStack className="credit-note-card-icon" />
+            </div>
+            <div className="credit-note-card-content">
+              <h4>Total Amount</h4>
+              <p>₹ {totalAmount.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div className="credit-note-summary-card open-notes">
+            <div className="credit-note-card-icon-wrapper open-notes-icon">
+              <BsXCircleFill className="credit-note-card-icon" />
+            </div>
+            <div className="credit-note-card-content">
+              <h4>Open</h4>
+              <p>{openNotes}</p>
+            </div>
+          </div>
+
+          <div className="credit-note-summary-card closed-notes">
+            <div className="credit-note-card-icon-wrapper closed-notes-icon">
+              <BsCheckCircleFill className="credit-note-card-icon" />
+            </div>
+            <div className="credit-note-card-content">
+              <h4>Closed</h4>
+              <p>{closedNotes}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Credit Note Table */}
+        <div className="credit-note-table-container">
+          {notes.length === 0 ? (
+            <div className="credit-note-empty-state">
+              <BsInboxFill className="credit-note-empty-icon" />
+              <h3>No Credit Notes Found</h3>
+              <p>Start tracking credit notes and adjustments</p>
+              <button
+                className="credit-note-empty-add-btn"
+                onClick={() => navigate("/create-credit-note")}
+              >
+                <BsPlus /> Create Your First Credit Note
+              </button>
+            </div>
+          ) : (
+            <table className="credit-note-table">
+              <thead>
+                <tr>
+                  <th><BsCalendar3 /> Date</th>
+                  <th>Credit Note Number</th>
+                  <th><BsPeopleFill /> Party Name</th>
+                  <th><BsFileEarmarkText /> Invoice No</th>
+                  <th><BsCashStack /> Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {notes.map((n, i) => (
+                  <tr key={i}>
+                    <td>{n.date}</td>
+                    <td className="note-number-cell">{`CN-${n.number}`}</td>
+                    <td className="party-name-cell">
+                      <BsPeopleFill className="party-icon" /> {n.party || "-"}
+                    </td>
+                    <td>{n.invoice || "-"}</td>
+                    <td className="amount-cell">₹ {Number(n.total).toFixed(2)}</td>
+                    <td>
+                      <span className={`credit-note-status-badge ${n.status === "Closed" ? "closed" : "open"}`}>
+                        {n.status === "Closed" ? <BsCheckCircleFill /> : <BsXCircleFill />}
+                        {n.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
-    </>
+    </PortalLayout>
   );
 }

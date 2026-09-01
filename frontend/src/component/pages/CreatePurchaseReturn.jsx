@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
 import { BsQrCodeScan } from "react-icons/bs";
 import "../dashboard.css";
@@ -174,12 +173,8 @@ function CreatePurchaseReturn() {
   };
 
   return (
-    <>
-      <Navbar />
-
-      <div className="prc-layout">
-        <Sidebar />
-
+    <PortalLayout title="Create Purchase Return (Debit Note)">
+      <div className="create-purchase-return-page-container animate-fade-in">
         <div className="prc-main">
           <div className="prc-wrapper">
 
@@ -358,7 +353,7 @@ function CreatePurchaseReturn() {
           </div>
         </div>
       )}
-    </>
+    </PortalLayout>
   );
 }
 

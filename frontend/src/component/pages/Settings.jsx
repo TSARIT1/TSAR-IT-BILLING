@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
+import "../dashboard.css";
 import "../businessSettings.css";
 
 function Settings() {
@@ -10,7 +10,8 @@ function Settings() {
     const [showBusinessMenu, setShowBusinessMenu] = useState(null);
 
     // Current business form states
-    const [logoDataUrl, setLogoDataUrl] = useState("");
+    const [logoDataUrl, setLogoDataUrl] = useState(localStorage.getItem("companyLogo") || "");
+    const [profileImageDataUrl, setProfileImageDataUrl] = useState(localStorage.getItem("userProfileImage") || "");
     const [businessName, setBusinessName] = useState("");
     const [companyPhone, setCompanyPhone] = useState("");
     const [companyEmail, setCompanyEmail] = useState("");
@@ -38,11 +39,20 @@ function Settings() {
             setBusinesses(saved);
             loadBusinessData(saved[0]);
         }
+        if (!logoDataUrl) {
+            const storedLogo = localStorage.getItem("companyLogo");
+            if (storedLogo) setLogoDataUrl(storedLogo);
+        }
+        if (!profileImageDataUrl) {
+            const storedProfile = localStorage.getItem("userProfileImage");
+            if (storedProfile) setProfileImageDataUrl(storedProfile);
+        }
     }, []);
 
     // Load specific business data into form
     const loadBusinessData = (business) => {
-        setLogoDataUrl(business.logoDataUrl || "");
+        setLogoDataUrl(business.logoDataUrl || localStorage.getItem("companyLogo") || "");
+        setProfileImageDataUrl(business.profileImageDataUrl || localStorage.getItem("userProfileImage") || "");
         setBusinessName(business.businessName || "");
         setCompanyPhone(business.companyPhone || "");
         setCompanyEmail(business.companyEmail || "");
@@ -236,7 +246,7 @@ function Settings() {
         }
     };
 
-    // Logo upload
+    // Company Logo upload (used for Invoices, Bills, Thermal Receipts, and Dashboard)
     const handleLogoUpload = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -247,7 +257,30 @@ function Settings() {
         }
 
         const reader = new FileReader();
-        reader.onload = (ev) => setLogoDataUrl(ev.target.result);
+        reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            setLogoDataUrl(dataUrl);
+            localStorage.setItem("companyLogo", dataUrl);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // User Profile Photo upload (different from business company logo)
+    const handleProfileImageUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Profile image size should not exceed 5MB");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            setProfileImageDataUrl(dataUrl);
+            localStorage.setItem("userProfileImage", dataUrl);
+        };
         reader.readAsDataURL(file);
     };
 
@@ -278,10 +311,8 @@ function Settings() {
     // Empty state - no businesses
     if (businesses.length === 0) {
         return (
-            <>
-                <Navbar />
-                <div className="dashboard-layout">
-                    <Sidebar />
+            <PortalLayout title="Business Settings">
+                <div className="business-settings-page-container animate-fade-in">
                     <div className="dashboard-content business-settings-page">
                         <div className="empty-state">
                             <div className="empty-state-icon">🏢</div>
@@ -293,15 +324,13 @@ function Settings() {
                         </div>
                     </div>
                 </div>
-            </>
+            </PortalLayout>
         );
     }
 
     return (
-        <>
-            <Navbar />
-            <div className="dashboard-layout">
-                <Sidebar />
+        <PortalLayout title="Business Profiles & ERP Preferences">
+            <div className="business-settings-page-container animate-fade-in">
                 <div className="dashboard-content business-settings-page">
                     {/* Business Tabs */}
                     <div className="business-tabs-container">
@@ -369,16 +398,20 @@ function Settings() {
                     <div className="settings-grid">
                         {/* LEFT COLUMN */}
                         <div className="settings-left card">
-                            {/* Logo Upload Section */}
-                            <div className="form-row">
-                                <div className="upload-box">
-                                    <label className="upload-label">Upload Logo</label>
+                            {/* Branding: Company Logo and Profile Image Section */}
+                            <div className="form-row" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                                {/* 1. Company Logo */}
+                                <div className="upload-box" style={{ flex: '1', minWidth: '180px' }}>
+                                    <label className="upload-label fw-bold">Company Logo (Prints on Bills)</label>
                                     {logoDataUrl ? (
                                         <div className="logo-preview-container">
-                                            <img src={logoDataUrl} alt="Business Logo" className="logo-preview" />
+                                            <img src={logoDataUrl} alt="Business Logo" className="logo-preview" style={{ maxHeight: '80px', objectFit: 'contain' }} />
                                             <button
                                                 className="btn small ghost"
-                                                onClick={() => setLogoDataUrl("")}
+                                                onClick={() => {
+                                                    setLogoDataUrl("");
+                                                    localStorage.removeItem("companyLogo");
+                                                }}
                                                 style={{ marginTop: '10px' }}
                                             >
                                                 Remove Logo
@@ -394,14 +427,51 @@ function Settings() {
                                                 style={{ display: 'none' }}
                                             />
                                             <label htmlFor="logo-upload" className="upload-placeholder">
-                                                <div className="upload-icon">📷</div>
-                                                <div>Click to upload logo</div>
+                                                <div className="upload-icon">🏢</div>
+                                                <div>Click to upload Logo</div>
                                             </label>
                                         </>
                                     )}
-                                    <small>PNG/JPG, max 5 MB</small>
+                                    <small className="text-muted">Appears on invoices, POS slips & header</small>
                                 </div>
 
+                                {/* 2. User Profile Photo */}
+                                <div className="upload-box" style={{ flex: '1', minWidth: '180px' }}>
+                                    <label className="upload-label fw-bold">Personal Profile Photo</label>
+                                    {profileImageDataUrl ? (
+                                        <div className="logo-preview-container">
+                                            <img src={profileImageDataUrl} alt="Profile Photo" className="logo-preview rounded-circle" style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
+                                            <button
+                                                className="btn small ghost"
+                                                onClick={() => {
+                                                    setProfileImageDataUrl("");
+                                                    localStorage.removeItem("userProfileImage");
+                                                }}
+                                                style={{ marginTop: '10px' }}
+                                            >
+                                                Remove Photo
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleProfileImageUpload}
+                                                id="profile-upload"
+                                                style={{ display: 'none' }}
+                                            />
+                                            <label htmlFor="profile-upload" className="upload-placeholder">
+                                                <div className="upload-icon">👤</div>
+                                                <div>Click to upload Photo</div>
+                                            </label>
+                                        </>
+                                    )}
+                                    <small className="text-muted">Appears on user avatar & topbar profile</small>
+                                </div>
+                            </div>
+
+                            <div className="form-row mt-3">
                                 <div className="field-group wide">
                                     <label>Business Name *</label>
                                     <input
@@ -621,24 +691,22 @@ function Settings() {
 
                             {/* Industry Type */}
                             <div className="field-group">
-                                <label>Industry Type</label>
-                                <select value={industryType} onChange={(e) => setIndustryType(e.target.value)}>
-                                    <option value="">Select Industry Type</option>
-                                    <option value="Retail">Retail</option>
-                                    <option value="Wholesale">Wholesale</option>
-                                    <option value="Manufacturing">Manufacturing</option>
-                                    <option value="Education">Education</option>
-                                    <option value="IT Services">IT Services</option>
-                                    <option value="Healthcare">Healthcare</option>
-                                    <option value="Hospitality">Hospitality</option>
-                                    <option value="Real Estate">Real Estate</option>
-                                    <option value="Construction">Construction</option>
-                                    <option value="Agriculture">Agriculture</option>
-                                    <option value="Transportation">Transportation</option>
-                                    <option value="Finance">Finance</option>
-                                    <option value="Consulting">Consulting</option>
-                                    <option value="E-commerce">E-commerce</option>
-                                    <option value="Other">Other</option>
+                                <label>Industry Type & Business Sector</label>
+                                <select value={industryType} onChange={(e) => setIndustryType(e.target.value)} className="form-select fw-bold">
+                                    <option value="">-- Select Indian Business Sector --</option>
+                                    <option value="Supermarket & FMCG Retail">🛒 Supermarket, Grocery & FMCG Retail (Barcode & Weighing Scale)</option>
+                                    <option value="Clothing, Garments & Footwear">👗 Clothing, Garments & Footwear (Size, Color & Fabric)</option>
+                                    <option value="Electronics, Mobile & Hardware">📱 Electronics, Mobiles & Appliances (IMEI, Serial & Warranty)</option>
+                                    <option value="Fertilizers, Seeds & Agro Chemicals">🌾 Fertilizers, Seeds & Agro Chemicals (Batch, NPK & Subsidy)</option>
+                                    <option value="Transport, Logistics & Waybills">🚛 Transport, Logistics & E-Way Bills (LR, Vehicle & Distance)</option>
+                                    <option value="Pharmacy, Medical & Healthcare">💊 Pharmacy, Medical & Healthcare (Batch, Expiry & Drug Lic)</option>
+                                    <option value="Hardware, Sanitary & Building Materials">🔨 Hardware, Sanitary & Building Materials</option>
+                                    <option value="Automobile Spare Parts & Workshop">🚗 Automobile Spare Parts & Service Center</option>
+                                    <option value="Jewellery & Precious Metals">💍 Jewellery & Precious Metals (Purity & Hallmarking)</option>
+                                    <option value="General Wholesale & Distribution">📦 General Wholesale & Distribution (B2B Bulk)</option>
+                                    <option value="Manufacturing & Job Work">🏭 Manufacturing & Job Work (BOM & Production)</option>
+                                    <option value="IT, Consulting & Professional Services">💼 IT, Consulting & Professional Services</option>
+                                    <option value="OTHER">🌐 Other Business Sector</option>
                                 </select>
                             </div>
 
@@ -764,7 +832,7 @@ function Settings() {
                     </div>
                 </div>
             </div>
-        </>
+        </PortalLayout>
     );
 }
 

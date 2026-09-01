@@ -24,6 +24,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/godowns")
+@CrossOrigin(origins = "*")
 public class GodownController {
 
     private final GodownRepository godownRepo;

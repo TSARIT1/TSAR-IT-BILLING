@@ -17,8 +17,7 @@ import {
   BsFilePdfFill,
   BsFileEarmarkSpreadsheet
 } from "react-icons/bs";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import { getAllCustomers, getCustomersByBusinessId, deleteCustomer, downloadPartiesReport, downloadPartiesReportCSV } from "../../services/api";
 import "../dashboard.css";
 import "../parties.css";
@@ -205,11 +204,8 @@ function Parties() {
   const totalBoth = parties.filter(p => p.customerType === "Both").length;
 
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content">
+    <PortalLayout title="Customer & Supplier Parties">
+      <div className="parties-page-container animate-fade-in">
 
           {/* Modern Page Header */}
           <div className="parties-page-header">
@@ -410,9 +406,8 @@ function Parties() {
             </table>
           </div>
         </div>
-      </div>
-    </>
-  );
-}
+      </PortalLayout>
+    );
+  }
 
-export default Parties;
+  export default Parties;

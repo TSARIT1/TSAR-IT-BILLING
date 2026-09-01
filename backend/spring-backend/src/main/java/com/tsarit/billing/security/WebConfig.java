@@ -12,9 +12,11 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:3000")
-                        .allowedMethods("GET","POST","PUT","DELETE");
+                registry.addMapping("/**")
+                        .allowedOriginPatterns("https://billing.tsaritservices.com", "http://billing.tsaritservices.com", "http://localhost:3000", "http://localhost:5173", "http://localhost:8081")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }

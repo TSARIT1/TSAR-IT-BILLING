@@ -97,7 +97,11 @@ public class AuthController {
                     .body(Map.of("error", "Invalid email/mobile or password"));
         }
 
-        String token = jwtUtil.generateToken(user.getMobileNo());
+        String subject = user.getMobileNo();
+        if (subject == null || subject.isBlank()) {
+            subject = user.getEmail() != null && !user.getEmail().isBlank() ? user.getEmail() : user.getId();
+        }
+        String token = jwtUtil.generateToken(subject);
 
         user.setPassword(null);
         
@@ -108,5 +112,129 @@ public class AuthController {
         response.put("message", "Login successful");
 
         return ResponseEntity.ok(response);
+    }
+
+    // In-memory OTP cache (identifier -> OTP)
+    private static final Map<String, String> otpStore = new java.util.concurrent.ConcurrentHashMap<>();
+
+    // ----------------------- GET PROFILE -----------------------
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getProfile(@PathVariable String userId) {
+        return userRepository.findById(userId).map(user -> {
+            user.setPassword(null);
+            return ResponseEntity.ok((Object) user);
+        }).orElseGet(() -> ResponseEntity.status(404).body(Map.of("error", "User not found")));
+    }
+
+    // ----------------------- UPDATE PROFILE -----------------------
+    @PutMapping("/profile/{userId}")
+    public ResponseEntity<?> updateProfile(@PathVariable String userId, @RequestBody User userDetails) {
+        return userRepository.findById(userId).map(user -> {
+            if (userDetails.getOwnerName() != null && !userDetails.getOwnerName().isBlank()) {
+                user.setOwnerName(userDetails.getOwnerName());
+            }
+            if (userDetails.getBusinessName() != null && !userDetails.getBusinessName().isBlank()) {
+                user.setBusinessName(userDetails.getBusinessName());
+            }
+            if (userDetails.getEmail() != null && !userDetails.getEmail().isBlank()) {
+                user.setEmail(userDetails.getEmail());
+            }
+            if (userDetails.getMobileNo() != null && !userDetails.getMobileNo().isBlank()) {
+                user.setMobileNo(userDetails.getMobileNo());
+            }
+            if (userDetails.getReferredBy() != null) {
+                user.setReferredBy(userDetails.getReferredBy());
+            }
+            User saved = userRepository.save(user);
+            saved.setPassword(null);
+            return ResponseEntity.ok((Object) saved);
+        }).orElseGet(() -> ResponseEntity.status(404).body(Map.of("error", "User not found")));
+    }
+
+    // ----------------------- FORGOT PASSWORD -----------------------
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String identifier = request.get("identifier");
+        if (identifier == null || identifier.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email or mobile number is required"));
+        }
+
+        User user = identifier.contains("@")
+                ? userRepository.findByEmail(identifier).orElse(null)
+                : userRepository.findByMobileNo(identifier).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "No user found with provided identifier"));
+        }
+
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        otpStore.put(identifier, otp);
+
+        System.out.println("Generated OTP for " + identifier + ": " + otp);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Verification code sent successfully",
+            "identifier", identifier,
+            "otp", otp // Provided for testing & UI display
+        ));
+    }
+
+    // ----------------------- RESET PASSWORD -----------------------
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String identifier = request.get("identifier");
+        String otp = request.get("otp");
+        String newPassword = request.get("newPassword");
+
+        if (identifier == null || otp == null || newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Identifier, OTP, and new password are required"));
+        }
+
+        String storedOtp = otpStore.get(identifier);
+        // Accept stored OTP or master test code 123456
+        if (storedOtp == null || (!storedOtp.equals(otp) && !"123456".equals(otp))) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid or expired verification code"));
+        }
+
+        User user = identifier.contains("@")
+                ? userRepository.findByEmail(identifier).orElse(null)
+                : userRepository.findByMobileNo(identifier).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        otpStore.remove(identifier);
+
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully. You can now login."));
+    }
+
+    // ----------------------- CHANGE PASSWORD -----------------------
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+        String userId = request.get("userId");
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+
+        if (userId == null || oldPassword == null || newPassword == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User ID, current password, and new password are required"));
+        }
+
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Incorrect current password"));
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 }

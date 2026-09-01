@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
+import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../onlineOrders.css";
 import { FiSearch, FiShoppingCart, FiTrendingUp, FiPackage, FiPlus, FiX, FiEye, FiTrash2, FiEdit, FiDownload } from "react-icons/fi";
@@ -1004,11 +1003,8 @@ function OnlineOrders() {
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <>
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="dashboard-content online-orders-page" style={{ marginTop: "2%" }}>
+    <PortalLayout title="E-Commerce & Online Orders">
+      <div className="online-orders-page-container animate-fade-in">
 
           {/* ── Header ── */}
           <div className="orders-header">
@@ -2035,10 +2031,8 @@ function OnlineOrders() {
               </div>
             </div>
           )}
-
         </div>
-      </div>
-    </>
+    </PortalLayout>
   );
 }
 
