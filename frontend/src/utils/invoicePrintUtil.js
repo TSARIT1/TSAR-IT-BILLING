@@ -1,5 +1,6 @@
 /**
- * Enterprise Indian GST Invoice Print & Export Utility
+ * Enterprise Multi-Tenant SaaS GST Invoice Print & Export Utility
+ * Dynamic Tenant Branding - Uses Logged-in Merchant's Details
  * Supports:
  * - A4 (Standard GST Tax Invoice with SAC/HSN, CGST/SGST/IGST breakdown)
  * - A5 (Half-Sheet Compact Counter GST Invoice)
@@ -10,32 +11,51 @@
  */
 
 export const printEnterpriseInvoice = ({
-  invoice,
+  invoice = {},
   items = [],
   business = {},
   printSize = "A4", // "A4", "A5", "80mm", "58mm"
 }) => {
-  const companyLogo = business.logo || localStorage.getItem("companyLogo") || "";
-  const signature = business.signature || "";
-  const businessName = business.businessName || "TSAR IT Enterprise Solutions";
-  const gstNo = business.gstNo || business.gstin || "36AAAAA0000A1Z5";
-  const panNo = business.panNumber || "AAAAA0000A";
-  const address = business.address || "H.No 12-4/A, Main Commercial Hub, Madhapur";
-  const city = business.city || "Hyderabad";
-  const state = business.state || "Telangana";
-  const pincode = business.pincode || "500081";
-  const phone = business.phoneNo || business.companyPhone || "+91 98765 43210";
-  const email = business.email || business.companyEmail || "billing@tsarit.com";
+  // Read tenant details dynamically from parameter or localStorage session
+  let storedUser = {};
+  let storedBusiness = {};
+  let storedBank = {};
+  try {
+    storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    storedBusiness = JSON.parse(localStorage.getItem("businessData") || "{}");
+    storedBank = JSON.parse(localStorage.getItem("bankDetails") || "{}");
+  } catch (e) {
+    // ignore parse errors
+  }
+
+  const companyLogo = business.logo || business.companyLogo || localStorage.getItem("companyLogo") || storedBusiness.logo || "";
+  const signature = business.signature || localStorage.getItem("signature") || storedBusiness.signature || "";
+  
+  const businessName = business.businessName || storedBusiness.businessName || storedUser.businessName || storedUser.ownerName || "Merchant Store";
+  const gstNo = business.gstNo || business.gstin || storedBusiness.gstNo || "";
+  const panNo = business.panNumber || storedBusiness.panNo || "";
+  const address = business.address || storedBusiness.address || "";
+  const city = business.city || storedBusiness.city || "";
+  const state = business.state || storedBusiness.state || "";
+  const pincode = business.pincode || storedBusiness.pincode || "";
+  const phone = business.phoneNo || business.companyPhone || storedBusiness.phoneNo || storedUser.mobileNo || "";
+  const email = business.email || business.companyEmail || storedBusiness.email || storedUser.email || "";
+
+  const bankName = business.bankName || storedBank.bankName || storedBusiness.bankName || "";
+  const accountNumber = business.accountNumber || storedBank.accountNumber || storedBusiness.accountNumber || "";
+  const ifscCode = business.ifscCode || storedBank.ifscCode || storedBusiness.ifscCode || "";
+  const branchName = business.branchName || storedBank.branchName || storedBusiness.branchName || "";
+  const upiId = business.upiId || storedBank.upiId || (phone ? `${phone.replace(/[^0-9]/g, '')}@upi` : "");
 
   // Invoice variables
   const invoiceId = invoice.invoiceId || invoice.id || "INV-" + Date.now().toString().slice(-6);
   const invoiceDate = invoice.date || invoice.createdAt ? new Date(invoice.date || invoice.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
   const customerName = invoice.customerName || invoice.party || "Walk-In Customer";
   const customerPhone = invoice.customerPhone || invoice.mobile || "-";
-  const customerGstin = invoice.customerGstin || "URP (Unregistered)";
+  const customerGstin = invoice.customerGstin || (invoice.taxId ? invoice.taxId : "URP (Unregistered)");
   const customerAddress = invoice.customerAddress || invoice.city || "Local Market";
-  const placeOfSupply = invoice.placeOfSupply || state;
-  const isInterState = placeOfSupply && placeOfSupply.toLowerCase() !== state.toLowerCase();
+  const placeOfSupply = invoice.placeOfSupply || state || "Local State";
+  const isInterState = state && placeOfSupply && placeOfSupply.toLowerCase() !== state.toLowerCase();
 
   // Calculations
   let subtotal = 0;
@@ -51,7 +71,7 @@ export const printEnterpriseInvoice = ({
     const discPct = Number(it.discount || 0);
     const discAmt = (itemSub * discPct) / 100;
     const taxable = itemSub - discAmt;
-    const taxPct = Number(it.tax || 18);
+    const taxPct = Number(it.tax || it.taxRate || 0);
 
     let cgst = 0, sgst = 0, igst = 0;
     if (isInterState) {
@@ -70,7 +90,7 @@ export const printEnterpriseInvoice = ({
     return {
       sr: idx + 1,
       name: it.itemName || it.productName || it.name || "Item " + (idx + 1),
-      hsn: it.hsnCode || it.hsn || "8471",
+      hsn: it.hsnCode || it.hsn || "-",
       qty,
       unit: it.unit || "PCS",
       rate,
@@ -98,110 +118,99 @@ export const printEnterpriseInvoice = ({
   if (printSize === "58mm") {
     cssRules = `
       @page { size: 58mm auto; margin: 2mm; }
-      body { width: 54mm; font-family: 'Courier New', monospace; font-size: 11px; margin: 0; padding: 2px; color: #000; }
-      .thermal-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-      .thermal-title { font-size: 14px; font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; font-size: 10px; }
-      th { border-bottom: 1px dashed #000; text-align: left; }
-      .text-right { text-align: right; }
-      .text-center { text-align: center; }
-      .thermal-totals { border-top: 1px dashed #000; margin-top: 5px; padding-top: 5px; font-size: 11px; }
-      .logo-img { max-width: 48mm; max-height: 25mm; display: block; margin: 0 auto 4px auto; }
+      body { font-family: 'Courier New', Courier, monospace; font-size: 11px; margin: 0; padding: 2px; color: #000; }
+      .thermal-center { text-align: center; }
+      .thermal-bold { font-weight: bold; }
+      .thermal-divider { border-top: 1px dashed #000; margin: 4px 0; }
+      .thermal-table { width: 100%; border-collapse: collapse; }
+      .thermal-table th, .thermal-table td { font-size: 10px; padding: 2px 0; text-align: left; }
+      .thermal-table .text-right { text-align: right; }
+      .thermal-totals { margin-top: 4px; font-size: 11px; }
+      .logo-img { max-height: 35px; max-width: 80px; object-fit: contain; margin-bottom: 4px; }
     `;
   } else if (printSize === "80mm") {
     cssRules = `
       @page { size: 80mm auto; margin: 3mm; }
-      body { width: 74mm; font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 4px; color: #000; }
-      .thermal-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
-      .thermal-title { font-size: 16px; font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; font-size: 11px; }
-      th { border-bottom: 1px dashed #000; text-align: left; padding: 2px 0; }
-      td { padding: 2px 0; }
-      .text-right { text-align: right; }
-      .text-center { text-align: center; }
-      .thermal-totals { border-top: 1px dashed #000; margin-top: 6px; padding-top: 6px; font-size: 12px; }
-      .logo-img { max-width: 60mm; max-height: 30mm; display: block; margin: 0 auto 6px auto; }
-    `;
-  } else if (printSize === "A5") {
-    cssRules = `
-      @page { size: A5 landscape; margin: 8mm; }
-      body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; margin: 0; padding: 8px; color: #1e293b; }
-      .tax-invoice-header { display: flex; justify-content: space-between; border-bottom: 2px solid #0284c7; padding-bottom: 8px; }
-      .logo-img { max-height: 50px; max-width: 140px; margin-bottom: 4px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 10px; }
-      th, td { border: 1px solid #cbd5e1; padding: 4px 6px; }
-      th { background-color: #f1f5f9; font-weight: 700; }
-      .text-right { text-align: right; }
-      .text-center { text-align: center; }
-      .totals-box { width: 45%; margin-left: auto; margin-top: 8px; border-collapse: collapse; }
+      body { font-family: 'Courier New', Courier, monospace; font-size: 12px; margin: 0; padding: 4px; color: #000; }
+      .thermal-center { text-align: center; }
+      .thermal-bold { font-weight: bold; }
+      .thermal-divider { border-top: 1px dashed #000; margin: 6px 0; }
+      .thermal-table { width: 100%; border-collapse: collapse; }
+      .thermal-table th, .thermal-table td { font-size: 11px; padding: 3px 0; text-align: left; }
+      .thermal-table .text-right { text-align: right; }
+      .thermal-totals { margin-top: 6px; font-size: 12px; }
+      .logo-img { max-height: 45px; max-width: 100px; object-fit: contain; margin-bottom: 4px; }
     `;
   } else {
-    // Default A4 Standard
+    // A4 & A5 Modern Clean Invoicing Styles
+    const isA5 = printSize === "A5";
     cssRules = `
-      @page { size: A4 portrait; margin: 12mm; }
-      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #0f172a; margin: 0; padding: 10px; }
-      .invoice-container { border: 2px solid #0284c7; border-radius: 4px; padding: 16px; }
-      .tax-invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0284c7; padding-bottom: 12px; }
-      .logo-img { max-height: 70px; max-width: 180px; object-fit: contain; margin-bottom: 6px; }
-      .bill-title-banner { background: #0284c7; color: #fff; text-align: center; font-weight: 800; font-size: 14px; letter-spacing: 1.5px; padding: 4px; margin: 10px 0; }
-      .party-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 12px; }
-      .party-col { padding: 10px; }
-      .party-col:first-child { border-right: 1px solid #cbd5e1; }
-      table.items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-      table.items-table th { background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; padding: 8px 6px; font-size: 11px; text-transform: uppercase; }
-      table.items-table td { border: 1px solid #cbd5e1; padding: 6px; font-size: 11.5px; }
-      .totals-container { display: flex; justify-content: space-between; margin-top: 8px; }
-      .bank-details-box { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 12px; width: 48%; }
-      .summary-table { width: 48%; border-collapse: collapse; }
-      .summary-table td { padding: 4px 8px; border: 1px solid #cbd5e1; }
-      .grand-total-row td { background: #0284c7; color: #fff; font-weight: 800; font-size: 13px; }
-      .signature-row { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 10px; }
-      .signature-box { text-align: center; width: 200px; border-top: 1px solid #94a3b8; padding-top: 4px; font-weight: 600; font-size: 11px; }
-      .text-right { text-align: right; }
+      @page { size: ${isA5 ? "A5 landscape" : "A4 portrait"}; margin: ${isA5 ? "8mm" : "12mm"}; }
+      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${isA5 ? "11px" : "12px"}; color: #1e293b; margin: 0; padding: 0; background: #fff; }
+      .invoice-container { border: 1px solid #cbd5e1; border-radius: 8px; padding: ${isA5 ? "12px" : "20px"}; }
+      .tax-invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 14px; }
+      .logo-img { max-height: ${isA5 ? "40px" : "55px"}; max-width: 160px; object-fit: contain; margin-bottom: 6px; }
+      .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 14px; background: #f8fafc; }
+      .party-col { font-size: ${isA5 ? "10px" : "11px"}; line-height: 1.4; }
+      .items-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+      .items-table th { background: #0f172a; color: #fff; padding: 6px 8px; font-size: 11px; text-transform: uppercase; font-weight: 600; }
+      .items-table td { border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-size: 11px; }
+      .items-table tr:nth-child(even) { background-color: #f8fafc; }
       .text-center { text-align: center; }
-      .badge-gst { background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+      .text-right { text-align: right; }
+      .totals-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+      .bank-details-box { width: 55%; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; background: #f8fafc; font-size: 10px; }
+      .summary-table { width: 40%; border-collapse: collapse; font-size: 11px; }
+      .summary-table td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; }
+      .grand-total-row { background: #0f172a; color: #fff; font-size: 13px; font-weight: 800; }
+      .grand-total-row td { padding: 8px 6px; border: none; }
+      .signature-row { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+      .signature-box { text-align: center; font-size: 10px; color: #64748b; width: 200px; }
+      .badge-gst { background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }
     `;
   }
 
-  // HTML Body Builder
   let bodyHtml = "";
+
   if (printSize === "58mm" || printSize === "80mm") {
+    // Thermal Roll Layout
     bodyHtml = `
-      <div class="thermal-header">
-        ${companyLogo ? `<img src="${companyLogo}" class="logo-img" alt="Logo" />` : ""}
-        <div class="thermal-title">${businessName}</div>
-        <div>GSTIN: ${gstNo}</div>
-        <div>${address}, ${city}</div>
-        <div>Ph: ${phone}</div>
+      <div class="thermal-center">
+        ${companyLogo ? `<img src="${companyLogo}" class="logo-img" alt="Logo" /><br/>` : ""}
+        <div class="thermal-bold" style="font-size:${printSize === '80mm' ? '15px' : '13px'};">${businessName}</div>
+        ${address || city ? `<div>${[address, city, state].filter(Boolean).join(", ")}</div>` : ""}
+        ${phone ? `<div>Phone: ${phone}</div>` : ""}
+        ${gstNo ? `<div>GSTIN: ${gstNo}</div>` : ""}
       </div>
-      <div><strong>BILL NO:</strong> ${invoiceId}</div>
-      <div><strong>DATE:</strong> ${invoiceDate}</div>
-      <div><strong>CLIENT:</strong> ${customerName} (${customerPhone})</div>
-      <div style="border-bottom:1px dashed #000; margin:4px 0;"></div>
-      <table>
+      <div class="thermal-divider"></div>
+      <div><strong>Bill #:</strong> ${invoiceId}</div>
+      <div><strong>Date:</strong> ${invoiceDate}</div>
+      <div><strong>Customer:</strong> ${customerName}</div>
+      ${customerPhone && customerPhone !== "-" ? `<div><strong>Phone:</strong> ${customerPhone}</div>` : ""}
+      <div class="thermal-divider"></div>
+      <table class="thermal-table">
         <thead>
           <tr>
-            <th>ITEM</th>
-            <th class="text-center">QTY</th>
-            <th class="text-right">PRICE</th>
-            <th class="text-right">AMT</th>
+            <th style="width:50%;">Item</th>
+            <th style="width:15%;" class="text-right">Qty</th>
+            <th style="width:35%;" class="text-right">Total</th>
           </tr>
         </thead>
         <tbody>
           ${processedItems.map(it => `
             <tr>
               <td>${it.name}</td>
-              <td class="text-center">${it.qty}</td>
-              <td class="text-right">${it.rate.toFixed(2)}</td>
-              <td class="text-right">${it.taxable.toFixed(2)}</td>
+              <td class="text-right">${it.qty}</td>
+              <td class="text-right">₹${it.total.toFixed(2)}</td>
             </tr>
           `).join("")}
         </tbody>
       </table>
+      <div class="thermal-divider"></div>
       <div class="thermal-totals">
         <div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></div>
         ${totalDiscount > 0 ? `<div style="display:flex; justify-content:space-between;"><span>Discount:</span><span>-₹${totalDiscount.toFixed(2)}</span></div>` : ""}
-        <div style="display:flex; justify-content:space-between;"><span>GST Tax:</span><span>₹${totalTax.toFixed(2)}</span></div>
+        ${totalTax > 0 ? `<div style="display:flex; justify-content:space-between;"><span>GST Tax:</span><span>₹${totalTax.toFixed(2)}</span></div>` : ""}
         <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:${printSize === '80mm' ? '14px' : '12px'}; border-top:1px dashed #000; padding-top:4px; margin-top:2px;">
           <span>NET TOTAL:</span>
           <span>₹${grandTotal.toFixed(2)}</span>
@@ -209,21 +218,24 @@ export const printEnterpriseInvoice = ({
       </div>
       <div style="text-align:center; margin-top:10px; border-top:1px dashed #000; padding-top:6px;">
         <div>Thank You! Visit Again</div>
-        <div style="font-size:9px;">GST Verified Invoicing</div>
+        <div style="font-size:9px;">Powered by ${businessName}</div>
       </div>
     `;
   } else {
     // A4 / A5 Full GST Invoicing Format
+    const fullAddress = [address, city, state, pincode].filter(Boolean).join(", ");
+    
     bodyHtml = `
       <div class="invoice-container">
         <div class="tax-invoice-header">
           <div>
             ${companyLogo ? `<img src="${companyLogo}" class="logo-img" alt="Logo" />` : ""}
-            <h2 style="margin:0; font-size:18px; color:#0284c7; font-weight:800;">${businessName}</h2>
-            <div style="color:#475569; margin-top:4px;">
-              ${address}, ${city}, ${state} - ${pincode}<br/>
-              <strong>Phone:</strong> ${phone} | <strong>Email:</strong> ${email}<br/>
-              <span class="badge-gst">GSTIN: ${gstNo}</span> | <strong>PAN:</strong> ${panNo}
+            <h2 style="margin:0; font-size:18px; color:#0f172a; font-weight:800;">${businessName}</h2>
+            <div style="color:#475569; margin-top:4px; font-size:11px;">
+              ${fullAddress ? `${fullAddress}<br/>` : ""}
+              ${phone || email ? `<strong>Contact:</strong> ${[phone, email].filter(Boolean).join(" | ")}<br/>` : ""}
+              ${gstNo ? `<span class="badge-gst">GSTIN: ${gstNo}</span>` : ""}
+              ${panNo ? ` | <strong>PAN:</strong> ${panNo}` : ""}
             </div>
           </div>
           <div style="text-align:right;">
@@ -232,7 +244,7 @@ export const printEnterpriseInvoice = ({
             <div style="margin-top:8px; font-size:12px;">
               <strong>Invoice No:</strong> <span style="color:#0284c7; font-weight:700;">${invoiceId}</span><br/>
               <strong>Date:</strong> ${invoiceDate}<br/>
-              <strong>Place of Supply:</strong> ${placeOfSupply} (${isInterState ? "Inter-State / IGST" : "Intra-State / CGST+SGST"})
+              ${placeOfSupply ? `<strong>Place of Supply:</strong> ${placeOfSupply} (${isInterState ? "Inter-State / IGST" : "Intra-State / CGST+SGST"})` : ""}
             </div>
           </div>
         </div>
@@ -242,17 +254,17 @@ export const printEnterpriseInvoice = ({
             <strong style="color:#0284c7; text-transform:uppercase; font-size:11px;">Billed To (Customer):</strong>
             <div style="font-size:13px; font-weight:700; margin-top:2px;">${customerName}</div>
             <div style="color:#475569;">
-              ${customerAddress}<br/>
-              <strong>Phone:</strong> ${customerPhone}<br/>
-              <strong>GSTIN:</strong> ${customerGstin}
+              ${customerAddress ? `${customerAddress}<br/>` : ""}
+              ${customerPhone && customerPhone !== "-" ? `<strong>Phone:</strong> ${customerPhone}<br/>` : ""}
+              <strong>GSTIN / Tax ID:</strong> ${customerGstin}
             </div>
           </div>
           <div class="party-col">
-            <strong style="color:#0284c7; text-transform:uppercase; font-size:11px;">Shipping / Dispatch Details:</strong>
+            <strong style="color:#0284c7; text-transform:uppercase; font-size:11px;">Dispatch & Logistics:</strong>
             <div style="color:#475569; margin-top:4px;">
-              <strong>Dispatch From:</strong> Main Godown Hub<br/>
-              <strong>Transportation Mode:</strong> Roadways / Courier<br/>
-              <strong>Vehicle No:</strong> ${invoice.vehicleNo || "N/A"} | <strong>E-Way Bill:</strong> ${invoice.ewayBillNo || "Not Required (< ₹50k)"}
+              <strong>Dispatch From:</strong> ${city || "Main Business Hub"}<br/>
+              <strong>Transportation Mode:</strong> ${invoice.transportMode || "Direct Counter / Delivery"}<br/>
+              <strong>Vehicle No:</strong> ${invoice.vehicleNo || "N/A"} | <strong>E-Way Bill:</strong> ${invoice.ewayBillNo || "N/A"}
             </div>
           </div>
         </div>
@@ -296,14 +308,17 @@ export const printEnterpriseInvoice = ({
 
         <div class="totals-container">
           <div class="bank-details-box">
-            <strong style="color:#0284c7;">Bank & Statutory Terms:</strong>
+            <strong style="color:#0284c7;">Bank & Payment Details:</strong>
             <div style="font-size:11px; margin-top:4px; color:#475569;">
-              Bank: HDFC Bank Ltd | A/C: 50200012345678<br/>
-              IFSC: HDFC0001234 | Branch: Madhapur Hitec City<br/>
-              UPI ID: ${phone.replace(/[^0-9]/g, '')}@upi
+              ${bankName ? `<strong>Bank:</strong> ${bankName} | ` : ""}
+              ${accountNumber ? `<strong>A/C:</strong> ${accountNumber}<br/>` : ""}
+              ${ifscCode ? `<strong>IFSC:</strong> ${ifscCode} | ` : ""}
+              ${branchName ? `<strong>Branch:</strong> ${branchName}<br/>` : ""}
+              ${upiId ? `<strong>UPI ID:</strong> ${upiId}` : ""}
+              ${!bankName && !accountNumber && !upiId ? `Payment Mode: Direct Counter Settlement` : ""}
             </div>
             <div style="margin-top:6px; font-size:10px; color:#64748b;">
-              <strong>Terms:</strong> Goods once sold cannot be returned. Subject to ${city} jurisdiction. Interest @ 18% p.a. charged after due date.
+              <strong>Terms & Conditions:</strong> Goods once sold are verified. Subject to ${city || 'local'} jurisdiction.
             </div>
           </div>
 
@@ -378,8 +393,15 @@ export const printEnterpriseInvoice = ({
 /**
  * Export Invoice to Word (.doc) File
  */
-export const exportInvoiceToWord = (invoice, items = [], business = {}) => {
-  const businessName = business.businessName || "TSAR IT Enterprise";
+export const exportInvoiceToWord = (invoice = {}, items = [], business = {}) => {
+  let storedUser = {};
+  let storedBusiness = {};
+  try {
+    storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    storedBusiness = JSON.parse(localStorage.getItem("businessData") || "{}");
+  } catch (e) {}
+
+  const businessName = business.businessName || storedBusiness.businessName || storedUser.businessName || "Merchant Store";
   const invoiceId = invoice.invoiceId || invoice.id || "INV-" + Date.now().toString().slice(-6);
 
   let docContent = `

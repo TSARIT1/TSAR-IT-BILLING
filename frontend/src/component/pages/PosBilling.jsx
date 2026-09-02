@@ -157,10 +157,17 @@ export default function PosBilling() {
       return;
     }
 
+    let targetCustomerId = selectedCustomerId;
+    if (!targetCustomerId || targetCustomerId === "WALK_IN") {
+      if (customers.length > 0) {
+        targetCustomerId = customers[0].id;
+      }
+    }
+
     const billPayload = {
       invoiceId: "POS-" + Date.now().toString().slice(-6),
       date: new Date().toISOString().split('T')[0],
-      customer: selectedCustomerId,
+      customer: targetCustomerId || "Walk-In Customer",
       items: currentCart.items,
       subtotal: subtotal,
       cgst: cgst,
@@ -170,6 +177,22 @@ export default function PosBilling() {
       cashTendered: cashTendered || grandTotal,
       changeDue: changeDue
     };
+
+    try {
+      const backendSalePayload = {
+        customerId: targetCustomerId ? Number(targetCustomerId) : 1,
+        totalAmount: Number(grandTotal),
+        isPaid: true,
+        items: currentCart.items.map(it => ({
+          product: { id: Number(it.id) },
+          quantity: Number(it.quantity),
+          price: Number(it.price)
+        }))
+      };
+      await createSale(backendSalePayload);
+    } catch (err) {
+      console.warn("Notice: Saved POS bill locally, backend sale sync:", err?.message || err);
+    }
 
     setLastCompletedBill(billPayload);
     setPrintModalOpen(true);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PortalLayout from "../PortalLayout";
 import { 
   BsTicketDetailedFill, 
@@ -7,50 +7,79 @@ import {
   BsClockHistory, 
   BsRobot, 
   BsWhatsapp,
-  BsEnvelopeFill
+  BsEnvelopeFill,
+  BsTrash,
+  BsInbox
 } from "react-icons/bs";
+import { getTickets, createTicket, deleteTicket } from "../../services/api";
 
 export default function SupportTickets() {
-  const [tickets, setTickets] = useState([
-    {
-      id: 1,
-      ticketCode: "TCK-1001",
-      subject: "Need help with DBT Fertilizer Subsidy Report format",
-      category: "GST_COMPLIANCE",
-      priority: "HIGH",
-      status: "OPEN",
-      date: "Today, 10:30 AM",
-      rakiAiReply: "🤖 Raki AI: We have queued the custom DBT subsidy report template for your tenant. Our senior auditor has also been notified."
-    }
-  ]);
-
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [newTicket, setNewTicket] = useState({
     subject: "",
     category: "TECHNICAL",
     priority: "MEDIUM",
-    description: "",
-    phone: "+91 98450 12345"
+    description: ""
   });
 
-  const handleRaiseTicket = (e) => {
+  const loadTickets = async () => {
+    setLoading(true);
+    try {
+      const data = await getTickets();
+      if (Array.isArray(data)) {
+        setTickets(data);
+      } else {
+        setTickets([]);
+      }
+    } catch (err) {
+      console.error("Error loading tickets:", err);
+      setTickets([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTickets();
+  }, []);
+
+  const handleRaiseTicket = async (e) => {
     e.preventDefault();
-    if (!newTicket.subject || !newTicket.description) return;
+    if (!newTicket.subject.trim() || !newTicket.description.trim()) return;
 
-    const created = {
-      id: Date.now(),
-      ticketCode: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
-      subject: newTicket.subject,
-      category: newTicket.category,
-      priority: newTicket.priority,
-      status: "OPEN",
-      date: "Just now",
-      rakiAiReply: "🤖 Raki AI: Ticket logged successfully. Immediate notification dispatched to support desk & WhatsApp."
-    };
+    setSubmitting(true);
+    try {
+      const payload = {
+        subject: newTicket.subject.trim(),
+        message: newTicket.description.trim(),
+        priority: newTicket.priority,
+        status: "open"
+      };
 
-    setTickets([created, ...tickets]);
-    setShowModal(false);
-    setNewTicket({ subject: "", category: "TECHNICAL", priority: "MEDIUM", description: "", phone: "+91 98450 12345" });
+      await createTicket(payload);
+      setShowModal(false);
+      setNewTicket({ subject: "", category: "TECHNICAL", priority: "MEDIUM", description: "" });
+      await loadTickets();
+    } catch (err) {
+      console.error("Error raising ticket:", err);
+      alert(`Failed to raise ticket: ${err?.message || "Unknown error"}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this ticket?")) {
+      try {
+        await deleteTicket(id);
+        await loadTickets();
+      } catch (err) {
+        console.error("Error deleting ticket:", err);
+      }
+    }
   };
 
   return (
@@ -62,7 +91,7 @@ export default function SupportTickets() {
             <h4 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
               <BsTicketDetailedFill className="text-primary" /> Support Desk & Ticket System
             </h4>
-            <p className="text-muted small mb-0">Raise helpdesk queries, track technical issues, and get instant Raki AI autonomous resolution</p>
+            <p className="text-muted small mb-0">Raise helpdesk queries, track technical issues, and get instant assistance</p>
           </div>
           <button className="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-semibold" onClick={() => setShowModal(true)}>
             <BsPlusLg /> Raise New Ticket
@@ -75,7 +104,7 @@ export default function SupportTickets() {
             <BsRobot className="fs-2 text-warning" />
             <div>
               <h6 className="fw-bold mb-0 text-white">Raki AI Autonomous Helpdesk Active</h6>
-              <span className="small text-white-50">Instant response via Email & WhatsApp Bot within 60 seconds.</span>
+              <span className="small text-white-50">Automated triage and instant notification dispatched upon submission.</span>
             </div>
           </div>
           <div className="d-flex gap-2">
@@ -86,36 +115,71 @@ export default function SupportTickets() {
         </div>
 
         {/* Tickets List */}
-        <div className="d-flex flex-column gap-3">
-          {tickets.map((tk) => (
-            <div key={tk.id} className="card border-0 shadow-sm rounded-3 p-4 bg-white">
-              <div className="d-flex flex-wrap justify-content-between align-items-start mb-2 gap-2">
-                <div>
-                  <span className="badge bg-primary me-2">{tk.ticketCode}</span>
-                  <span className="badge bg-light text-secondary border me-2">{tk.category}</span>
-                  <span className={`badge ${tk.priority === 'HIGH' ? 'bg-danger' : 'bg-warning text-dark'}`}>{tk.priority} Priority</span>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <span className="text-muted small d-flex align-items-center gap-1">
-                    <BsClockHistory /> {tk.date}
-                  </span>
-                  <span className={`badge ${tk.status === 'RESOLVED' ? 'bg-success' : 'bg-info text-dark'}`}>
-                    {tk.status}
-                  </span>
-                </div>
-              </div>
-
-              <h5 className="fw-bold text-dark mb-2">{tk.subject}</h5>
-
-              {/* Raki AI Automated Reply Box */}
-              {tk.rakiAiReply && (
-                <div className="p-3 bg-light rounded-3 border-start border-4 border-primary mt-2">
-                  <p className="small mb-0 text-dark fw-semibold">{tk.rakiAiReply}</p>
-                </div>
-              )}
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
-          ))}
-        </div>
+            <p className="text-muted mt-2">Loading support tickets...</p>
+          </div>
+        ) : tickets.length === 0 ? (
+          <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <BsInbox className="text-muted fs-1 mb-3 mx-auto" />
+            <h5 className="fw-bold text-dark">No Support Tickets Open</h5>
+            <p className="text-muted small mb-4">Have an inquiry, technical question, or feedback? Raise your first support ticket.</p>
+            <div>
+              <button className="btn btn-primary px-4 fw-semibold" onClick={() => setShowModal(true)}>
+                <BsPlusLg className="me-1" /> Raise New Ticket
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="d-flex flex-column gap-3">
+            {tickets.map((tk) => {
+              const ticketCode = `TCK-${tk.id ? String(tk.id).padStart(4, '0') : '1001'}`;
+              const createdStr = tk.createdAt ? new Date(tk.createdAt).toLocaleString('en-IN') : 'Recent';
+              const priorityUpper = (tk.priority || 'MEDIUM').toUpperCase();
+              const statusUpper = (tk.status || 'OPEN').toUpperCase();
+
+              return (
+                <div key={tk.id} className="card border-0 shadow-sm rounded-3 p-4 bg-white">
+                  <div className="d-flex flex-wrap justify-content-between align-items-start mb-2 gap-2">
+                    <div>
+                      <span className="badge bg-primary me-2">{ticketCode}</span>
+                      <span className={`badge ${priorityUpper === 'HIGH' || priorityUpper === 'CRITICAL' ? 'bg-danger' : 'bg-warning text-dark'} me-2`}>
+                        {priorityUpper} Priority
+                      </span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="text-muted small d-flex align-items-center gap-1">
+                        <BsClockHistory /> {createdStr}
+                      </span>
+                      <span className={`badge ${statusUpper === 'CLOSED' || statusUpper === 'RESOLVED' ? 'bg-success' : 'bg-info text-dark'}`}>
+                        {statusUpper}
+                      </span>
+                      <button 
+                        className="btn btn-sm btn-outline-danger ms-2 py-0 px-2"
+                        title="Delete Ticket"
+                        onClick={() => handleDelete(tk.id)}
+                      >
+                        <BsTrash />
+                      </button>
+                    </div>
+                  </div>
+
+                  <h5 className="fw-bold text-dark mb-2">{tk.subject}</h5>
+                  <p className="text-secondary small mb-2">{tk.message}</p>
+
+                  <div className="p-3 bg-light rounded-3 border-start border-4 border-primary mt-2">
+                    <p className="small mb-0 text-dark fw-semibold">
+                      🤖 Raki AI: Ticket logged successfully. Dispatched to support desk & WhatsApp notification channel.
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Raise Ticket Modal */}
         {showModal && (
@@ -182,7 +246,9 @@ export default function SupportTickets() {
                   </div>
                   <div className="modal-footer border-top bg-light">
                     <button type="button" className="btn btn-light" onClick={() => setShowModal(false)}>Cancel</button>
-                    <button type="submit" className="btn btn-primary fw-semibold px-4">Submit Ticket</button>
+                    <button type="submit" className="btn btn-primary fw-semibold px-4" disabled={submitting}>
+                      {submitting ? "Submitting..." : "Submit Ticket"}
+                    </button>
                   </div>
                 </form>
               </div>

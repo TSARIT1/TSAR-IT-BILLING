@@ -33,8 +33,21 @@ function ItemsInventory() {
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    productName: "",
+    category: "General",
+    sellingPrice: "",
+    purchasePrice: "",
+    totalStock: "",
+    minStockLevel: "10",
+    taxRate: "18",
+    unit: "PCS",
+    productCode: ""
+  });
+
   // Categories for dropdown
-  const categories = ["All", "Electronics", "Clothing", "Food", "Furniture", "Other"];
+  const categories = ["All", "Electronics", "Clothing", "Food", "Fertilizer", "Furniture", "Other"];
 
   useEffect(() => {
     fetchProducts();
@@ -78,7 +91,6 @@ function ItemsInventory() {
       setItems(mappedData);
     } catch (error) {
       console.error("Error fetching products:", error);
-      alert("Failed to load products from backend. Make sure backend is running on http://localhost:8081");
       setItems([]);
     } finally {
       setLoading(false);
@@ -151,51 +163,63 @@ function ItemsInventory() {
   };
 
   const handleCreateItem = () => {
-    const itemName = prompt("Enter Item Name:");
-    if (!itemName) return;
+    setNewProduct({
+      productName: "",
+      category: "General",
+      sellingPrice: "",
+      purchasePrice: "",
+      totalStock: "",
+      minStockLevel: "10",
+      taxRate: "18",
+      unit: "PCS",
+      productCode: ""
+    });
+    setShowAddModal(true);
+  };
 
-    const itemCode = prompt("Enter Item Code (optional):");
-    const totalStock = parseInt(prompt("Enter Total Stock:") || "0");
-    const currentStock = parseInt(prompt("Enter Current Stock:") || totalStock);
-    const category = prompt("Enter Category (Electronics/Clothing/Food/Furniture/Other):") || "Other";
-    const minLevel = parseInt(prompt("Enter Minimum Stock Level (default 50):") || "50");
-
-    const newItem = {
-      id: Date.now(),
-      name: itemName,
-      code: itemCode || "-",
-      category: category,
-      totalStock: totalStock,
-      currentStock: currentStock,
-      totalSold: totalStock - currentStock,
-      minLevel: minLevel,
-      qty: currentStock, // For backward compatibility
-      lowStockThreshold: minLevel
-    };
-
-    const updated = [...items, newItem];
-    setItems(updated);
-    localStorage.setItem("items", JSON.stringify(updated));
-
-    // Initialize stock history with initial stock
-    if (totalStock > 0) {
-      const initialHistory = [{
-        id: Date.now(),
-        date: new Date().toISOString(),
-        type: 'purchase',
-        quantity: totalStock,
-        balance: currentStock
-      }];
-      localStorage.setItem(`stockHistory_${newItem.id}`, JSON.stringify(initialHistory));
+  const handleSaveNewProduct = async (e) => {
+    e.preventDefault();
+    if (!newProduct.productName.trim()) {
+      alert("Product name is required.");
+      return;
+    }
+    try {
+      setLoading(true);
+      const payload = {
+        productName: newProduct.productName.trim(),
+        category: newProduct.category || "General",
+        sellingPrice: parseFloat(newProduct.sellingPrice) || 0,
+        purchasePrice: parseFloat(newProduct.purchasePrice) || 0,
+        totalStock: parseInt(newProduct.totalStock) || 0,
+        remainingStock: parseInt(newProduct.totalStock) || 0,
+        minStockLevel: parseInt(newProduct.minStockLevel) || 10,
+        taxRate: parseFloat(newProduct.taxRate) || 0,
+        unit: newProduct.unit || "PCS",
+        productCode: newProduct.productCode || `SKU-${Date.now().toString().slice(-6)}`
+      };
+      await createProduct(payload);
+      setShowAddModal(false);
+      await fetchProducts();
+    } catch (err) {
+      console.error("Error creating product:", err);
+      alert(`Failed to save product: ${err?.message || "Unknown error"}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteItem = (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      const updated = items.filter(item => item.id !== id);
-      setItems(updated);
-      localStorage.setItem("items", JSON.stringify(updated));
-      localStorage.removeItem(`stockHistory_${id}`);
+  const handleDeleteItem = async (id, name) => {
+    if (window.confirm(`Are you sure you want to delete product "${name || id}"?\nThis cannot be undone.`)) {
+      try {
+        setLoading(true);
+        await deleteProduct(id);
+        await fetchProducts();
+      } catch (err) {
+        console.error("Error deleting product:", err);
+        alert(`Failed to delete product: ${err?.message || "Unknown error"}`);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -660,7 +684,15 @@ function ItemsInventory() {
                             title="Stock History"
                             onClick={() => handleViewHistory(item)}
                           >
-                            <BsClockHistory /> View History
+                            <BsClockHistory /> History
+                          </button>
+                          <button
+                            className="inventory-action-btn delete-btn text-danger ms-1"
+                            title="Delete Product"
+                            style={{ border: '1px solid #fee2e2', background: '#fff1f2', color: '#e11d48', padding: '4px 8px', borderRadius: '6px', fontSize: '0.78rem' }}
+                            onClick={() => handleDeleteItem(item.id, item.name)}
+                          >
+                            <BsTrash /> Delete
                           </button>
                         </td>
                       </tr>
@@ -786,6 +818,146 @@ function ItemsInventory() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Add New Product Modal */}
+      {showAddModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content shadow-lg border-0 rounded-4">
+              <div className="modal-header bg-primary text-white rounded-top-4">
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <BsBoxSeam /> Add New Inventory Product
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowAddModal(false)}></button>
+              </div>
+              <form onSubmit={handleSaveNewProduct}>
+                <div className="modal-body p-4">
+                  <div className="row g-3">
+                    <div className="col-md-8">
+                      <label className="form-label fw-semibold">Product / Item Name *</label>
+                      <input 
+                        type="text" 
+                        className="form-control rounded-3" 
+                        placeholder="e.g. Urea 46-0-0 50kg or Cotton Shirt XL" 
+                        required
+                        value={newProduct.productName} 
+                        onChange={(e) => setNewProduct({ ...newProduct, productName: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Category</label>
+                      <select 
+                        className="form-select rounded-3"
+                        value={newProduct.category} 
+                        onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                      >
+                        <option value="General">General</option>
+                        <option value="Fertilizer">Fertilizer</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Food">Food</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Selling Price (₹)</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        className="form-control rounded-3" 
+                        placeholder="0.00" 
+                        value={newProduct.sellingPrice} 
+                        onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Purchase Price (₹)</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        className="form-control rounded-3" 
+                        placeholder="0.00" 
+                        value={newProduct.purchasePrice} 
+                        onChange={(e) => setNewProduct({ ...newProduct, purchasePrice: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Tax Rate (GST %)</label>
+                      <select 
+                        className="form-select rounded-3"
+                        value={newProduct.taxRate} 
+                        onChange={(e) => setNewProduct({ ...newProduct, taxRate: e.target.value })}
+                      >
+                        <option value="0">0% (Nil / Exempt)</option>
+                        <option value="5">5%</option>
+                        <option value="12">12%</option>
+                        <option value="18">18% (Standard)</option>
+                        <option value="28">28%</option>
+                      </select>
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Initial Stock Quantity</label>
+                      <input 
+                        type="number" 
+                        className="form-control rounded-3" 
+                        placeholder="0" 
+                        value={newProduct.totalStock} 
+                        onChange={(e) => setNewProduct({ ...newProduct, totalStock: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Unit of Measurement</label>
+                      <select 
+                        className="form-select rounded-3"
+                        value={newProduct.unit} 
+                        onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                      >
+                        <option value="PCS">PCS (Pieces)</option>
+                        <option value="BAG">BAG (Bags)</option>
+                        <option value="KG">KG (Kilograms)</option>
+                        <option value="MTR">MTR (Meters)</option>
+                        <option value="BOX">BOX (Boxes)</option>
+                        <option value="LTR">LTR (Liters)</option>
+                      </select>
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Min Stock Alert Level</label>
+                      <input 
+                        type="number" 
+                        className="form-control rounded-3" 
+                        placeholder="10" 
+                        value={newProduct.minStockLevel} 
+                        onChange={(e) => setNewProduct({ ...newProduct, minStockLevel: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="col-md-12">
+                      <label className="form-label fw-semibold">Product Code / SKU (Optional)</label>
+                      <input 
+                        type="text" 
+                        className="form-control rounded-3" 
+                        placeholder="Leave blank to auto-generate" 
+                        value={newProduct.productCode} 
+                        onChange={(e) => setNewProduct({ ...newProduct, productCode: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer bg-light rounded-bottom-4">
+                  <button type="button" className="btn btn-secondary rounded-3" onClick={() => setShowAddModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary rounded-3 px-4 fw-bold" disabled={loading}>
+                    {loading ? "Saving..." : "Save Product"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

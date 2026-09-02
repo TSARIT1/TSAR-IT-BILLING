@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PortalLayout from "../PortalLayout";
 import { 
   BsBriefcaseFill, 
@@ -12,33 +12,18 @@ import {
 } from "react-icons/bs";
 
 export default function ProcurementRfq() {
-  const [rfqs, setRfqs] = useState([
-    {
-      id: 1,
-      rfqNumber: "RFQ-2026-0042",
-      title: "Bulk Cotton Yarn & Raw Fabric Supply (500 Meters)",
-      department: "Production Division",
-      closingDate: "2026-09-05",
-      status: "EVALUATING",
-      quotes: [
-        { supplier: "Apex Raw Materials Ltd", price: 125000.00, deliveryDays: 7, terms: "Net 30", isLowest: false },
-        { supplier: "Bharat Agro Suppliers", price: 112000.00, deliveryDays: 5, terms: "Net 15", isLowest: true },
-        { supplier: "Delta Chemicals Co", price: 138000.00, deliveryDays: 10, terms: "Advance 50%", isLowest: false }
-      ]
-    },
-    {
-      id: 2,
-      rfqNumber: "RFQ-2026-0043",
-      title: "Agro Fertilizer Raw Base (Urea & DAP 10 Tons)",
-      department: "Fertilizer Plant",
-      closingDate: "2026-09-10",
-      status: "PUBLISHED",
-      quotes: [
-        { supplier: "National Fertilizer Corp", price: 450000.00, deliveryDays: 3, terms: "Net 30", isLowest: true },
-        { supplier: "Kisan Chemical Traders", price: 475000.00, deliveryDays: 6, terms: "Net 45", isLowest: false }
-      ]
+  const [rfqs, setRfqs] = useState(() => {
+    try {
+      const saved = localStorage.getItem("procurement_rfqs");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
     }
-  ]);
+  });
+
+  useEffect(() => {
+    localStorage.setItem("procurement_rfqs", JSON.stringify(rfqs));
+  }, [rfqs]);
 
   return (
     <PortalLayout>
@@ -55,7 +40,16 @@ export default function ProcurementRfq() {
 
         {/* RFQ Comparison Cards */}
         <div className="row g-4">
-          {rfqs.map((rfq) => {
+          {rfqs.length === 0 ? (
+            <div className="col-12">
+              <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <BsBriefcaseFill className="text-muted fs-1 mb-3 mx-auto" />
+                <h5 className="fw-bold text-dark">No Active Procurement RFQs</h5>
+                <p className="text-muted small mb-0">Publish Requests for Quotations (RFQs) to compare supplier bids and award purchase orders.</p>
+              </div>
+            </div>
+          ) : (
+            rfqs.map((rfq) => {
             const lowestQuote = rfq.quotes.find(q => q.isLowest) || rfq.quotes[0];
             const highestQuote = [...rfq.quotes].sort((a, b) => b.price - a.price)[0];
             const maxSavings = highestQuote.price - lowestQuote.price;
@@ -132,7 +126,7 @@ export default function ProcurementRfq() {
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
 
       </div>

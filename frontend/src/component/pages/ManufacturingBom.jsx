@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PortalLayout from "../PortalLayout";
 import { 
   BsGearWideConnected, 
@@ -12,40 +12,18 @@ import {
 } from "react-icons/bs";
 
 export default function ManufacturingBom() {
-  const [boms, setBoms] = useState([
-    {
-      id: 1,
-      bomNumber: "BOM-2026-001",
-      productName: "Premium Cotton Shirt (XL)",
-      outputQty: 1,
-      unit: "PCS",
-      materialCost: 840.00,
-      laborCost: 120.00,
-      overheadCost: 40.00,
-      totalCost: 1000.00,
-      materials: [
-        { name: "High Grade Cotton Fabric", qty: 2.5, unit: "MTR", unitCost: 300.00, total: 750.00 },
-        { name: "Metal Pearl Buttons", qty: 1.0, unit: "SET", unitCost: 50.00, total: 50.00 },
-        { name: "Garment Packing Box", qty: 1.0, unit: "PCS", unitCost: 40.00, total: 40.00 }
-      ]
-    },
-    {
-      id: 2,
-      bomNumber: "BOM-2026-002",
-      productName: "NPK 19:19:19 Soluble Fertilizer 50kg Bag",
-      outputQty: 1,
-      unit: "BAG",
-      materialCost: 1850.00,
-      laborCost: 150.00,
-      overheadCost: 50.00,
-      totalCost: 2050.00,
-      materials: [
-        { name: "Urea Granules", qty: 20.0, unit: "KG", unitCost: 35.00, total: 700.00 },
-        { name: "Di-Ammonium Phosphate (DAP)", qty: 20.0, unit: "KG", unitCost: 45.00, total: 900.00 },
-        { name: "Muriate of Potash (MOP)", qty: 10.0, unit: "KG", unitCost: 25.00, total: 250.00 }
-      ]
+  const [boms, setBoms] = useState(() => {
+    try {
+      const saved = localStorage.getItem("mfg_boms");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
     }
-  ]);
+  });
+
+  useEffect(() => {
+    localStorage.setItem("mfg_boms", JSON.stringify(boms));
+  }, [boms]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newBom, setNewBom] = useState({
@@ -161,7 +139,21 @@ export default function ManufacturingBom() {
 
         {/* BOM Cards List */}
         <div className="row g-3">
-          {boms.map((bom) => (
+          {boms.length === 0 ? (
+            <div className="col-12">
+              <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <BsLayersFill className="text-muted fs-1 mb-3 mx-auto" />
+                <h5 className="fw-bold text-dark">No Bills of Materials Defined</h5>
+                <p className="text-muted small mb-4">Define raw material components, labor, and overheads for multi-level production recipes.</p>
+                <div>
+                  <button className="btn btn-primary px-4 fw-semibold" onClick={() => setShowCreateModal(true)}>
+                    <BsPlusLg className="me-1" /> Create First BOM
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            boms.map((bom) => (
             <div key={bom.id} className="col-12 col-xl-6">
               <div className="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
                 <div className="card-header bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
@@ -218,7 +210,7 @@ export default function ManufacturingBom() {
                 </div>
               </div>
             </div>
-          ))}
+          )))}
         </div>
 
         {/* Create BOM Modal */}

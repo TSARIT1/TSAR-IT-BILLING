@@ -1332,6 +1332,52 @@ export const getSubscriptionUsage = async (tenantId = "default") => {
 };
 
 // ============================================
+// SUPPORT TICKETS APIS
+// ============================================
+const TICKET_API = `${BASE_URL}/api/tickets`;
+const ticketClient = addAuthInterceptor(axios.create({ baseURL: TICKET_API, headers: { "Content-Type": "application/json" } }));
+
+export const getTickets = async () => {
+  try {
+    const response = await ticketClient.get("");
+    return response.data || [];
+  } catch (error) {
+    console.error("Tickets fetch error:", error);
+    return [];
+  }
+};
+
+export const createTicket = async (ticketData) => {
+  try {
+    const response = await ticketClient.post("", ticketData);
+    return response.data;
+  } catch (error) {
+    console.error("Create ticket error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const updateTicket = async (id, ticketData) => {
+  try {
+    const response = await ticketClient.put(`/${id}`, ticketData);
+    return response.data;
+  } catch (error) {
+    console.error("Update ticket error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const deleteTicket = async (id) => {
+  try {
+    const response = await ticketClient.delete(`/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete ticket error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// ============================================
 // ALIASES & COMPATIBILITY EXPORTS
 // ============================================
 // getCustomers is an alias for getAllCustomers (used in Cards.jsx and similar)

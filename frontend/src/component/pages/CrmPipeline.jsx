@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PortalLayout from "../PortalLayout";
 import { 
@@ -15,60 +15,18 @@ import {
 } from "react-icons/bs";
 
 export default function CrmPipeline() {
-  const [leads, setLeads] = useState([
-    {
-      id: 1,
-      code: "LEAD-78901",
-      name: "Ramesh Sharma",
-      company: "Kaveri Agro Tech",
-      phone: "+91 98450 12345",
-      email: "ramesh@kaveriagro.in",
-      stage: "NEW",
-      score: 85,
-      value: 150000,
-      salesperson: "Vikram Mehta",
-      date: "Today"
-    },
-    {
-      id: 2,
-      code: "LEAD-78902",
-      name: "Priya Sundaram",
-      company: "Lotus Textiles Retail",
-      phone: "+91 97890 23456",
-      email: "priya@lotustextiles.com",
-      stage: "QUALIFIED",
-      score: 95,
-      value: 420000,
-      salesperson: "Ananya Roy",
-      date: "Yesterday"
-    },
-    {
-      id: 3,
-      code: "LEAD-78903",
-      name: "Amit Deshmukh",
-      company: "Apex Electronics Hub",
-      phone: "+91 99220 34567",
-      email: "amit@apexelectronics.com",
-      stage: "PROPOSAL_SENT",
-      score: 90,
-      value: 280000,
-      salesperson: "Vikram Mehta",
-      date: "2 days ago"
-    },
-    {
-      id: 4,
-      code: "LEAD-78904",
-      name: "Gurpreet Singh",
-      company: "Punjab Heavy Transport",
-      phone: "+91 98140 45678",
-      email: "gurpreet@punjablogistics.in",
-      stage: "WON",
-      score: 100,
-      value: 850000,
-      salesperson: "Ananya Roy",
-      date: "3 days ago"
+  const [leads, setLeads] = useState(() => {
+    try {
+      const saved = localStorage.getItem("crm_leads");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
     }
-  ]);
+  });
+
+  useEffect(() => {
+    localStorage.setItem("crm_leads", JSON.stringify(leads));
+  }, [leads]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
