@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standard Drawer width leaving 35%+ of screen visible as backdrop -->
+    <dimen name="nav_drawer_width">220dp</dimen>
+    <dimen name="nav_drawer_corner_radius">16dp</dimen>
+</resources>

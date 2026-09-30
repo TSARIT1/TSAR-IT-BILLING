@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8FAFC"
+    android:padding="24dp"
+    android:gravity="center_horizontal">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <!-- Shield Recovery Icon Container -->
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@drawable/bg_drawer_avatar"
+                android:padding="16dp"
+                android:layout_marginBottom="24dp">
+
+                <ImageView
+                    android:id="@+id/ivShieldIcon"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_shield_recover"
+                    android:contentDescription="Recovery Shield" />
+            </FrameLayout>
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/tvCrashTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="App Safely Recovered"
+                android:textColor="#0F172A"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textAlignment="center"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:id="@+id/tvCrashSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="An unexpected issue occurred, but TSAR IT Crash Guard intercepted it. Your login session and offline data remain completely safe."
+                android:textColor="#64748B"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:textAlignment="center"
+                android:layout_marginBottom="28dp" />
+
+            <!-- Auto-return Timer Badge -->
+            <LinearLayout
+                android:id="@+id/layoutTimerBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_chip_soft"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:id="@+id/tvCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ Returning to Dashboard in 5s..."
+                    android:textColor="#7C1E2E"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Primary Action: Return to Dashboard -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReturnDashboard"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Return to Home &amp; Dashboard"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#7C1E2E"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_nav_dashboard"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:iconTint="#FFFFFF"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Secondary Action: Restart App Cleanly -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRestartApp"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Restart Fresh Session"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                android:textColor="#1E293B"
+                app:backgroundTint="#F1F5F9"
+                app:strokeColor="#CBD5E1"
+                app:strokeWidth="1dp"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Diagnostics Toggle -->
+            <TextView
+                android:id="@+id/tvToggleDiagnostics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Error Diagnostics ▼"
+                android:textColor="#64748B"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Expandable Diagnostics Box -->
+            <LinearLayout
+                android:id="@+id/layoutDiagnostics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FFFFFF"
+                android:padding="14dp"
+                android:visibility="gone"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tvErrorDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Error details will appear here"
+                    android:textColor="#334155"
+                    android:fontFamily="monospace"
+                    android:textSize="11sp"
+                    android:maxLines="12"
+                    android:scrollbars="vertical"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCopyError"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Copy Diagnostics"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:textColor="#1E293B"
+                    app:backgroundTint="#E2E8F0"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Footer Branding -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TSAR IT Billing &amp; ERP • Enterprise Crash Guard"
+        android:textColor="#94A3B8"
+        android:textSize="11sp"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/grpCore" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_nav_dashboard"
+            android:title="Dashboard" />
+        <item
+            android:id="@+id/nav_profile"
+            multiple="true"
+            android:icon="@drawable/ic_nav_customers"
+            android:title="My Profile &amp; Account" />
+        <item
+            android:id="@+id/nav_pos"
+            android:icon="@drawable/ic_nav_pos"
+            android:title="POS Counter" />
+        <item
+            android:id="@+id/nav_invoices"
+            android:icon="@drawable/ic_nav_invoices"
+            android:title="Invoices" />
+        <item
+            android:id="@+id/nav_customers"
+            android:icon="@drawable/ic_nav_customers"
+            android:title="Parties" />
+        <item
+            android:id="@+id/nav_inventory"
+            android:icon="@drawable/ic_nav_inventory"
+            android:title="Inventory" />
+        <item
+            android:id="@+id/nav_godowns"
+            multiple="true"
+            android:icon="@drawable/ic_nav_godown"
+            android:title="Godowns" />
+        <item
+            android:id="@+id/nav_sales_payments"
+            multiple="true"
+            android:icon="@drawable/ic_nav_payment"
+            android:title="Payments In (Sales)" />
+        <item
+            android:id="@+id/nav_orders"
+            multiple="true"
+            android:icon="@drawable/ic_nav_orders"
+            android:title="Online Orders" />
+        <item
+            android:id="@+id/nav_vendors"
+            multiple="true"
+            android:icon="@drawable/ic_nav_staff"
+            android:title="Vendors" />
+        <item
+            android:id="@+id/nav_staff"
+            multiple="true"
+            android:icon="@drawable/ic_nav_staff"
+            android:title="Staff &amp; Payroll" />
+        <item
+            android:id="@+id/nav_bank"
+            multiple="true"
+            android:icon="@drawable/ic_nav_bank"
+            android:title="Cash &amp; Bank" />
+        <item
+            android:id="@+id/nav_reports"
+            multiple="true"
+            android:icon="@drawable/ic_nav_reports"
+            android:title="Reports (P&amp;L)" />
+        <item
+            android:id="@+id/nav_expenses"
+            multiple="true"
+            android:icon="@drawable/ic_delete"
+            android:title="Expenses" />
+        <item
+            android:id="@+id/nav_audit"
+            multiple="true"
+            android:icon="@drawable/ic_nav_reports"
+            android:title="Audit Log (CA)" />
+        <item
+            android:id="@+id/nav_einvoice"
+            multiple="true"
+            android:icon="@drawable/ic_nav_pos"
+            android:title="E-Invoicing" />
+        <item
+            android:id="@+id/nav_notifications"
+            multiple="true"
+            android:icon="@drawable/ic_nav_notifications"
+            android:title="Notifications" />
+        <item
+            android:id="@+id/nav_tickets"
+            multiple="true"
+            android:icon="@drawable/ic_edit"
+            android:title="Support Tickets" />
+        <item
+            android:id="@+id/nav_subscription"
+            multiple="true"
+            android:icon="@drawable/ic_nav_payment"
+            android:title="My Plan" />
+        <item
+            android:id="@+id/nav_modules"
+            multiple="true"
+            android:icon="@drawable/ic_menu_hamburger"
+            android:title="All Modules" />
+        <item
+            android:id="@+id/nav_refer_share"
+            multiple="true"
+            android:icon="@drawable/ic_whatsapp"
+            android:title="Refer &amp; Share App" />
+        <item
+            android:id="@+id/nav_check_update"
+            multiple="true"
+            android:icon="@drawable/ic_sync"
+            android:title="Check for App Updates" />
+        <item
+            android:id="@+id/nav_settings"
+            multiple="true"
+            android:icon="@drawable/ic_nav_settings"
+            android:title="Settings &amp; Printers" />
+    </group>
+</menu>

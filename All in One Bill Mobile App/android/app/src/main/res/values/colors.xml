@@ -1,8 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#4F46E5</color>
-    <color name="colorPrimaryDark">#0F172A</color>
-    <color name="colorAccent">#818CF8</color>
-    <color name="colorSuccess">#10B981</color>
-    <color name="colorWarning">#F59E0B</color>
-    <color name="colorBackground">#0F172A</color>
+    <!-- Primary — deep burgundy: premium, ledger-appropriate TSAR IT identity -->
+    <color name="colorPrimary">#7C1E2E</color>
+    <color name="colorPrimaryDark">#4A0F1A</color>
+    <color name="colorPrimarySoft">#F9EDEF</color>
+    <color name="colorAccent">#B45309</color>
+
+    <!-- Gold accent — used sparingly: brand marks, highlights, the POS CTA -->
+    <color name="colorGold">#B45309</color>
+    <color name="colorGoldDark">#8A3E06</color>
+    <color name="colorGoldLight">#FFF8EB</color>
+
+    <!-- Surfaces: warm-neutral paper, soft borders (calmer than pure gray) -->
+    <color name="colorBackground">#F6F7F9</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceLight">#FAFBFC</color>
+    <color name="colorSurfaceBorder">#E7EBF0</color>
+    <color name="colorDivider">#EEF1F5</color>
+
+    <!-- Typography: near-black ink, slate grays -->
+    <color name="colorTextPrimary">#141A24</color>
+    <color name="colorTextSecondary">#4A5568</color>
+    <color name="colorTextMuted">#8D97A5</color>
+
+    <!-- Semantic states (muted, professional; paired -Light chips) -->
+    <color name="colorSuccess">#177E4D</color>
+    <color name="colorSuccessLight">#E5F6EC</color>
+    <color name="colorDanger">#C0392B</color>
+    <color name="colorDangerLight">#FBEAE7</color>
+    <color name="colorWarning">#B45309</color>
+    <color name="colorWarningLight">#FFF3DC</color>
+    <color name="colorInfo">#7C1E2E</color>
+    <color name="colorInfoLight">#F9EDEF</color>
+
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

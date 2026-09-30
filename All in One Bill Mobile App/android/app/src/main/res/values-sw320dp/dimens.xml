@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compact devices (320dp screen width): 200dp leaves 120dp (37.5%) visible backdrop -->
+    <dimen name="nav_drawer_width">200dp</dimen>
+    <dimen name="nav_drawer_corner_radius">16dp</dimen>
+</resources>
