@@ -40,8 +40,8 @@ export default function CrmPipeline() {
   });
 
   const stages = [
-    { key: "NEW", label: "New Leads", color: "#6366f1" },
-    { key: "CONTACTED", label: "Contacted", color: "#3b82f6" },
+    { key: "NEW", label: "New Leads", color: "#9c3d52" },
+    { key: "CONTACTED", label: "Contacted", color: "#a87620" },
     { key: "QUALIFIED", label: "Qualified", color: "#06b6d4" },
     { key: "PROPOSAL_SENT", label: "Proposal Sent", color: "#f59e0b" },
     { key: "WON", label: "Won / Converted", color: "#10b981" }

@@ -9,15 +9,48 @@ import {
 } from "react-icons/bs";
 import Swal from "sweetalert2";
 
-export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan }) {
+const RAZORPAY_CHECKOUT_URL = "https://checkout.razorpay.com/v1/checkout.js";
+
+const loadRazorpayCheckout = () => {
+  if (window.Razorpay) {
+    return Promise.resolve(true);
+  }
+
+  const existingScript = document.querySelector(`script[src="${RAZORPAY_CHECKOUT_URL}"]`);
+  if (existingScript) {
+    return new Promise((resolve) => {
+      existingScript.addEventListener("load", () => resolve(true), { once: true });
+      existingScript.addEventListener("error", () => resolve(false), { once: true });
+    });
+  }
+
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = RAZORPAY_CHECKOUT_URL;
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token
+    ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+    : { "Content-Type": "application/json" };
+};
+
+export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan, onSuccess }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
 
   if (!isOpen || !selectedPlan) return null;
 
-  const razorpayKeyId = process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_live_TTc7Hc65XaxuNm";
+  // Public key id only — never embed the secret in the frontend bundle.
+  const razorpayKeyId = process.env.REACT_APP_RAZORPAY_KEY_ID || "";
 
-  const handlePayNow = () => {
+  const handlePayNow = async () => {
     setIsProcessing(true);
 
     let storedUser = {};
@@ -27,12 +60,14 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
       storedUser = {};
     }
 
-    const userName = storedUser.ownerName || "TSAR Business Owner";
-    const userEmail = storedUser.email || "admin@tsarit.com";
-    const userMobile = storedUser.mobileNo || "9876543210";
+    const userName = storedUser.ownerName || '';
+    const userEmail = storedUser.email || '';
+    const userMobile = storedUser.mobileNo || '';
 
-    // If Razorpay SDK is loaded in window
-    if (window.Razorpay) {
+    const isRazorpayReady = await loadRazorpayCheckout();
+
+    // If Razorpay SDK is available, open the live checkout only after the user requests payment.
+    if (isRazorpayReady && window.Razorpay) {
       const options = {
         key: razorpayKeyId,
         amount: selectedPlan.price * 100, // Amount in paise
@@ -46,7 +81,7 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
           contact: userMobile
         },
         theme: {
-          color: "#4F46E5"
+          color: "#7C1E2E"
         },
         handler: function (response) {
           setIsProcessing(false);
@@ -57,7 +92,22 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
           localStorage.setItem("userPlanPrice", selectedPlan.price);
           localStorage.setItem("userPlanDate", new Date().toISOString());
 
+          // Persist to backend database
+          const businessId = localStorage.getItem("businessId") || localStorage.getItem("userBusinessId") || "default";
+          fetch("/api/subscriptions/upgrade", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+              businessId: businessId,
+              planId: selectedPlan.id,
+              paymentId: paymentId,
+              paymentMethod: "RAZORPAY",
+              amount: selectedPlan.price
+            })
+          }).catch(e => console.error("Subscription persist error:", e));
+
           onClose();
+          if (onSuccess) onSuccess(selectedPlan);
 
           Swal.fire({
             icon: "success",
@@ -66,13 +116,13 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
               <div style="text-align: left; font-size: 14px; line-height: 1.6;">
                 <p><strong>Plan Activated:</strong> ${selectedPlan.name}</p>
                 <p><strong>Amount Paid:</strong> ₹${selectedPlan.price.toLocaleString('en-IN')}</p>
-                <p><strong>Razorpay Payment ID:</strong> <span style="font-family: monospace; color: #4F46E5;">${paymentId}</span></p>
+                <p><strong>Razorpay Payment ID:</strong> <span style="font-family: monospace; color: #7C1E2E;">${paymentId}</span></p>
                 <p style="color: #10B981; font-weight: bold; margin-top: 8px;">
                   ✓ All enterprise modules, GST filing, 80mm/58mm printing, Android sync & RAKI AI Copilot are now fully unlocked.
                 </p>
               </div>
             `,
-            confirmButtonColor: "#4F46E5",
+            confirmButtonColor: "#7C1E2E",
             confirmButtonText: "Go to Dashboard"
           });
         },
@@ -107,7 +157,22 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
       localStorage.setItem("userPlanPrice", selectedPlan.price);
       localStorage.setItem("userPlanDate", new Date().toISOString());
 
+      const paymentId = `pay_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      const businessId = localStorage.getItem("businessId") || localStorage.getItem("userBusinessId") || "default";
+      fetch("/api/subscriptions/upgrade", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          businessId: businessId,
+          planId: selectedPlan.id,
+          paymentId: paymentId,
+          paymentMethod: paymentMethod || "UPI",
+          amount: selectedPlan.price
+        })
+      }).catch(e => console.error("Subscription persist error:", e));
+
       onClose();
+      if (onSuccess) onSuccess(selectedPlan);
 
       Swal.fire({
         icon: "success",
@@ -117,13 +182,13 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
             <p><strong>Plan Activated:</strong> ${selectedPlan.name}</p>
             <p><strong>Amount Paid:</strong> ₹${selectedPlan.price.toLocaleString('en-IN')}</p>
             <p><strong>Razorpay Gateway Key:</strong> <span style="font-family: monospace; font-size: 11px;">${razorpayKeyId}</span></p>
-            <p><strong>Payment ID:</strong> pay_${Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+            <p><strong>Payment ID:</strong> ${paymentId}</p>
             <p style="color: #10B981; font-weight: bold; margin-top: 8px;">
               ✓ All enterprise features, POS, Android app auto-sync & RAKI AI are now active.
             </p>
           </div>
         `,
-        confirmButtonColor: "#4F46E5",
+        confirmButtonColor: "#7C1E2E",
         confirmButtonText: "Access Portal"
       });
     }, 1200);
@@ -134,9 +199,9 @@ export default function RazorpayCheckoutModal({ isOpen, onClose, selectedPlan })
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
           {/* Header */}
-          <div className="modal-header bg-dark text-white p-4 border-0">
+          <div className="modal-header text-white p-4 border-0" style={{ background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 100%)' }}>
             <div>
-              <span className="badge bg-primary text-white mb-1 px-3 py-1">
+              <span className="badge mb-1 px-3 py-1 shadow-sm" style={{ backgroundColor: '#c9973f', color: '#ffffff' }}>
                 <BsShieldCheck className="me-1" /> SECURE RAZORPAY LIVE GATEWAY
               </span>
               <h5 className="modal-title fw-bold text-white mb-0">Subscribe to {selectedPlan.name}</h5>

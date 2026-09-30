@@ -5,11 +5,11 @@
 
 /* Page Header */
 .purchase-orders-page-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 30px;
     border-radius: 16px;
     margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
 }
 
 .purchase-orders-header-content {
@@ -78,7 +78,7 @@
 
 .purchase-orders-create-btn {
     background: rgba(255, 255, 255, 0.9);
-    color: #3e4e96;
+    color: #7c1e2e;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -114,11 +114,11 @@
 }
 
 .purchase-orders-summary-card.total-orders {
-    border-left-color: #3e4e96;
+    border-left-color: #7c1e2e;
 }
 
 .purchase-orders-summary-card.total-amount {
-    border-left-color: #e8961b;
+    border-left-color: #b45309;
 }
 
 .purchase-orders-summary-card.open-orders {
@@ -140,11 +140,11 @@
 }
 
 .total-orders-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .total-amount-icon {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a623 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a623 100%);
 }
 
 .open-orders-icon {
@@ -212,7 +212,7 @@
 .purchase-orders-table th svg {
     margin-right: 6px;
     vertical-align: middle;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .purchase-orders-table tbody tr {
@@ -232,7 +232,7 @@
 
 .order-number-cell {
     font-weight: 600;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .party-name-cell {
@@ -301,7 +301,7 @@
 }
 
 .purchase-orders-empty-add-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 14px 32px;
@@ -313,12 +313,12 @@
     align-items: center;
     gap: 10px;
     transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 .purchase-orders-empty-add-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.5);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.5);
 }
 
 /* Responsive Design */

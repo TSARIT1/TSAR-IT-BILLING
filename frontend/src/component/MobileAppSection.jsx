@@ -3,24 +3,22 @@ import {
   BsAndroid2, 
   BsDownload, 
   BsGooglePlay, 
-  BsQrCode, 
   BsCloudCheckFill, 
   BsPrinterFill, 
   BsQrCodeScan, 
-  BsShieldCheck, 
-  BsLightningChargeFill 
+  BsShieldCheck
 } from "react-icons/bs";
 
 export default function MobileAppSection() {
   return (
-    <section className="mobile-app-showcase-section py-5" style={{ background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)", color: "#fff" }}>
+    <section className="mobile-app-showcase-section py-5" style={{ background: "linear-gradient(180deg, #2C0D17 0%, #1E293B 100%)", color: "#fff" }}>
       <div className="container py-4">
         <div className="row align-items-center g-5">
           {/* Left Column: Details & Download CTA */}
           <div className="col-lg-7">
             <div className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-primary bg-opacity-25 border border-primary border-opacity-50 text-primary-light mb-3">
               <BsAndroid2 className="text-success fs-5" />
-              <span className="small fw-bold text-white">TSAR IT MOBILE APP — VERSION 4.0</span>
+              <span className="small fw-bold text-white">TSAR IT MOBILE APP — VERSION 4.14.14</span>
             </div>
 
             <h2 className="display-6 fw-bold mb-3 text-white">
@@ -85,32 +83,31 @@ export default function MobileAppSection() {
             {/* Action Buttons */}
             <div className="d-flex flex-wrap align-items-center gap-3">
               <a 
-                href="/downloads/TSAR-IT-Billing-v4.0.0.apk" 
-                download="TSAR-IT-Billing-v4.0.0.apk"
+                href="/downloads/TSAR-IT-Billing-v4.14.14.apk" 
+                download="TSAR-IT-Billing-v4.14.14.apk"
                 className="btn btn-primary btn-lg px-4 py-3 fw-bold d-flex align-items-center gap-2 shadow rounded-3"
               >
-                <BsDownload className="fs-5" /> Download Direct APK (v4.0)
+                <BsDownload className="fs-5" /> Download Direct APK (v4.14.14)
               </a>
 
               <a 
-                href="/downloads/TSAR-IT-Billing-v4.0.0.apk" 
-                download="TSAR-IT-Billing-v4.0.0.apk"
+                href="/download-app" 
                 className="btn btn-outline-light btn-lg px-4 py-3 fw-bold d-flex align-items-center gap-2 rounded-3"
               >
-                <BsGooglePlay className="text-success fs-5" /> Google Play Store
+                <BsGooglePlay className="text-success fs-5" /> Install Guide
               </a>
             </div>
 
             <div className="text-muted small mt-3">
-              Supported on Android 8.0 to Android 14+ (ARM64 / x86_64) • Free Automatic Updates
+              Supported on Android 8.0 to Android 14+ (ARM64 / x86_64) • Official HTTPS Updates
             </div>
           </div>
 
           {/* Right Column: QR Code & Mobile Mockup Preview */}
           <div className="col-lg-5 text-center">
-            <div className="card bg-dark border border-secondary border-opacity-25 rounded-4 p-4 shadow-lg mx-auto" style={{ maxWidth: "380px" }}>
+            <div className="card border-0 rounded-4 p-4 shadow-lg mx-auto text-white" style={{ maxWidth: "380px", background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 100%)' }}>
               <div className="mb-3">
-                <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                <span className="badge px-3 py-1 shadow-sm" style={{ backgroundColor: '#c9973f', color: '#ffffff' }}>
                   SCAN TO INSTALL ON MOBILE
                 </span>
               </div>
@@ -121,47 +118,47 @@ export default function MobileAppSection() {
                 <svg width="180" height="180" viewBox="0 0 180 180">
                   <rect width="180" height="180" fill="white" />
                   {/* Outer Frame */}
-                  <rect x="15" y="15" width="45" height="45" fill="#0F172A" />
+                  <rect x="15" y="15" width="45" height="45" fill="#2C0D17" />
                   <rect x="25" y="25" width="25" height="25" fill="white" />
-                  <rect x="30" y="30" width="15" height="15" fill="#4F46E5" />
+                  <rect x="30" y="30" width="15" height="15" fill="#7C1E2E" />
 
-                  <rect x="120" y="15" width="45" height="45" fill="#0F172A" />
+                  <rect x="120" y="15" width="45" height="45" fill="#2C0D17" />
                   <rect x="130" y="25" width="25" height="25" fill="white" />
-                  <rect x="135" y="30" width="15" height="15" fill="#4F46E5" />
+                  <rect x="135" y="30" width="15" height="15" fill="#7C1E2E" />
 
-                  <rect x="15" y="120" width="45" height="45" fill="#0F172A" />
+                  <rect x="15" y="120" width="45" height="45" fill="#2C0D17" />
                   <rect x="25" y="130" width="25" height="25" fill="white" />
-                  <rect x="30" y="135" width="15" height="15" fill="#4F46E5" />
+                  <rect x="30" y="135" width="15" height="15" fill="#7C1E2E" />
 
                   {/* Data Blocks */}
-                  <rect x="70" y="25" width="15" height="15" fill="#0F172A" />
-                  <rect x="95" y="25" width="15" height="15" fill="#0F172A" />
-                  <rect x="70" y="50" width="40" height="10" fill="#4F46E5" />
-                  <rect x="70" y="70" width="20" height="20" fill="#0F172A" />
-                  <rect x="100" y="70" width="20" height="20" fill="#0F172A" />
-                  <rect x="130" y="70" width="35" height="20" fill="#0F172A" />
+                  <rect x="70" y="25" width="15" height="15" fill="#2C0D17" />
+                  <rect x="95" y="25" width="15" height="15" fill="#2C0D17" />
+                  <rect x="70" y="50" width="40" height="10" fill="#7C1E2E" />
+                  <rect x="70" y="70" width="20" height="20" fill="#2C0D17" />
+                  <rect x="100" y="70" width="20" height="20" fill="#2C0D17" />
+                  <rect x="130" y="70" width="35" height="20" fill="#2C0D17" />
 
-                  <rect x="25" y="70" width="35" height="10" fill="#4F46E5" />
-                  <rect x="25" y="90" width="20" height="20" fill="#0F172A" />
-                  <rect x="55" y="90" width="30" height="20" fill="#0F172A" />
+                  <rect x="25" y="70" width="35" height="10" fill="#7C1E2E" />
+                  <rect x="25" y="90" width="20" height="20" fill="#2C0D17" />
+                  <rect x="55" y="90" width="30" height="20" fill="#2C0D17" />
 
-                  <rect x="70" y="120" width="20" height="20" fill="#0F172A" />
-                  <rect x="100" y="120" width="20" height="20" fill="#4F46E5" />
-                  <rect x="130" y="120" width="35" height="20" fill="#0F172A" />
+                  <rect x="70" y="120" width="20" height="20" fill="#2C0D17" />
+                  <rect x="100" y="120" width="20" height="20" fill="#7C1E2E" />
+                  <rect x="130" y="120" width="35" height="20" fill="#2C0D17" />
 
-                  <rect x="70" y="150" width="40" height="15" fill="#0F172A" />
-                  <rect x="120" y="150" width="45" height="15" fill="#4F46E5" />
+                  <rect x="70" y="150" width="40" height="15" fill="#2C0D17" />
+                  <rect x="120" y="150" width="45" height="15" fill="#7C1E2E" />
                 </svg>
               </div>
 
               <h6 className="text-white fw-bold mb-1">Point Phone Camera to Scan</h6>
               <p className="text-light text-opacity-75 small mb-3">
-                Instantly downloads the secure <strong>TSAR-IT-Billing-v4.0.0.apk</strong> to your mobile device.
+                Instantly downloads the secure <strong>TSAR-IT-Billing-v4.14.14.apk</strong> to your mobile device.
               </p>
 
               <div className="d-flex justify-content-center gap-2">
-                <span className="badge bg-primary px-3 py-2">Version: 4.0.0</span>
-                <span className="badge bg-secondary px-3 py-2">Size: 32.4 MB</span>
+                <span className="badge bg-primary px-3 py-2">Version: 4.14.14</span>
+                <span className="badge bg-secondary px-3 py-2">Size: 4.7 MB</span>
               </div>
             </div>
           </div>

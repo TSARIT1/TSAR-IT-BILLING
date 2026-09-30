@@ -5,14 +5,14 @@
 
 /* Page Header */
 .payment-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 25px 35px;
     border-radius: 16px;
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -125,7 +125,7 @@
 
 .save-btn {
     background: rgba(255, 255, 255, 0.95);
-    color: #3e4e96;
+    color: #7c1e2e;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -167,11 +167,11 @@
 }
 
 .summary-card.blue::before {
-    background: linear-gradient(180deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(180deg, #7c1e2e 0%, #9c3d52 100%);
 }
 
 .summary-card.orange::before {
-    background: linear-gradient(180deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(180deg, #b45309 0%, #f5a842 100%);
 }
 
 .summary-card.green::before {
@@ -201,11 +201,11 @@
 }
 
 .summary-card.blue .card-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #9c3d52 100%);
 }
 
 .summary-card.orange .card-icon {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a842 100%);
 }
 
 .summary-card.green .card-icon {
@@ -251,7 +251,7 @@
 
 .section-header i {
     font-size: 24px;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .section-header h3 {
@@ -279,7 +279,7 @@
 }
 
 .form-group label i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 16px;
 }
 
@@ -290,7 +290,7 @@
     border: 2px solid #e5e7eb;
     border-radius: 12px;
     font-size: 15px;
-    font-family: "Poppins", sans-serif;
+    font-family: "Sora", "Plus Jakarta Sans", sans-serif;
     background: #f9fafb;
     transition: all 0.3s ease;
 }
@@ -299,9 +299,9 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 .form-group input[readonly] {
@@ -314,7 +314,7 @@
 .form-group textarea {
     min-height: 100px;
     resize: vertical;
-    font-family: "Poppins", sans-serif;
+    font-family: "Sora", "Plus Jakarta Sans", sans-serif;
 }
 
 /* Special Input Styles */
@@ -328,10 +328,10 @@
 
 .payment-number-input {
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     font-weight: 700 !important;
     font-size: 16px !important;
-    border-color: #3e4e96 !important;
+    border-color: #7c1e2e !important;
 }
 
 /* Amount Input Group */
@@ -353,7 +353,7 @@
     left: 16px;
     font-size: 20px;
     font-weight: 700;
-    color: #e8961b;
+    color: #b45309;
     z-index: 1;
 }
 
@@ -363,12 +363,12 @@
     font-weight: 700 !important;
     color: #1f2937 !important;
     background: #ffffff !important;
-    border: 2px solid #e8961b !important;
+    border: 2px solid #b45309 !important;
 }
 
 .amount-input:focus {
-    border-color: #e8961b !important;
-    box-shadow: 0 0 0 4px rgba(232, 150, 27, 0.2) !important;
+    border-color: #b45309 !important;
+    box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.2) !important;
 }
 
 .amount-display {
@@ -445,15 +445,15 @@
 
 .mode-icon:hover {
     background: #ffffff;
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.2);
+    box-shadow: 0 4px 12px rgba(124, 30, 46, 0.2);
 }
 
 .mode-icon.active {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
-    border-color: #3e4e96;
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.3);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
+    border-color: #7c1e2e;
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.3);
 }
 
 .mode-icon.active i,

@@ -6,6 +6,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { BsQrCodeScan } from "react-icons/bs";
 import "../dashboard.css";
 import "../allPart.css";
+import { getAllCustomers } from "../../services/api";
 
 function CreateCreditNote() {
   const navigate = useNavigate();
@@ -25,10 +26,13 @@ function CreateCreditNote() {
   const [paymentEntered, setPaymentEntered] = useState(0);
 
   useEffect(() => {
+    // Note counter from local storage (until backend CN API is available)
     const stored = JSON.parse(localStorage.getItem("creditNotes")) || [];
     setNoteNo(stored.length + 1);
-    const storedParties = JSON.parse(localStorage.getItem("parties")) || [];
-    setParties(storedParties);
+    // Load real customers from API
+    getAllCustomers()
+      .then(list => { if (Array.isArray(list)) setParties(list.map(c => ({ name: c.name, mobile: c.phone || c.mobile || '' }))); })
+      .catch(() => setParties([]));
   }, []);
 
   useEffect(() => {

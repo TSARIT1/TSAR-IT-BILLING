@@ -11,7 +11,7 @@ import {
   BsTrash,
   BsInbox
 } from "react-icons/bs";
-import { getTickets, createTicket, deleteTicket } from "../../services/api";
+import { getTickets, createTicket, deleteTicket, getTicketReplies, addTicketReply } from "../../services/api";
 
 export default function SupportTickets() {
   const [tickets, setTickets] = useState([]);
@@ -24,6 +24,11 @@ export default function SupportTickets() {
     priority: "MEDIUM",
     description: ""
   });
+  const [openTicketId, setOpenTicketId] = useState(null);
+  const [thread, setThread] = useState([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [replyDraft, setReplyDraft] = useState("");
+  const [replySending, setReplySending] = useState(false);
 
   const loadTickets = async () => {
     setLoading(true);
@@ -79,6 +84,39 @@ export default function SupportTickets() {
       } catch (err) {
         console.error("Error deleting ticket:", err);
       }
+    }
+  };
+
+  const openConversation = async (tk) => {
+    if (openTicketId === tk.id) { setOpenTicketId(null); return; }
+    setOpenTicketId(tk.id);
+    setThread([]);
+    setReplyDraft("");
+    setThreadLoading(true);
+    try {
+      const data = await getTicketReplies(tk.id);
+      setThread(Array.isArray(data?.replies) ? data.replies : []);
+    } catch (err) {
+      console.error("Error loading replies:", err);
+      setThread([]);
+    } finally {
+      setThreadLoading(false);
+    }
+  };
+
+  const sendReply = async (tk) => {
+    if (!replyDraft.trim()) return;
+    setReplySending(true);
+    try {
+      const data = await addTicketReply(tk.id, replyDraft.trim());
+      if (data?.reply) setThread(th => [...th, data.reply]);
+      setReplyDraft("");
+      if (data?.status && data.status !== tk.status) loadTickets();
+    } catch (err) {
+      console.error("Error sending reply:", err);
+      alert("Failed to send reply. Please try again.");
+    } finally {
+      setReplySending(false);
     }
   };
 
@@ -175,6 +213,66 @@ export default function SupportTickets() {
                       🤖 Raki AI: Ticket logged successfully. Dispatched to support desk & WhatsApp notification channel.
                     </p>
                   </div>
+
+                  <div className="d-flex gap-2 mt-3">
+                    <button
+                      className={`btn btn-sm fw-semibold ${openTicketId === tk.id ? "btn-secondary" : "btn-outline-primary"}`}
+                      onClick={() => openConversation(tk)}
+                    >
+                      💬 {openTicketId === tk.id ? "Hide conversation" : "View conversation & reply"}
+                    </button>
+                  </div>
+
+                  {openTicketId === tk.id && (
+                    <div className="mt-3 p-3 rounded-3" style={{ background: "#faf6f4", border: "1px solid rgba(124,30,46,0.15)" }}>
+                      {threadLoading ? (
+                        <div className="text-muted small">Loading conversation…</div>
+                      ) : (
+                        <>
+                          <div className="mb-2 p-3 rounded-3 bg-white shadow-sm" style={{ borderLeft: "4px solid #0d6efd" }}>
+                            <b className="small d-block mb-1">You <span className="text-muted fw-normal float-end small">{createdStr}</span></b>
+                            <p className="small mb-0" style={{ whiteSpace: "pre-wrap" }}>{tk.message}</p>
+                          </div>
+                          {thread.map((r) => (
+                            <div
+                              key={r.id}
+                              className={`mb-2 p-3 rounded-3 shadow-sm ${r.fromSupport ? "text-white" : "bg-white"}`}
+                              style={r.fromSupport
+                                ? { background: "linear-gradient(135deg, #7c1e2e, #94273a)", borderLeft: "4px solid #c9973f", marginLeft: "2rem" }
+                                : { borderLeft: "4px solid #0d6efd" }}
+                            >
+                              <b className="small d-block mb-1">
+                                {r.authorName || (r.fromSupport ? "TSAR IT Support" : "You")}
+                                <span className={`fw-normal float-end small ${r.fromSupport ? "text-white-50" : "text-muted"}`}>
+                                  {r.createdAt ? new Date(r.createdAt).toLocaleString("en-IN") : ""}
+                                </span>
+                              </b>
+                              <p className="small mb-0" style={{ whiteSpace: "pre-wrap" }}>{r.message}</p>
+                            </div>
+                          ))}
+                          {thread.length === 0 && (
+                            <div className="text-muted small mb-2">No support reply yet — our team usually responds within a few hours.</div>
+                          )}
+                          <div className="d-flex gap-2 align-items-end mt-2">
+                            <textarea
+                              className="form-control form-control-sm"
+                              rows="2"
+                              placeholder="Add more details or reply to support…"
+                              value={replyDraft}
+                              onChange={(e) => setReplyDraft(e.target.value)}
+                            ></textarea>
+                            <button
+                              className="btn btn-primary btn-sm fw-semibold px-3"
+                              disabled={replySending || !replyDraft.trim()}
+                              onClick={() => sendReply(tk)}
+                            >
+                              {replySending ? "Sending…" : "Send"}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

@@ -1,20 +1,13 @@
 import React, { useState } from "react";
 import PortalLayout from "../PortalLayout";
-import Navbar from "../Navbar";
+import NavbarV6 from "../NavbarV6";
+import "../style.css";
+import "../landing-v6.css";
 import Footer from "../Footer";
 import { 
   BsAndroid2, 
   BsDownload, 
-  BsGooglePlay, 
-  BsQrCode, 
-  BsCloudCheckFill, 
-  BsPrinterFill, 
-  BsQrCodeScan, 
-  BsPhoneFill, 
   BsCheckCircleFill, 
-  BsArrowRight,
-  BsWifi,
-  BsShieldCheck
 } from "react-icons/bs";
 
 export default function MobileAppDownload() {
@@ -22,7 +15,7 @@ export default function MobileAppDownload() {
   const [copied, setCopied] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
 
-  const downloadUrl = `${window.location.origin}/downloads/TSAR-IT-Billing-v4.0.0.apk`;
+  const downloadUrl = `${window.location.origin}/downloads/TSAR-IT-Billing-v4.14.14.apk`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(downloadUrl);
@@ -42,39 +35,40 @@ export default function MobileAppDownload() {
         </div>
         <div className="d-flex gap-2">
           <a 
-            href="/downloads/TSAR-IT-Billing-v4.0.0.apk" 
-            download="TSAR-IT-Billing-v4.0.0.apk"
+            href="/downloads/TSAR-IT-Billing-v4.14.14.apk" 
+            download="TSAR-IT-Billing-v4.14.14.apk"
             className="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-semibold"
             onClick={() => setDownloadCount(downloadCount + 1)}
           >
-            <BsDownload /> Download Direct APK (v4.0.0)
+            <BsDownload /> Download Direct APK (v4.14.14)
           </a>
         </div>
       </div>
 
       {/* Hero Download Card */}
-      <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-dark text-white p-4">
+      <div className="card border-0 shadow rounded-4 overflow-hidden mb-4 text-white p-4" style={{ background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 55%, #4a0f1a 100%)' }}>
         <div className="row align-items-center g-4">
           <div className="col-lg-8">
-            <div className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-success bg-opacity-25 border border-success border-opacity-50 text-success mb-3">
-              <BsCheckCircleFill />
-              <span className="small fw-bold">Official Production Release • Version 4.0.0</span>
+            <div className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white bg-opacity-15 border border-white border-opacity-25 text-white mb-3 shadow-sm">
+              <BsCheckCircleFill style={{ color: '#fde047' }} />
+              <span className="small fw-bold">Official Production Release • Version 4.14.14</span>
             </div>
             <h3 className="fw-bold text-white mb-2">
               Mobile POS, GST Billing & Field Sales on Any Android Device
             </h3>
-            <p className="text-light text-opacity-75 mb-4">
+            <p className="text-light text-opacity-90 mb-4">
               Designed for shop counters, delivery vans, warehouses, and field agents across India. Works 100% offline and auto-syncs with this web portal.
             </p>
 
             <div className="d-flex flex-wrap gap-3">
               <a 
-                href="/downloads/TSAR-IT-Billing-v4.0.0.apk" 
-                download="TSAR-IT-Billing-v4.0.0.apk"
-                className="btn btn-primary btn-lg px-4 py-3 fw-bold d-flex align-items-center gap-2 shadow"
+                href="/downloads/TSAR-IT-Billing-v4.14.14.apk" 
+                download="TSAR-IT-Billing-v4.14.14.apk"
+                className="btn btn-warning btn-lg px-4 py-3 fw-bold d-flex align-items-center gap-2 shadow"
+                style={{ backgroundColor: '#c9973f', borderColor: '#c9973f', color: '#ffffff' }}
                 onClick={() => setDownloadCount(downloadCount + 1)}
               >
-                <BsDownload className="fs-5" /> Download APK File (32.4 MB)
+                <BsDownload className="fs-5" /> Download APK File (4.7 MB)
               </a>
               <button 
                 className="btn btn-outline-light btn-lg px-4 py-3 fw-semibold d-flex align-items-center gap-2"
@@ -91,29 +85,29 @@ export default function MobileAppDownload() {
               {/* SVG Visual QR Code */}
               <svg width="160" height="160" viewBox="0 0 180 180">
                 <rect width="180" height="180" fill="white" />
-                <rect x="15" y="15" width="45" height="45" fill="#0F172A" />
+                <rect x="15" y="15" width="45" height="45" fill="#2C0D17" />
                 <rect x="25" y="25" width="25" height="25" fill="white" />
-                <rect x="30" y="30" width="15" height="15" fill="#4F46E5" />
-                <rect x="120" y="15" width="45" height="45" fill="#0F172A" />
+                <rect x="30" y="30" width="15" height="15" fill="#7C1E2E" />
+                <rect x="120" y="15" width="45" height="45" fill="#2C0D17" />
                 <rect x="130" y="25" width="25" height="25" fill="white" />
-                <rect x="135" y="30" width="15" height="15" fill="#4F46E5" />
-                <rect x="15" y="120" width="45" height="45" fill="#0F172A" />
+                <rect x="135" y="30" width="15" height="15" fill="#7C1E2E" />
+                <rect x="15" y="120" width="45" height="45" fill="#2C0D17" />
                 <rect x="25" y="130" width="25" height="25" fill="white" />
-                <rect x="30" y="135" width="15" height="15" fill="#4F46E5" />
-                <rect x="70" y="25" width="15" height="15" fill="#0F172A" />
-                <rect x="95" y="25" width="15" height="15" fill="#0F172A" />
-                <rect x="70" y="50" width="40" height="10" fill="#4F46E5" />
-                <rect x="70" y="70" width="20" height="20" fill="#0F172A" />
-                <rect x="100" y="70" width="20" height="20" fill="#0F172A" />
-                <rect x="130" y="70" width="35" height="20" fill="#0F172A" />
-                <rect x="25" y="70" width="35" height="10" fill="#4F46E5" />
-                <rect x="25" y="90" width="20" height="20" fill="#0F172A" />
-                <rect x="55" y="90" width="30" height="20" fill="#0F172A" />
-                <rect x="70" y="120" width="20" height="20" fill="#0F172A" />
-                <rect x="100" y="120" width="20" height="20" fill="#4F46E5" />
-                <rect x="130" y="120" width="35" height="20" fill="#0F172A" />
-                <rect x="70" y="150" width="40" height="15" fill="#0F172A" />
-                <rect x="120" y="150" width="45" height="15" fill="#4F46E5" />
+                <rect x="30" y="135" width="15" height="15" fill="#7C1E2E" />
+                <rect x="70" y="25" width="15" height="15" fill="#2C0D17" />
+                <rect x="95" y="25" width="15" height="15" fill="#2C0D17" />
+                <rect x="70" y="50" width="40" height="10" fill="#7C1E2E" />
+                <rect x="70" y="70" width="20" height="20" fill="#2C0D17" />
+                <rect x="100" y="70" width="20" height="20" fill="#2C0D17" />
+                <rect x="130" y="70" width="35" height="20" fill="#2C0D17" />
+                <rect x="25" y="70" width="35" height="10" fill="#7C1E2E" />
+                <rect x="25" y="90" width="20" height="20" fill="#2C0D17" />
+                <rect x="55" y="90" width="30" height="20" fill="#2C0D17" />
+                <rect x="70" y="120" width="20" height="20" fill="#2C0D17" />
+                <rect x="100" y="120" width="20" height="20" fill="#7C1E2E" />
+                <rect x="130" y="120" width="35" height="20" fill="#2C0D17" />
+                <rect x="70" y="150" width="40" height="15" fill="#2C0D17" />
+                <rect x="120" y="150" width="45" height="15" fill="#7C1E2E" />
               </svg>
             </div>
             <div className="small text-white fw-bold mt-2">Scan with Phone Camera to Install</div>
@@ -220,7 +214,7 @@ export default function MobileAppDownload() {
 
   return (
     <div className="landing-page-wrapper">
-      <Navbar />
+      <NavbarV6 />
       <main className="py-4" style={{ minHeight: "85vh", backgroundColor: "#f8fafc" }}>
         <div className="container py-3">
           {content}

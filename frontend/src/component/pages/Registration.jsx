@@ -11,12 +11,14 @@ import {
   BsEyeSlashFill, 
   BsArrowRight,
   BsCheckCircleFill,
-  BsRocketTakeoffFill
+  BsRocketTakeoffFill,
+  BsPeopleFill
 } from "react-icons/bs";
-import Navbar from "../Navbar";
+import NavbarV6 from "../NavbarV6";
 import { registerUser } from "../../services/api";
 import Swal from "sweetalert2";
 import "../login.css";
+import "../landing-v6.css";
 
 export default function Registration() {
   const navigate = useNavigate();
@@ -25,7 +27,9 @@ export default function Registration() {
     businessName: "",
     email: "",
     mobileNo: "",
-    password: ""
+    password: "",
+    industryType: "Retail",
+    referredBy: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,8 +43,20 @@ export default function Registration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.ownerName.trim() || !formData.businessName.trim() || !formData.mobileNo.trim() || !formData.password.trim()) {
-      setErrorMsg("Please fill in all required fields.");
+    // Only a sign-in identity (mobile OR email) and a password are required.
+    // Everything else is optional so no one is blocked from signing up.
+    if (!formData.mobileNo.trim() && !formData.email.trim()) {
+      setErrorMsg("Enter a mobile number or an email — we need one way for you to sign in.");
+      return;
+    }
+
+    if (formData.mobileNo.trim() && !/^[6-9]\d{9}$/.test(formData.mobileNo.trim())) {
+      setErrorMsg("Enter a valid 10-digit Indian mobile number (or leave it blank and use email).");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setErrorMsg("Password must be at least 8 characters.");
       return;
     }
 
@@ -48,17 +64,52 @@ export default function Registration() {
     try {
       const response = await registerUser(formData);
 
-      Swal.fire({
-        icon: "success",
-        title: "Account Registered Successfully!",
-        text: `Welcome to TSAR IT Billing, ${formData.ownerName}! Please login to access your dashboard.`,
-        confirmButtonColor: "#4f46e5"
-      }).then(() => {
-        navigate("/login");
-      });
+      if (response && response.token) {
+        localStorage.setItem("token", response.token);
+        const tenantRole = response.role || response.userRole || "TENANT_OWNER";
+        if (response.user) localStorage.setItem("user", JSON.stringify({
+          ...response.user,
+          role: tenantRole,
+          businessId: response.businessId,
+          userBusinessId: response.userBusinessId
+        }));
+        if (response.userId) localStorage.setItem("userId", response.userId);
+        if (response.businessId) localStorage.setItem("businessId", response.businessId);
+        if (response.userBusinessId) localStorage.setItem("userBusinessId", response.userBusinessId);
+        localStorage.setItem("userRole", tenantRole);
+        if (response.activePlan) localStorage.setItem("userPlan", response.activePlan);
+        localStorage.setItem("trialDaysRemaining", "15");
+        localStorage.setItem("businessData", JSON.stringify({
+          businessName: response.businessName || formData.businessName,
+          ownerName: response.ownerName || formData.ownerName,
+          phoneNo: formData.mobileNo,
+          email: formData.email
+        }));
+
+        Swal.fire({
+          icon: "success",
+          title: "Account Registered Successfully! 🎉",
+          text: `Welcome to TSAR IT Billing, ${formData.ownerName}! Your 15-Day Free Trial is activated with all enterprise modules unlocked.`,
+          confirmButtonColor: "#7c1e2e",
+          confirmButtonText: "Go to Dashboard"
+        }).then(() => {
+          navigate("/dashboard");
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Account Registered Successfully!",
+          text: `Welcome to TSAR IT Billing, ${formData.ownerName}! Please login to access your dashboard.`,
+          confirmButtonColor: "#7c1e2e"
+        }).then(() => {
+          navigate("/login");
+        });
+      }
 
     } catch (err) {
-      console.error("Registration error:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Registration error:", err);
+      }
       // api.js throws error.response.data directly (not the full Axios error)
       // so err IS the data object — access .error or .message directly
       const serverMsg = (err && (err.error || err.message)) || "Registration failed. Please check your information or try another mobile number.";
@@ -70,7 +121,7 @@ export default function Registration() {
 
   return (
     <div className="auth-page-container">
-      <Navbar />
+      <NavbarV6 />
 
       <div className="auth-split-wrapper">
         {/* Left Side: Brand Showcase */}
@@ -78,7 +129,7 @@ export default function Registration() {
           <div className="brand-side-content">
             <div className="brand-pill">
               <BsRocketTakeoffFill className="text-warning me-2" />
-              <span>14-Day Free Access</span>
+              <span>15-Day Free Access</span>
             </div>
 
             <h1 className="brand-heading">
@@ -94,7 +145,7 @@ export default function Registration() {
                 <BsCheckCircleFill className="text-success fs-5" />
                 <div>
                   <strong>No Credit Card Required</strong>
-                  <div className="text-muted small">Full access to all enterprise features for 14 days</div>
+                  <div className="text-muted small">Full access to all enterprise features for 15 days</div>
                 </div>
               </div>
 
@@ -137,10 +188,10 @@ export default function Registration() {
             )}
 
             <form onSubmit={handleSubmit} className="auth-form">
-              {/* Row 1: Owner Name & Business Name */}
+              {/* Row 1: Owner Name & Business Name (both optional) */}
               <div className="row g-2 mb-2">
                 <div className="col-md-6">
-                  <label className="form-label small">Owner / Full Name *</label>
+                  <label className="form-label small">Owner / Full Name</label>
                   <div className="input-with-icon">
                     <BsPersonFill className="input-icon" />
                     <input
@@ -150,13 +201,12 @@ export default function Registration() {
                       placeholder="e.g. Rajesh Kumar"
                       value={formData.ownerName}
                       onChange={handleChange}
-                      required
                     />
                   </div>
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small">Business / Shop Name *</label>
+                  <label className="form-label small">Business / Shop Name</label>
                   <div className="input-with-icon">
                     <BsBuildingsFill className="input-icon" />
                     <input
@@ -166,32 +216,33 @@ export default function Registration() {
                       placeholder="e.g. Apex Enterprises"
                       value={formData.businessName}
                       onChange={handleChange}
-                      required
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Row 2: Mobile Number & Email */}
+              {/* Row 2: Mobile Number & Email (either one signs you in) */}
               <div className="row g-2 mb-2">
                 <div className="col-md-6">
-                  <label className="form-label small">Mobile Number *</label>
+                  <label className="form-label small">Mobile Number</label>
                   <div className="input-with-icon">
                     <BsTelephoneFill className="input-icon" />
                     <input
                       type="tel"
                       name="mobileNo"
                       className="form-control auth-input"
-                      placeholder="10-digit Mobile No"
+                    placeholder="10-digit Mobile No"
+                    inputMode="numeric"
+                    pattern="[6-9][0-9]{9}"
+                    maxLength={10}
                       value={formData.mobileNo}
                       onChange={handleChange}
-                      required
                     />
                   </div>
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small">Business Email (Optional)</label>
+                  <label className="form-label small">Business Email</label>
                   <div className="input-with-icon">
                     <BsEnvelopeFill className="input-icon" />
                     <input
@@ -205,32 +256,53 @@ export default function Registration() {
                   </div>
                 </div>
               </div>
+              <p className="text-muted small mb-2">Mobile number or email is needed to sign in — everything else is optional.</p>
 
-              {/* Row 3: Industry & Sector */}
-              <div className="form-group mb-2">
-                <label className="form-label small">Industry / Business Sector *</label>
-                <select
-                  name="industryType"
-                  className="form-select auth-input py-2"
-                  value={formData.industryType || "Retail"}
-                  onChange={handleChange}
-                >
-                  <optgroup label="Core Sectors">
-                    <option value="Retail">Retail Store / Supermarket</option>
-                    <option value="Wholesale">Wholesale & B2B Trading</option>
-                    <option value="Distribution">Distributor & Logistics</option>
-                    <option value="Manufacturing">Manufacturing & Production</option>
-                    <option value="Service-Based">Service Provider / IT Consultancy</option>
-                  </optgroup>
-                  <optgroup label="Specialized Industries">
-                    <option value="Pharmacy">Pharmacy / Chemist & Medical</option>
-                    <option value="Restaurants">Restaurant / Cafe & Food Court</option>
-                    <option value="Hotel">Hotel / Hospitality</option>
-                    <option value="FMCG">FMCG & Consumer Goods</option>
-                    <option value="Textile">Textile, Apparel & Garments</option>
-                    <option value="Electronics">Electronics, Mobile & Hardware</option>
-                  </optgroup>
-                </select>
+              {/* Row 3: Industry (optional) & Reference (optional) */}
+              <div className="row g-2 mb-2">
+                <div className="col-md-6">
+                  <label className="form-label small">Industry / Business Sector</label>
+                  <select
+                    name="industryType"
+                    className="form-select auth-input py-2"
+                    value={formData.industryType || "Retail"}
+                    onChange={handleChange}
+                  >
+                    <optgroup label="Core Sectors">
+                      <option value="Retail">Retail Store / Supermarket</option>
+                      <option value="Wholesale">Wholesale & B2B Trading</option>
+                      <option value="Distribution">Distributor & Logistics</option>
+                      <option value="Manufacturing">Manufacturing & Production</option>
+                      <option value="Service-Based">Service Provider / IT Consultancy</option>
+                    </optgroup>
+                    <optgroup label="Specialized Industries">
+                      <option value="Pharmacy">Pharmacy / Chemist & Medical</option>
+                      <option value="Restaurants">Restaurant / Cafe & Food Court</option>
+                      <option value="Hotel">Hotel / Hospitality</option>
+                      <option value="FMCG">FMCG & Consumer Goods</option>
+                      <option value="Textile">Textile, Apparel & Garments</option>
+                      <option value="Electronics">Electronics, Mobile & Hardware</option>
+                      <option value="Agro">Agro / Fertilizers & Seeds</option>
+                      <option value="Others">Others</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label small">Referred by (Optional)</label>
+                  <div className="input-with-icon">
+                    <BsPeopleFill className="input-icon" />
+                    <input
+                      type="text"
+                      name="referredBy"
+                      className="form-control auth-input"
+                      placeholder="Who referred you? Name / code"
+                      value={formData.referredBy}
+                      onChange={handleChange}
+                      maxLength={100}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Row 4: Password */}
@@ -242,7 +314,8 @@ export default function Registration() {
                     type={showPassword ? "text" : "password"}
                     name="password"
                     className="form-control auth-input"
-                    placeholder="At least 6 characters"
+                    placeholder="At least 8 characters"
+                    minLength={8}
                     value={formData.password}
                     onChange={handleChange}
                     required

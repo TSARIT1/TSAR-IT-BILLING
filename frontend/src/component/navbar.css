@@ -3,7 +3,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-main);
 }
 
 .main-content {
@@ -27,15 +27,18 @@ nav {
   left: 0;
   width: 100%;
   height: 70px;
-  background-color: rgb(245, 249, 251);
-  color: black;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--brand-ink);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0;
   margin: 0;
   z-index: 9999;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 12px 30px -28px rgba(15, 23, 42, 0.55);
 }
 
 /* Container for the buttons to align them nicely */
@@ -50,34 +53,31 @@ nav {
 .login-btn {
   background: none;
   border: none;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-main);
   font-weight: 600;
   /* Bold text like the image */
   font-size: large;
-  color: #2c3e50;
-  /* Dark slate color */
+  color: var(--slate-700);
   cursor: pointer;
   padding: 0;
   transition: color 0.3s;
 }
 
 .login-btn:hover {
-  color: #000;
+  color: var(--brand-blue);
 }
 
 /* 2. Book Free Demo Button (Outlined) */
 .demo-btn {
   background-color: white;
-  border: 2px solid #282c34;
-  /* Dark border thickness */
+  border: 1px solid rgba(15, 23, 42, 0.18);
   border-radius: 50px;
   /* Pill shape */
   padding: 10px 24px;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-main);
   font-weight: 600;
   font-size: 15px;
-  color: #282c34;
-  /* Text matches border */
+  color: var(--brand-ink);
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
@@ -85,20 +85,19 @@ nav {
 }
 
 .demo-btn:hover {
-  background-color: navy;
-  /* Slight grey on hover */
+  background-color: var(--slate-900);
+  color: #ffffff;
+  border-color: var(--slate-900);
 }
 
 /* 3. Start Free Billing Button (Solid Dark) */
 .start-btn {
-  background-color: #282c34;
-  /* Dark charcoal/black color */
-  border: 2px solid #282c34;
-  /* Border same as background */
+  background: var(--premium-gradient);
+  border: 1px solid transparent;
   border-radius: 50px;
   /* Pill shape */
   padding: 10px 24px;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-main);
   font-weight: 600;
   font-size: 15px;
   color: white;
@@ -109,9 +108,8 @@ nav {
 }
 
 .start-btn:hover {
-  background-color: navy;
-  /* Slightly lighter dark on hover */
-  border-color: #3e4450;
+  background: linear-gradient(135deg, #611726 0%, #4a1524 52%, #c9973f 100%);
+  border-color: transparent;
   transform: translateY(-1px);
   /* Subtle lift effect */
 }
@@ -125,7 +123,7 @@ nav {
 
 .nav-links a {
   text-decoration: none;
-  color: #222;
+  color: var(--slate-700);
   font-weight: 500;
   align-items: center;
   font-size: 16px;
@@ -140,7 +138,7 @@ nav {
   bottom: -3px;
   width: 0;
   height: 2px;
-  background-color: #ff7c00;
+  background: var(--gold-gradient);
   transition: 0.3s;
 }
 
@@ -167,9 +165,10 @@ nav {
   background: white;
   min-width: 180px;
   padding: 10px 0;
-  border-radius: 6px;
+  border-radius: 14px;
   display: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow-lg);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   z-index: 999;
 }
 
@@ -185,13 +184,13 @@ nav {
 }
 
 .dropdown-menu li a {
-  color: #222;
+  color: var(--slate-700);
   text-decoration: none;
   font-weight: 400;
 }
 
 .dropdown-menu li:hover {
-  background: #f5f5f5;
+  background: #f8fafc;
 }
 
 .dropdown-two-column .dropdown-menu.wide-menu {
@@ -203,8 +202,7 @@ nav {
   padding: 0;
   /* padding handled inside columns */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-left: 5px solid #4a148c;
-  /* Purple bar on the left container */
+  border-left: 5px solid var(--brand-gold);
   /* Use Flexbox to put columns side by side */
   flex-direction: row;
   justify-content: space-between;
@@ -313,7 +311,7 @@ nav {
 }
 
 .profile-btn {
-  background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+  background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
   color: #ffffff;
   border: none;
   padding: 10px 20px;
@@ -325,12 +323,12 @@ nav {
   align-items: center;
   gap: 8px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(62, 78, 150, 0.3);
+  box-shadow: 0 2px 8px rgba(124, 30, 46, 0.3);
 }
 
 .profile-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(62, 78, 150, 0.4);
+  box-shadow: 0 4px 12px rgba(124, 30, 46, 0.4);
 }
 
 .profile-icon {
@@ -380,7 +378,7 @@ nav {
 
 .profile-dropdown-item:hover {
   background: #f3f4f6;
-  color: #3e4e96;
+  color: #7c1e2e;
 }
 
 .profile-dropdown-item svg {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   BsRocketTakeoffFill, 
   BsPlayCircleFill, 
@@ -10,8 +10,7 @@ import {
   BsQrCodeScan,
   BsStars,
   BsCheck2Circle,
-  BsAndroid2,
-  BsAwardFill
+  BsAndroid2
 } from 'react-icons/bs';
 import tsarItLogo from '../asstes/tsar_it_logo.jpg';
 
@@ -41,8 +40,8 @@ export default function Hero() {
           <div className="col-lg-6 hero-text-col">
             <div className="hero-announcement-badge">
               <span className="live-status-pulse"></span>
-              <span className="badge-new">TSAR IT BILLING</span>
-              <span className="hero-badge-txt">GST Invoicing, Multi-Godown Hub & Thermal POS</span>
+              <span className="badge-new">{process.env.REACT_APP_BUSINESS_NAME}</span>
+              <span className="hero-badge-txt">GST Invoicing, Multi-Godown Hub &amp; Thermal POS</span>
               <BsArrowRight className="ms-1" />
             </div>
 
@@ -105,9 +104,14 @@ export default function Hero() {
               <button className="btn-saas-secondary hero-secondary-cta" onClick={() => navigate('/login')}>
                 <BsPlayCircleFill className="text-primary" /> Launch Portal Demo
               </button>
-              <Link to="/download-app" className="btn btn-outline-dark d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none">
-                <BsAndroid2 className="text-success fs-5" /> Download App
-              </Link>
+              <a 
+                href="/downloads/TSAR-IT-Billing-v4.14.14.apk" 
+                download="TSAR-IT-Billing-v4.14.14.apk"
+                className="btn btn-outline-dark d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
+                title="Download Android Mobile App APK (v4.14.14)"
+              >
+                <BsAndroid2 className="text-success fs-5" /> Download App (v4.14.14)
+              </a>
             </div>
 
             {/* Trust Badges Bar */}
@@ -117,6 +121,12 @@ export default function Hero() {
               <span className="trust-item">No credit card required</span>
               <span className="bullet-sep">•</span>
               <span className="trust-item">Full Excel/Tally data import</span>
+            </div>
+
+            <div className="hero-sector-strip" aria-label="Supported Indian business sectors">
+              {['Retail', 'Wholesale', 'Restaurant', 'Pharmacy', 'Garments', 'Electronics IMEI', 'Agro', 'Transport', 'Manufacturing'].map((sector) => (
+                <span key={sector}>{sector}</span>
+              ))}
             </div>
           </div>
 
@@ -165,7 +175,7 @@ export default function Hero() {
                         className="rounded border p-1 bg-white"
                       />
                       <div>
-                        <span className="badge bg-primary text-white mb-1" style={{ fontSize: '9px' }}>TAX INVOICE #TSAR-2026-104</span>
+                        <span className="badge text-white mb-1" style={{ fontSize: '9px', backgroundColor: '#7c1e2e' }}>TAX INVOICE #TSAR-2026-104</span>
                         <strong className="d-block text-dark small">Party: Shri Krishna Enterprise</strong>
                         <div className="text-muted" style={{ fontSize: '11px' }}>GSTIN: 36AABCU9603R1ZM</div>
                       </div>

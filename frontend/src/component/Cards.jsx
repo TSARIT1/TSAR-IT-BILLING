@@ -1,183 +1,247 @@
-import React, { useState, useEffect } from "react";
-import { 
-  BsCashStack, 
-  BsBoxSeam, 
-  BsBank, 
-  BsArrowUpRight, 
+import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import {
+  BsCashStack,
+  BsBoxSeam,
+  BsBank,
+  BsArrowUpRight,
   BsGraphUp,
   BsCheckCircleFill,
-  BsExclamationCircle
+  BsExclamationCircle,
 } from "react-icons/bs";
-import { getInvoices, getAllProducts, getAllCustomers, getBankAccounts } from "../services/api";
+import { getSales, getAllProducts, getBankAccounts } from "../services/api";
 
+/**
+ * Executive KPI cards on the Dashboard - Enterprise Edition.
+ * Real-time synced, gracefully cached in sessionStorage, zero hang on loading.
+ */
 export default function Cards() {
-  const [toCollect, setToCollect] = useState(0);
-  const [unpaidCount, setUnpaidCount] = useState(0);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [totalStockUnits, setTotalStockUnits] = useState(0);
-  const [cashBank, setCashBank] = useState(0);
-  const [accountsCount, setAccountsCount] = useState(0);
-  const [totalSales, setTotalSales] = useState(0);
-  const [invoicesCount, setInvoicesCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // Read cached metrics if available to eliminate initial '...'
+  const getCached = () => {
+    try {
+      const saved = sessionStorage.getItem("tsar_dashboard_kpis");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+  };
 
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
+  const cached = getCached();
 
-    const fetchRealData = async () => {
-      setLoading(true);
-      try {
-        const [invList, prodList, bankList] = await Promise.allSettled([
-          getInvoices(userId),
-          getAllProducts(),
-          getBankAccounts()
-        ]);
+  const [toCollect, setToCollect] = useState(cached?.toCollect || 0);
+  const [unpaidCount, setUnpaidCount] = useState(cached?.unpaidCount || 0);
+  const [totalProducts, setTotalProducts] = useState(cached?.totalProducts || 0);
+  const [totalStockUnits, setTotalStockUnits] = useState(cached?.totalStockUnits || 0);
+  const [cashBank, setCashBank] = useState(cached?.cashBank || 0);
+  const [accountsCount, setAccountsCount] = useState(cached?.accountsCount || 0);
+  const [totalSales, setTotalSales] = useState(cached?.totalSales || 0);
+  const [salesCount, setSalesCount] = useState(cached?.salesCount || 0);
+  const [loading, setLoading] = useState(!cached);
 
-        // 1. Process Invoices & Receivables
-        if (invList.status === "fulfilled" && Array.isArray(invList.value)) {
-          const invoices = invList.value;
-          const salesTotal = invoices.reduce((sum, inv) => sum + (Number(inv.totalAmount) || 0), 0);
-          const pendingInvoices = invoices.filter(inv => !inv.isSaled && !inv.isDeleted);
-          const pendingTotal = pendingInvoices.reduce((sum, inv) => sum + (Number(inv.totalAmount) || 0), 0);
+  const fetchRealData = useCallback(async () => {
+    const userBusinessId = localStorage.getItem("userBusinessId");
 
-          setTotalSales(salesTotal);
-          setInvoicesCount(invoices.length);
-          setToCollect(pendingTotal);
-          setUnpaidCount(pendingInvoices.length);
-        } else {
-          setTotalSales(0);
-          setInvoicesCount(0);
-          setToCollect(0);
-          setUnpaidCount(0);
-        }
+    // Guard timeout to prevent cards from being stuck in loading state
+    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3500, "timeout"));
 
-        // 2. Process Products & Stock
-        if (prodList.status === "fulfilled" && Array.isArray(prodList.value)) {
-          const prods = prodList.value;
-          setTotalProducts(prods.length);
-          const stockSum = prods.reduce((sum, p) => sum + (Number(p.remainingStock) || Number(p.totalStock) || 0), 0);
-          setTotalStockUnits(stockSum);
-        } else {
-          setTotalProducts(0);
-          setTotalStockUnits(0);
-        }
+    try {
+      const results = await Promise.race([
+        Promise.allSettled([
+          getSales(),
+          getAllProducts(userBusinessId),
+          getBankAccounts(),
+        ]),
+        timeoutPromise
+      ]);
 
-        // 3. Process Bank Accounts
-        if (bankList.status === "fulfilled" && Array.isArray(bankList.value) && bankList.value.length > 0) {
-          const accs = bankList.value;
-          setAccountsCount(accs.length);
-          const balanceTotal = accs.reduce((sum, a) => sum + (Number(a.currentBalance) || Number(a.openingBalance) || 0), 0);
-          setCashBank(balanceTotal);
-        } else {
-          setCashBank(0);
-          setAccountsCount(0);
-        }
-      } catch (err) {
-        console.error("Error loading dashboard card metrics:", err);
-      } finally {
+      if (results === "timeout") {
         setLoading(false);
+        return;
       }
-    };
 
-    fetchRealData();
+      const [salesRes, prodRes, bankRes] = results;
+
+      let nextToCollect = 0;
+      let nextUnpaidCount = 0;
+      let nextTotalSales = 0;
+      let nextSalesCount = 0;
+      let nextTotalProducts = 0;
+      let nextStockSum = 0;
+      let nextCashBank = 0;
+      let nextAccountsCount = 0;
+
+      // 1. Sales: revenue + true receivables
+      if (salesRes.status === "fulfilled" && Array.isArray(salesRes.value)) {
+        const seen = new Set();
+        const sales = salesRes.value.filter((s) => {
+          const key = s.saleId ?? s.saleItemId ?? `${s.customerId}-${s.amount}-${s.date}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        const amountOf = (s) => Number(s.amount ?? s.totalAmount ?? 0) || 0;
+        const isPaidSale = (s) => {
+          if (s.isPaid === true || s.paid === true) return true;
+          if (s.isPaid === false || s.paid === false) return false;
+          const status = String(s.status || "").toUpperCase();
+          if (status === "PAID" || status === "SETTLED") return true;
+          if (status === "UNPAID" || status === "PENDING" || status === "DUE") return false;
+          return true;
+        };
+        nextTotalSales = sales.reduce((sum, s) => sum + amountOf(s), 0);
+        const unpaid = sales.filter((s) => !isPaidSale(s));
+        nextToCollect = unpaid.reduce((sum, s) => sum + amountOf(s), 0);
+        nextSalesCount = sales.length;
+        nextUnpaidCount = unpaid.length;
+      }
+
+      // 2. Products & stock
+      if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
+        let prods = prodRes.value;
+        if (userBusinessId) {
+          prods = prods.filter((p) => !p.userBusinessId || p.userBusinessId === userBusinessId);
+        }
+        nextTotalProducts = prods.length;
+        nextStockSum = prods.reduce(
+          (sum, p) => sum + (Number(p.remainingStock) || Number(p.totalStock) || 0),
+          0
+        );
+      }
+
+      // 3. Bank accounts balance
+      if (bankRes.status === "fulfilled" && Array.isArray(bankRes.value) && bankRes.value.length > 0) {
+        const accs = bankRes.value;
+        nextAccountsCount = accs.length;
+        nextCashBank = accs.reduce(
+          (sum, a) => sum + (Number(a.currentBalance) || Number(a.openingBalance) || 0),
+          0
+        );
+      }
+
+      // Commit to state
+      setToCollect(nextToCollect);
+      setUnpaidCount(nextUnpaidCount);
+      setTotalSales(nextTotalSales);
+      setSalesCount(nextSalesCount);
+      setTotalProducts(nextTotalProducts);
+      setTotalStockUnits(nextStockSum);
+      setCashBank(nextCashBank);
+      setAccountsCount(nextAccountsCount);
+
+      // Save to cache for instant rendering next time
+      try {
+        sessionStorage.setItem("tsar_dashboard_kpis", JSON.stringify({
+          toCollect: nextToCollect,
+          unpaidCount: nextUnpaidCount,
+          totalSales: nextTotalSales,
+          salesCount: nextSalesCount,
+          totalProducts: nextTotalProducts,
+          totalStockUnits: nextStockSum,
+          cashBank: nextCashBank,
+          accountsCount: nextAccountsCount,
+        }));
+      } catch (e) {}
+
+    } catch (err) {
+      console.warn("Notice: KPI metrics sync notice:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const fmtInr = (n) => `₹ ${Number(n).toLocaleString('en-IN')}`;
+  useEffect(() => {
+    fetchRealData();
+
+    // Auto-refresh when tab regains focus or billing data changes
+    const onFocus = () => fetchRealData();
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("tsar_data_mutated", onFocus);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("tsar_data_mutated", onFocus);
+    };
+  }, [fetchRealData]);
+
+  const fmtInr = (n) => `₹ ${Number(n || 0).toLocaleString("en-IN")}`;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {/* 1. To Collect (Pending Receivables) */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500 rounded-l"></div>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            To Collect (Receivables)
-          </span>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shadow-inner">
-            <BsCashStack />
+    <div className="dashboard-cards-grid">
+      {/* 1. To Collect (true receivables from unpaid sales) */}
+      <Link to="/sales-invoices" className="executive-stat-card stat-card-link">
+        <div className="stat-icon-wrapper amber">
+          <BsCashStack />
+        </div>
+        <div className="stat-info-wrap">
+          <div className="stat-label-text">To Collect (Receivables)</div>
+          <div className="stat-main-number font-mono">
+            {loading && !cached ? <span className="stat-skeleton">₹ 0.00</span> : fmtInr(toCollect)}
+          </div>
+          <div className="stat-foot-row">
+            <span className={`stat-trend-tag ${unpaidCount > 0 ? "negative" : "positive"}`}>
+              {unpaidCount > 0 ? <BsExclamationCircle /> : <BsCheckCircleFill />}
+              {unpaidCount > 0 ? `${unpaidCount} unpaid bill${unpaidCount > 1 ? "s" : ""}` : "All collected"}
+            </span>
+            <span className="stat-foot-note">Customer dues</span>
           </div>
         </div>
-        <div className="text-2xl font-black text-slate-900 tracking-tight mb-2 font-mono">
-          {loading ? "..." : fmtInr(toCollect)}
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className={`inline-flex items-center gap-1 font-semibold ${unpaidCount > 0 ? "text-amber-600 bg-amber-50" : "text-emerald-600 bg-emerald-50"} px-2 py-0.5 rounded-full`}>
-            {unpaidCount > 0 ? <BsExclamationCircle /> : <BsCheckCircleFill />}
-            {unpaidCount > 0 ? `${unpaidCount} Pending` : "All Clear"}
-          </span>
-          <span className="text-slate-400">Customer Dues</span>
-        </div>
-      </div>
+      </Link>
 
-      {/* 2. Inventory Items & Stock */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-teal-500 rounded-l"></div>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Catalog & Stock
-          </span>
-          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-lg shadow-inner">
-            <BsBoxSeam />
+      {/* 2. Catalog & Stock */}
+      <Link to="/inventory" className="executive-stat-card stat-card-link">
+        <div className="stat-icon-wrapper emerald">
+          <BsBoxSeam />
+        </div>
+        <div className="stat-info-wrap">
+          <div className="stat-label-text">Catalog &amp; Stock</div>
+          <div className="stat-main-number">
+            {loading && !cached ? <span className="stat-skeleton">0 Products</span> : `${totalProducts} Products`}
+          </div>
+          <div className="stat-foot-row">
+            <span className="stat-trend-tag positive">
+              <BsArrowUpRight /> {totalStockUnits.toLocaleString("en-IN")} units
+            </span>
+            <span className="stat-foot-note">Inventory</span>
           </div>
         </div>
-        <div className="text-2xl font-black text-slate-900 tracking-tight mb-2 font-mono">
-          {loading ? "..." : `${totalProducts} Products`}
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="inline-flex items-center gap-1 font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">
-            <BsArrowUpRight /> {totalStockUnits.toLocaleString('en-IN')} Total Units
-          </span>
-          <span className="text-slate-400">Inventory</span>
-        </div>
-      </div>
+      </Link>
 
-      {/* 3. Cash & Bank Balance */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 rounded-l"></div>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Liquid Cash + Bank
-          </span>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shadow-inner">
-            <BsBank />
+      {/* 3. Liquid Cash + Bank */}
+      <Link to="/cash/bank" className="executive-stat-card stat-card-link">
+        <div className="stat-icon-wrapper rose">
+          <BsBank />
+        </div>
+        <div className="stat-info-wrap">
+          <div className="stat-label-text">Liquid Cash + Bank</div>
+          <div className="stat-main-number font-mono">
+            {loading && !cached ? <span className="stat-skeleton">₹ 0.00</span> : fmtInr(cashBank)}
+          </div>
+          <div className="stat-foot-row">
+            <span className="stat-trend-tag positive">
+              <BsCheckCircleFill /> {accountsCount} account{accountsCount === 1 ? "" : "s"}
+            </span>
+            <span className="stat-foot-note">Live balance</span>
           </div>
         </div>
-        <div className="text-2xl font-black text-slate-900 tracking-tight mb-2 font-mono">
-          {loading ? "..." : fmtInr(cashBank)}
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-            <BsCheckCircleFill className="text-xs" /> {accountsCount > 0 ? `${accountsCount} Bank Accounts` : "Cash In Hand"}
-          </span>
-          <span className="text-slate-400">Live Balance</span>
-        </div>
-      </div>
+      </Link>
 
-      {/* 4. Total Sales */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-600 rounded-l"></div>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Total Sales Revenue
-          </span>
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shadow-inner">
-            <BsGraphUp />
+      {/* 4. Total Sales Revenue (confirmed sales) */}
+      <Link to="/sales-invoices" className="executive-stat-card stat-card-link">
+        <div className="stat-icon-wrapper indigo">
+          <BsGraphUp />
+        </div>
+        <div className="stat-info-wrap">
+          <div className="stat-label-text">Total Sales Revenue</div>
+          <div className="stat-main-number font-mono">
+            {loading && !cached ? <span className="stat-skeleton">₹ 0.00</span> : fmtInr(totalSales)}
+          </div>
+          <div className="stat-foot-row">
+            <span className="stat-trend-tag neutral">
+              <BsArrowUpRight /> {salesCount} sale{salesCount === 1 ? "" : "s"}
+            </span>
+            <span className="stat-foot-note">Confirmed bills</span>
           </div>
         </div>
-        <div className="text-2xl font-black text-indigo-700 tracking-tight mb-2 font-mono">
-          {loading ? "..." : fmtInr(totalSales)}
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="inline-flex items-center gap-1 font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-            <BsArrowUpRight /> {invoicesCount} Invoices
-          </span>
-          <span className="text-slate-400">Verified</span>
-        </div>
-      </div>
+      </Link>
     </div>
   );
 }

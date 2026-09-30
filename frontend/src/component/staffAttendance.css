@@ -6,14 +6,14 @@
 
 /* Page Header */
 .staff-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 25px 35px;
     border-radius: 16px;
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -102,13 +102,13 @@
 .staff-header .btn-primary {
     background: rgba(255, 255, 255, 0.95) !important;
     border: none !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .staff-header .btn-primary:hover {
     background: #ffffff !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
@@ -145,7 +145,7 @@
 }
 
 .staff-summary-cards .summary-card.blue::before {
-    background: linear-gradient(180deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(180deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .staff-summary-cards .summary-card.green::before {
@@ -153,7 +153,7 @@
 }
 
 .staff-summary-cards .summary-card.orange::before {
-    background: linear-gradient(180deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(180deg, #b45309 0%, #f5a842 100%);
 }
 
 .staff-summary-cards .summary-card.red::before {
@@ -183,7 +183,7 @@
 }
 
 .staff-summary-cards .summary-card.blue .card-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .staff-summary-cards .summary-card.green .card-icon {
@@ -191,7 +191,7 @@
 }
 
 .staff-summary-cards .summary-card.orange .card-icon {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a842 100%);
 }
 
 .staff-summary-cards .summary-card.red .card-icon {
@@ -258,7 +258,7 @@
 }
 
 .month-selector-card .selector-content label i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 18px;
 }
 
@@ -274,9 +274,9 @@
 }
 
 .month-selector-card .selector-content .form-control:focus {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 .month-selector-card .btn-outline-success {
@@ -321,11 +321,11 @@
 }
 
 .features-grid .feature-card .feature-icon-wrapper.blue {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .features-grid .feature-card .feature-icon-wrapper.orange {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a842 100%);
 }
 
 .features-grid .feature-card .feature-icon-wrapper.green {
@@ -370,13 +370,13 @@
 
 /* Call to Action Section */
 .cta-section {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     border-radius: 16px;
     padding: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -428,7 +428,7 @@
 .cta-section .cta-button {
     background: rgba(255, 255, 255, 0.95) !important;
     border: none !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     padding: 15px 35px !important;
     font-size: 16px !important;
     font-weight: 700 !important;
@@ -564,7 +564,7 @@
 }
 
 .staff-table-container .table-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
     padding: 20px 25px;
     display: flex;
     justify-content: space-between;
@@ -686,14 +686,14 @@
 }
 
 .staff-table .staff-name i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 20px;
 }
 
 /* Role Badge */
 .role-badge {
     display: inline-block;
-    background: linear-gradient(135deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a842 100%);
     color: #ffffff;
     padding: 5px 12px;
     border-radius: 12px;
@@ -730,11 +730,11 @@
 }
 
 .btn-action.btn-edit {
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .btn-action.btn-edit:hover {
-    background: rgba(62, 78, 150, 0.1);
+    background: rgba(124, 30, 46, 0.1);
     color: #2f3a70;
 }
 
@@ -1297,8 +1297,8 @@
 
 .modal-body .form-group .form-control:focus {
     outline: none;
-    border-color: #3e4e96;
-    box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.1);
+    border-color: #7c1e2e;
+    box-shadow: 0 0 0 3px rgba(124, 30, 46, 0.1);
 }
 
 .modal-body .form-group .form-control::placeholder {
@@ -1350,7 +1350,7 @@
 }
 
 .modal-footer .btn-primary {
-    background: #3e4e96 !important;
+    background: #7c1e2e !important;
     border: none !important;
     color: #ffffff !important;
 }
@@ -1358,7 +1358,7 @@
 .modal-footer .btn-primary:hover {
     background: #2f3a70 !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 30, 46, 0.3);
 }
 
 /* Responsive Modal */
@@ -1408,7 +1408,7 @@
     }
 }
 
-   
+
 /* =========================================
    ATTENDANCE CALENDAR MODAL STYLING
    ========================================= */
@@ -1428,7 +1428,7 @@
     align-items: center;
     margin-bottom: 20px;
     padding: 15px;
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     border-radius: 12px;
     color: white;
 }
@@ -1476,7 +1476,7 @@
 }
 
 .summary-item strong {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 18px;
 }
 
@@ -1494,7 +1494,7 @@
 .weekday {
     text-align: center;
     font-weight: 600;
-    color: #3e4e96;
+    color: #7c1e2e;
     padding: 10px;
     background: #f0f4ff;
     border-radius: 8px;

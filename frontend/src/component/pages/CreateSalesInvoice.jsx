@@ -24,9 +24,25 @@ import {
 import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesInvoice.css";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { createInvoice, getInvoices, deleteInvoice, updateInvoice, updateInvoiceItem, deleteInvoiceItem, getInvoiceItems, getAllProducts, confirmSaleFromInvoice, searchCustomers, getCustomerByPhone } from "../../services/api";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  createInvoice,
+  getInvoices,
+  deleteInvoice,
+  updateInvoice,
+  updateInvoiceItem,
+  deleteInvoiceItem,
+  getInvoiceItems,
+  getInvoiceById,
+  getSaleById,
+  getSaleItems,
+  updateSale,
+  getAllProducts,
+  confirmSaleFromInvoice,
+  searchCustomers,
+  getCustomerByPhone
+} from "../../services/api";
+import BillPrintAndShareModal from "../BillPrintAndShareModal";
 
 function CreateSalesInvoice() {
   const [party, setParty] = useState("");
@@ -38,6 +54,8 @@ function CreateSalesInvoice() {
   const [showHistory, setShowHistory] = useState(false);
   const [invoices, setInvoices] = useState([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  const [editingSaleId, setEditingSaleId] = useState(null);
+  const [isEditingSoldBill, setIsEditingSoldBill] = useState(false);
   const [availableProducts, setAvailableProducts] = useState([]);
   const [showConfirmSaleModal, setShowConfirmSaleModal] = useState(false);
   const [selectedInvoices, setSelectedInvoices] = useState([]);
@@ -58,8 +76,11 @@ function CreateSalesInvoice() {
   const [distanceKm, setDistanceKm] = useState("");
   const [lrNumber, setLrNumber] = useState("");
   const [dispatchFrom, setDispatchFrom] = useState("Main Godown / Hub");
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [lastSavedInvoice, setLastSavedInvoice] = useState(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     console.log("Debug: Checking userId in localStorage...");
@@ -75,19 +96,101 @@ function CreateSalesInvoice() {
     fetchProductsFromBackend();
   }, []);
 
-  // Fetch products from backend
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const invoiceIdParam = params.get("invoiceId") || params.get("id");
+    if (invoiceIdParam) {
+      loadBillForEditing(invoiceIdParam);
+    }
+  }, [location.search]);
+
+  const loadBillForEditing = async (billId) => {
+    try {
+      console.log("Loading bill for editing:", billId);
+      let billData = null;
+      let billItems = [];
+      let isSale = false;
+
+      try {
+        billData = await getInvoiceById(billId);
+        if (billData && billData.items) {
+          billItems = billData.items;
+        }
+      } catch (err) {
+        console.log("Not found as standard invoice, trying as sale:", err);
+      }
+
+      if (!billData || !billItems || billItems.length === 0) {
+        try {
+          const saleData = await getSaleById(billId);
+          if (saleData) {
+            billData = saleData;
+            isSale = true;
+            billItems = saleData.items || [];
+          }
+        } catch (err) {
+          console.log("Failed to load as sale:", err);
+        }
+      }
+
+      if (!billData) {
+        try {
+          const rawItems = await getInvoiceItems(billId);
+          if (rawItems && rawItems.length > 0) {
+            billItems = rawItems;
+            billData = { invoiceId: billId };
+          }
+        } catch (err) {}
+      }
+
+      if (billData) {
+        if (isSale) {
+          setEditingSaleId(billId);
+          setEditingInvoiceId(billData.invoiceId || billId);
+        } else {
+          setEditingInvoiceId(billData.invoiceId || billId);
+        }
+        setIsEditingSoldBill(Boolean(billData.isSaled || billData.saled || isSale));
+        if (billData.customerName) setParty(billData.customerName);
+        if (billData.mobileNo || billData.phone) setMobile(billData.mobileNo || billData.phone || "");
+        if (billData.city) setCity(billData.city);
+        if (billData.customerId) setSelectedCustomerId(billData.customerId);
+        if (billData.invoiceDate) {
+          setInvoiceDate(billData.invoiceDate.slice(0, 10));
+        } else if (billData.createdAt) {
+          setInvoiceDate(billData.createdAt.slice(0, 10));
+        }
+
+        if (Array.isArray(billItems) && billItems.length > 0) {
+          const mapped = billItems.map((item, idx) => ({
+            id: item.id || item.saleItemId,
+            itemId: item.id || item.itemId || item.saleItemId,
+            itemNo: item.itemNo || (idx + 1),
+            productId: item.productId || (item.product ? item.product.id : ""),
+            godownId: item.godownId || "",
+            itemName: item.itemName || item.productName || "Product",
+            qty: item.qty || item.quantity || 1,
+            price: item.price || 0,
+            discount: item.discount || 0,
+            tax: item.tax != null ? item.tax : (item.taxRate || 0),
+            taxRate: item.tax != null ? item.tax : (item.taxRate || 0),
+            totalLineAmount: item.totalLineAmount || item.totalPrice || ((item.qty || item.quantity || 1) * (item.price || 0))
+          }));
+          setItems(mapped);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading bill for editing:", error);
+    }
+  };
+
   const fetchProductsFromBackend = async () => {
     try {
-      console.log("Fetching products from backend...");
       const products = await getAllProducts();
-      console.log("Products fetched from backend:", products);
       setAvailableProducts(Array.isArray(products) ? products : []);
     } catch (error) {
       console.error("Error fetching products:", error);
-      // Fallback to localStorage if backend fails
-      const storedProducts = JSON.parse(localStorage.getItem("items")) || [];
-      setAvailableProducts(storedProducts);
-      alert("Could not fetch products from server. Using local data.");
+      setAvailableProducts([]);
     }
   };
 
@@ -99,6 +202,7 @@ function CreateSalesInvoice() {
         productId: "",
         godownId: "",
         itemName: "",
+        hsnCode: "",
         qty: 1,
         price: 0,
         discount: 0,
@@ -121,10 +225,11 @@ function CreateSalesInvoice() {
       const selectedProduct = availableProducts.find(p => p.productName === value || p.name === value);
 
       if (selectedProduct) {
-        // Autofill ALL fields from the selected product including ID, Godown ID, etc.
+        // Autofill ALL fields from the selected product including ID, Godown ID, HSN, etc.
         updated[index].productId = selectedProduct.productId || selectedProduct.id || ""; // Product ID from backend
         updated[index].godownId = selectedProduct.godownId || ""; // Godown ID from backend
         updated[index].itemName = selectedProduct.productName || selectedProduct.name;
+        updated[index].hsnCode = selectedProduct.hsnCode || selectedProduct.hsn || ""; // HSN from product master
         updated[index].qty = 1; // Default quantity
         updated[index].price = selectedProduct.sellingPrice || selectedProduct.price || 0;
         updated[index].discount = selectedProduct.discount || 0; // Discount from backend
@@ -214,16 +319,45 @@ function CreateSalesInvoice() {
     };
 
     try {
-      if (editingInvoiceId) {
-        // Update existing invoice
-        await updateInvoice(editingInvoiceId, invoiceData);
-        alert("Invoice updated successfully!");
+      let savedId = editingInvoiceId;
+      if (editingSaleId) {
+        // Update existing Sale record
+        const salePayload = {
+          customerId: selectedCustomerId,
+          totalAmount: total,
+          isPaid: true,
+          items: items.map(i => ({
+            product: { id: i.productId },
+            quantity: i.qty,
+            price: i.price,
+            productName: i.itemName
+          }))
+        };
+        await updateSale(editingSaleId, salePayload);
+        savedId = editingInvoiceId || editingSaleId;
+        alert(`Bill #${savedId} updated successfully!`);
+        setEditingSaleId(null);
         setEditingInvoiceId(null);
+        setIsEditingSoldBill(false);
+      } else if (editingInvoiceId) {
+        // Update existing invoice
+        const res = await updateInvoice(editingInvoiceId, invoiceData);
+        savedId = editingInvoiceId;
+        alert(`Bill #${savedId} updated successfully!`);
+        setEditingInvoiceId(null);
+        setIsEditingSoldBill(false);
       } else {
         // Create new invoice
-        await createInvoice(invoiceData);
-        alert("Invoice saved successfully!");
+        const res = await createInvoice(invoiceData);
+        savedId = res?.invoiceId || res?.id || ("INV-" + Date.now().toString().slice(-6));
       }
+
+      setLastSavedInvoice({
+        ...invoiceData,
+        invoiceId: savedId,
+        items: items
+      });
+      setPrintModalOpen(true);
 
       // Clear form
       setParty("");
@@ -268,32 +402,31 @@ function CreateSalesInvoice() {
   };
 
   const handleEdit = async (invoice) => {
-    // Prevent editing sold invoices
-    if (invoice.saled) {
-      alert("Cannot edit a sold invoice. This invoice has already been confirmed as a sale.");
-      return;
-    }
-
     setEditingInvoiceId(invoice.invoiceId);
-    setParty(invoice.customerName);
-    setMobile(invoice.mobileNo);
-    setCity(invoice.city);
-    setInvoiceDate(invoice.invoiceDate);
+    setIsEditingSoldBill(Boolean(invoice.saled || invoice.isSaled));
+    setParty(invoice.customerName || "");
+    setMobile(invoice.mobileNo || "");
+    setCity(invoice.city || "");
+    setInvoiceDate(invoice.invoiceDate || new Date().toISOString().slice(0, 10));
+    if (invoice.customerId) setSelectedCustomerId(invoice.customerId);
+
     try {
       // Fetch items from invoice_items table
       const itemsData = await getInvoiceItems(invoice.invoiceId);
 
       // Map backend DTO → frontend state
       const mappedItems = itemsData.map(item => ({
-        itemId: item.itemId,
+        id: item.id || item.itemId,
+        itemId: item.itemId || item.id,
         itemNo: item.itemNo,
         productId: item.productId,
         godownId: item.godownId,
         itemName: item.itemName,
         qty: item.qty,
         price: item.price,
-        discount: item.discount,
-        tax: item.tax,
+        discount: item.discount || 0,
+        tax: item.tax || 0,
+        taxRate: item.tax || 0,
         totalLineAmount: item.totalLineAmount
       }));
 
@@ -333,11 +466,14 @@ function CreateSalesInvoice() {
 
   const handleCancelEdit = () => {
     setEditingInvoiceId(null);
+    setEditingSaleId(null);
+    setIsEditingSoldBill(false);
     setParty("");
     setMobile("");
     setCity("");
     setItems([]);
     setInvoiceDate(new Date().toISOString().slice(0, 10));
+    navigate("/create-invoice", { replace: true });
   };
 
   // Save individual item
@@ -636,10 +772,12 @@ function CreateSalesInvoice() {
               <div className="invoice-title-section">
                 <h2 className="invoice-page-title">
                   <BsFileEarmarkText className="invoice-title-icon" />
-                  {editingInvoiceId ? 'Edit Sales Invoice' : 'Create Sales Invoice'}
+                  {editingInvoiceId ? `Edit Bill #${editingInvoiceId}` : 'Create Sales Invoice'}
                 </h2>
                 <p className="invoice-page-subtitle">
-                  {editingInvoiceId ? 'Update invoice details' : 'Generate professional invoices for your customers'}
+                  {editingInvoiceId
+                    ? (isEditingSoldBill ? 'Editing generated bill — quantities, items, and totals will be updated' : 'Update invoice details')
+                    : 'Generate professional invoices for your customers'}
                 </p>
               </div>
               <div className="invoice-header-actions">
@@ -664,6 +802,20 @@ function CreateSalesInvoice() {
               </div>
             </div>
           </div>
+
+          {/* Active Edit Alert Banner */}
+          {editingInvoiceId && (
+            <div className="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-3 rounded-3 shadow-sm border-warning">
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <span className="badge bg-warning text-dark px-2 py-1 fs-6">✏️ EDITING MODE</span>
+                <span className="fw-bold">You are modifying generated bill #{editingInvoiceId}.</span>
+                {isEditingSoldBill && <span className="badge bg-success">Active Bill</span>}
+              </div>
+              <button className="btn btn-sm btn-outline-dark" onClick={handleCancelEdit}>
+                Cancel & Create New
+              </button>
+            </div>
+          )}
 
           {/* Invoice History Section */}
           {showHistory && (
@@ -1254,6 +1406,16 @@ function CreateSalesInvoice() {
             </div>
           )}
         </div>
+
+        {/* Print, Download, Bluetooth & WiFi Connection Hub Modal */}
+        {printModalOpen && lastSavedInvoice && (
+          <BillPrintAndShareModal
+            isOpen={printModalOpen}
+            onClose={() => setPrintModalOpen(false)}
+            billData={lastSavedInvoice}
+            items={lastSavedInvoice.items || []}
+          />
+        )}
     </PortalLayout>
   );
 }

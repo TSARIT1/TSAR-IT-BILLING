@@ -6,6 +6,7 @@ import "../createQuotation.css";
 import { FiArrowLeft, FiSettings } from "react-icons/fi";
 import { BsQrCodeScan } from "react-icons/bs";
 import { AiOutlinePlus } from "react-icons/ai";
+import { getAllCustomers } from "../../services/api";
 
 function CreateQuotation() {
   const navigate = useNavigate();
@@ -35,9 +36,10 @@ function CreateQuotation() {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("quotations")) || [];
     setQuotationNo(stored.length + 1);
-
-    const storedParties = JSON.parse(localStorage.getItem("parties")) || [];
-    setParties(storedParties);
+    // Load real customers from API
+    getAllCustomers()
+      .then(list => { if (Array.isArray(list)) setParties(list.map(c => ({ name: c.name, mobile: c.phone || c.mobile || '' }))); })
+      .catch(() => setParties([]));
   }, []);
 
   useEffect(() => {

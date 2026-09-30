@@ -118,8 +118,8 @@ export default function DoubleEntryAccountingView() {
               </tr>
             </thead>
             <tbody>
-              {trialBalance.accounts && trialBalance.accounts.length > 0 ? (
-                trialBalance.accounts.map((acc, idx) => (
+              {trialBalance.accounts && trialBalance.accounts.filter(a => Number(a.debit) > 0 || Number(a.credit) > 0).length > 0 ? (
+                trialBalance.accounts.filter(a => Number(a.debit) > 0 || Number(a.credit) > 0).map((acc, idx) => (
                   <tr key={idx}>
                     <td><span className="badge bg-secondary-subtle text-dark font-monospace">{acc.code}</span></td>
                     <td className="fw-semibold">{acc.name}</td>
@@ -132,7 +132,7 @@ export default function DoubleEntryAccountingView() {
               ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-4 text-muted">
-                    No ledger entries posted yet. Creating sales invoices and purchase bills will automatically generate accounts.
+                    No active ledger postings yet. Creating sales bills or expenses will post real-time journal entries here.
                   </td>
                 </tr>
               )}

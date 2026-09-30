@@ -5,11 +5,11 @@
 
 /* Page Header */
 .quotation-page-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 30px;
     border-radius: 16px;
     margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
 }
 
 .quotation-header-content {
@@ -53,7 +53,7 @@
 
 .quotation-report-btn {
     background: rgba(255, 255, 255, 0.9);
-    color: #3e4e96;
+    color: #7c1e2e;
     border: none;
     padding: 12px 24px;
     border-radius: 10px;
@@ -99,11 +99,11 @@
 }
 
 .quotation-summary-card.total-quotations {
-    border-left-color: #3e4e96;
+    border-left-color: #7c1e2e;
 }
 
 .quotation-summary-card.total-value {
-    border-left-color: #e8961b;
+    border-left-color: #b45309;
 }
 
 .quotation-summary-card.open-quotations {
@@ -125,11 +125,11 @@
 }
 
 .total-quotations-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .total-value-icon {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a623 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a623 100%);
 }
 
 .open-quotations-icon {
@@ -221,21 +221,21 @@
 
 .quotation-filter-select:focus {
     outline: none;
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 .quotation-status-select:focus {
     outline: none;
-    border-color: #e8961b;
+    border-color: #b45309;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(232, 150, 27, 0.1);
+    box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.1);
 }
 
 /* Create Button */
 .quotation-create-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 12px 24px;
@@ -247,13 +247,13 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
     text-decoration: none;
 }
 
 .quotation-create-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Table Container */
@@ -288,7 +288,7 @@
 .quotation-table th svg {
     margin-right: 6px;
     vertical-align: middle;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .quotation-table tbody tr {
@@ -308,7 +308,7 @@
 
 .quotation-number-cell {
     font-weight: 600;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .party-name-cell {
@@ -377,7 +377,7 @@
 }
 
 .quotation-empty-add-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 12px 28px;
@@ -389,13 +389,13 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
     text-decoration: none;
 }
 
 .quotation-empty-add-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Responsive Design */

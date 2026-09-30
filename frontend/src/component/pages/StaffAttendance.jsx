@@ -65,7 +65,7 @@ function StaffAttendance() {
   // Load staff from backend
   const loadStaff = async () => {
     try {
-      const businessId = localStorage.getItem('userBusinessId');
+      const businessId = localStorage.getItem('userBusinessId') || localStorage.getItem('businessId');
       if (!businessId) {
         console.error('Business ID not found');
         return;
@@ -216,7 +216,7 @@ function StaffAttendance() {
   // Load monthly attendance for all staff
   const loadMonthlyAttendance = async (staffMembers) => {
     try {
-      const businessId = localStorage.getItem('userBusinessId');
+      const businessId = localStorage.getItem('userBusinessId') || localStorage.getItem('businessId');
       if (!businessId) return;
 
       const date = new Date(selectedDate);
@@ -287,7 +287,7 @@ function StaffAttendance() {
     }
 
     try {
-      const businessId = localStorage.getItem('userBusinessId');
+      const businessId = localStorage.getItem('userBusinessId') || localStorage.getItem('businessId');
       if (!businessId) {
         alert('Business ID not found. Please login again.');
         return;
@@ -377,7 +377,7 @@ function StaffAttendance() {
       return;
     }
 
-    const businessId = localStorage.getItem('userBusinessId');
+    const businessId = localStorage.getItem('userBusinessId') || localStorage.getItem('businessId');
     if (!businessId) {
       alert('Business ID not found. Please login again.');
       return;
@@ -439,7 +439,7 @@ function StaffAttendance() {
   const handleDeleteStaff = async (staffId) => {
     if (window.confirm('Are you sure you want to delete this staff member?')) {
       try {
-        const businessId = localStorage.getItem('userBusinessId');
+        const businessId = localStorage.getItem('userBusinessId') || localStorage.getItem('businessId');
         if (!businessId) {
           alert('Business ID not found. Please login again.');
           return;
@@ -492,7 +492,7 @@ function StaffAttendance() {
   // Load monthly attendance for selected staff
   const loadStaffMonthlyData = async (staffId, month, year) => {
     try {
-      const businessId = localStorage.getItem('userBusinessId');
+      const businessId = localStorage.getItem('userBusinessId') || localStorage.getItem('businessId');
       if (!businessId) {
         console.error('Business ID not found');
         return;
@@ -575,8 +575,8 @@ function StaffAttendance() {
     const pageHeight = doc.internal.pageSize.getHeight();
 
     // Colors
-    const primaryColor = [62, 78, 150]; // #3e4e96
-    const accentColor = [232, 150, 27]; // #e8961b
+    const primaryColor = [62, 78, 150]; // #7c1e2e
+    const accentColor = [232, 150, 27]; // #b45309
     const greenColor = [40, 167, 69]; // #28a745
     const redColor = [220, 53, 69]; // #dc3545
     const blueColor = [0, 123, 255]; // #007bff

@@ -16,9 +16,11 @@ import {
   BsPersonFill
 } from "react-icons/bs";
 import PortalLayout from "../PortalLayout";
-import { getAllProducts, getAllCustomers, createSale } from "../../services/api";
+import { getAllProducts, getAllCustomers, createSale, createCustomer, getUserProfile, getBusinessSettings } from "../../services/api";
 import { printEnterpriseInvoice } from "../../utils/invoicePrintUtil";
+import BillPrintAndShareModal from "../BillPrintAndShareModal";
 import Swal from "sweetalert2";
+import { posTotals } from "../../utils/posTotals";
 
 export default function PosBilling() {
   const [products, setProducts] = useState([]);
@@ -32,8 +34,10 @@ export default function PosBilling() {
   const [posSectorMode, setPosSectorMode] = useState("ALL"); // ALL, SUPERMARKET, CLOTHING, ELECTRONICS, FERTILIZER, TRANSPORT
   const [paymentMode, setPaymentMode] = useState("CASH"); // CASH, UPI, CARD, SPLIT
   const [cashTendered, setCashTendered] = useState("");
+  const savingSale = useRef(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [lastCompletedBill, setLastCompletedBill] = useState(null);
+  const [merchantProfile, setMerchantProfile] = useState({});
 
   // Sector Specific Active Attribs
   const [selectedSize, setSelectedSize] = useState("L");
@@ -49,12 +53,32 @@ export default function PosBilling() {
   useEffect(() => {
     const initData = async () => {
       try {
+        const userId = localStorage.getItem("userId");
         const [prodList, custList] = await Promise.all([
           getAllProducts(),
           getAllCustomers()
         ]);
         if (Array.isArray(prodList)) setProducts(prodList);
         if (Array.isArray(custList)) setCustomers(custList);
+
+        // Load merchant profile for dynamic thermal receipt header
+        if (userId) {
+          try {
+            const profile = await getUserProfile(userId);
+            if (profile) {
+              let bizSettings = {};
+              try {
+                const userStr = localStorage.getItem("user");
+                const userObj = userStr ? JSON.parse(userStr) : {};
+                const businessId = userObj.businessId || profile.businessId;
+                if (businessId) {
+                  bizSettings = await getBusinessSettings(userId) || {};
+                }
+              } catch (_) {}
+              setMerchantProfile({ ...profile, ...bizSettings });
+            }
+          } catch (_) {}
+        }
       } catch (e) {
         console.error("Error loading POS data:", e);
       }
@@ -62,20 +86,66 @@ export default function PosBilling() {
     initData();
   }, []);
 
+  // Auto-focus search input on mount and when cart tab changes
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, [activeCartIndex]);
+
+  // Global POS Keyboard Shortcuts: [F2] Complete & Print, [Ctrl+B] Hold Cart, [Esc] Clear Search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "F2") {
+        e.preventDefault();
+        handleCompleteSale();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === "b" || e.key === "B")) {
+        e.preventDefault();
+        handleHoldCart();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setSearchQuery("");
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
   const currentCart = carts[activeCartIndex] || carts[0];
 
+  const availableOf = (prod) => {
+    const v = prod.remainingStock ?? prod.stockQuantity ?? prod.totalStock ?? prod.currentStock;
+    return v == null ? Infinity : Number(v);
+  };
+
   const handleAddItemToCart = (prod) => {
+    // Expiry guard (frontend mirror; backend re-validates authoritatively).
+    if (prod.expiryDate && String(prod.expiryDate).slice(0, 10) < new Date().toISOString().slice(0, 10)) {
+      Swal.fire("Expired product", `${prod.productName || prod.name} expired on ${String(prod.expiryDate).slice(0, 10)} and cannot be billed.`, "warning");
+      return;
+    }
+    const available = availableOf(prod);
+    if (Number.isFinite(available) && available <= 0) {
+      Swal.fire("Product is currently out of stock.", `${prod.productName || prod.name} has 0 units available.`, "warning");
+      return;
+    }
     const existingIndex = currentCart.items.findIndex(item => item.id === prod.id);
     let updatedItems = [...currentCart.items];
 
     if (existingIndex > -1) {
-      updatedItems[existingIndex].quantity += 1;
+      const nextQty = updatedItems[existingIndex].quantity + 1;
+      if (Number.isFinite(available) && nextQty > available) {
+        Swal.fire("Insufficient stock", `Only ${available} units are available for ${prod.productName || prod.name}.`, "warning");
+        return;
+      }
+      updatedItems[existingIndex].quantity = nextQty;
       updatedItems[existingIndex].total = updatedItems[existingIndex].quantity * updatedItems[existingIndex].price;
     } else {
-      const price = Number(prod.sellingPrice || prod.purchasePrice || 100);
-      const isApparel = posSectorMode === "CLOTHING";
-      // Dual GST rule for Apparel: 5% if <= 1000, 12% if > 1000
-      const autoTax = isApparel ? (price <= 1000 ? 5 : 12) : Number(prod.taxRate || 18);
+      const price = Number(prod.sellingPrice ?? 0);
+      const autoTax = Number(prod.taxRate ?? 0);
+      if (!Number.isFinite(price) || price < 0 || !Number.isFinite(autoTax) || autoTax < 0) {
+        Swal.fire("Invalid product", "Correct the product price and tax rate in Inventory.", "warning");
+        return;
+      }
 
       updatedItems.push({
         id: prod.id,
@@ -99,6 +169,8 @@ export default function PosBilling() {
     updatedCarts[activeCartIndex].items = updatedItems;
     setCarts(updatedCarts);
     setSearchQuery("");
+    setInputImei("");
+    setWeighingGrams("");
   };
 
   const handleUpdateQuantity = (idx, delta) => {
@@ -107,6 +179,12 @@ export default function PosBilling() {
     if (newQty <= 0) {
       updatedItems.splice(idx, 1);
     } else {
+      const prod = products.find(p => String(p.id) === String(updatedItems[idx].id));
+      const available = prod ? availableOf(prod) : Infinity;
+      if (Number.isFinite(available) && newQty > available) {
+        Swal.fire("Insufficient stock", `Only ${available} units are available.`, "warning");
+        return;
+      }
       updatedItems[idx].quantity = newQty;
       updatedItems[idx].total = newQty * updatedItems[idx].price;
     }
@@ -141,57 +219,114 @@ export default function PosBilling() {
     });
   };
 
-  // Calculations
-  const subtotal = currentCart.items.reduce((acc, item) => acc + item.total, 0);
-  const taxableValue = subtotal / 1.18;
-  const totalTax = subtotal - taxableValue;
-  const cgst = totalTax / 2;
-  const sgst = totalTax / 2;
-  const grandTotal = Math.round(subtotal);
+  // Calculations — MyBillBook rule: IGST for inter-state, CGST+SGST for intra-state.
+  const selectedCustomerForTax = customers.find(customer => String(customer.id) === String(selectedCustomerId));
+  const businessState = (merchantProfile?.state || localStorage.getItem("businessState") || "").toLowerCase();
+  const customerState = (selectedCustomerForTax?.state || selectedCustomerForTax?.placeOfSupply || "").toLowerCase();
+  const isInterStateSale = Boolean(businessState && customerState && businessState !== customerState);
+  const { subtotal, taxableValue, totalTax, cgst, sgst, igst, grandTotal } = posTotals(currentCart.items, { isInterState: isInterStateSale });
 
   const changeDue = cashTendered ? Math.max(0, Number(cashTendered) - grandTotal) : 0;
 
   const handleCompleteSale = async () => {
+    if (savingSale.current) return;
     if (currentCart.items.length === 0) {
       Swal.fire("No Items", "Please scan or select products to bill.", "warning");
       return;
     }
 
+    const isCredit = paymentMode === "CREDIT";
     let targetCustomerId = selectedCustomerId;
+    let selectedCustomer = null;
+
     if (!targetCustomerId || targetCustomerId === "WALK_IN") {
-      if (customers.length > 0) {
-        targetCustomerId = customers[0].id;
+      if (isCredit) {
+        Swal.fire("Customer required", "Credit sales must be linked to a customer for ledger outstanding.", "warning");
+        return;
       }
+      // Auto-resolve Walk-In counter party for Cash / UPI / Card sales
+      const existingWalkIn = customers.find(c => /walk[- ]?in|counter|cash/i.test(c.name));
+      if (existingWalkIn) {
+        targetCustomerId = existingWalkIn.id;
+        selectedCustomer = existingWalkIn;
+      } else if (customers.length > 0) {
+        targetCustomerId = customers[0].id;
+        selectedCustomer = customers[0];
+      } else {
+        // Auto-create a Walk-In Customer for this business
+        try {
+          const userStr = localStorage.getItem("user");
+          const userObj = userStr ? JSON.parse(userStr) : {};
+          const activeBizId = merchantProfile?.businessId || merchantProfile?.userBusinessId || userObj.businessId || localStorage.getItem("userBusinessId") || localStorage.getItem("businessId") || "default";
+          const newCust = await createCustomer({
+            name: "Walk-in Customer",
+            phone: "",
+            customerType: "Retail",
+            businessId: activeBizId,
+            status: "ACTIVE"
+          });
+          if (newCust && newCust.id) {
+            targetCustomerId = newCust.id;
+            selectedCustomer = newCust;
+            setCustomers(prev => [...prev, newCust]);
+          }
+        } catch (_) {
+          targetCustomerId = 1;
+        }
+      }
+    } else {
+      selectedCustomer = customers.find(customer => String(customer.id) === String(targetCustomerId));
+    }
+
+    // Payment validation: total = paid + due. CREDIT keeps full due on customer ledger.
+    if (paymentMode === "CASH" && cashTendered !== "" &&
+        (!Number.isFinite(Number(cashTendered)) || Number(cashTendered) < grandTotal)) {
+      Swal.fire("Insufficient cash", "Cash received must cover the bill total.", "warning");
+      return;
     }
 
     const billPayload = {
-      invoiceId: "POS-" + Date.now().toString().slice(-6),
       date: new Date().toISOString().split('T')[0],
-      customer: targetCustomerId || "Walk-In Customer",
+      customer: targetCustomerId || 1,
+      customerName: selectedCustomer ? selectedCustomer.name : "Walk-In Customer",
+      customerPhone: selectedCustomer ? (selectedCustomer.phone || "") : "",
       items: currentCart.items,
       subtotal: subtotal,
+      taxableValue: taxableValue,
       cgst: cgst,
       sgst: sgst,
+      igst: igst || 0,
+      isInterState: isInterStateSale,
       totalAmount: grandTotal,
       paymentMode: paymentMode,
       cashTendered: cashTendered || grandTotal,
       changeDue: changeDue
     };
 
+    savingSale.current = true;
     try {
       const backendSalePayload = {
-        customerId: targetCustomerId ? Number(targetCustomerId) : 1,
+        customerId: Number(targetCustomerId) || 1,
         totalAmount: Number(grandTotal),
-        isPaid: true,
+        // CREDIT → unpaid ledger entry, settled later via mark-paid; others paid.
+        isPaid: !isCredit,
         items: currentCart.items.map(it => ({
           product: { id: Number(it.id) },
           quantity: Number(it.quantity),
           price: Number(it.price)
         }))
       };
-      await createSale(backendSalePayload);
+      const savedSale = await createSale(backendSalePayload);
+      billPayload.id = savedSale.id;
+      billPayload.saleId = savedSale.id;
+      billPayload.isPaid = !isCredit;
+      billPayload.dueAmount = isCredit ? grandTotal : 0;
     } catch (err) {
-      console.warn("Notice: Saved POS bill locally, backend sale sync:", err?.message || err);
+      const msg = err?.response?.data?.message || err?.message || "";
+      Swal.fire("Sale was not saved", msg || "Your cart is still available. Check the connection before trying again.", "error");
+      return;
+    } finally {
+      savingSale.current = false;
     }
 
     setLastCompletedBill(billPayload);
@@ -202,6 +337,7 @@ export default function PosBilling() {
     updatedCarts[activeCartIndex].items = [];
     setCarts(updatedCarts);
     setCashTendered("");
+    searchInputRef.current?.focus();
   };
 
   const filteredProducts = products.filter(p => {
@@ -352,7 +488,7 @@ export default function PosBilling() {
                 type="text"
                 className="form-control form-control-sm py-0"
                 style={{ width: '150px' }}
-                placeholder="e.g. 19:19:19 / Urea"
+                placeholder="Batch / Spec"
                 value={inputBatch}
                 onChange={(e) => setInputBatch(e.target.value)}
               />
@@ -520,11 +656,12 @@ export default function PosBilling() {
           {/* Payment Method Selector */}
           <div className="dashboard-card-box p-3 mb-3">
             <label className="form-label small fw-bold text-muted text-uppercase mb-2">Payment Settlement Mode</label>
-            <div className="d-grid grid-template-columns-3 gap-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            <div className="d-grid grid-template-columns-3 gap-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
               {[
                 { id: 'CASH', label: 'Cash', icon: <BsCashStack /> },
                 { id: 'UPI', label: 'UPI / QR', icon: <BsQrCode /> },
-                { id: 'CARD', label: 'Card', icon: <BsCreditCard2FrontFill /> }
+                { id: 'CARD', label: 'Card', icon: <BsCreditCard2FrontFill /> },
+                { id: 'CREDIT', label: 'Credit', icon: <BsPauseCircleFill /> }
               ].map(mode => (
                 <button
                   key={mode.id}
@@ -585,7 +722,9 @@ export default function PosBilling() {
               <div className="text-center p-3 mt-3 bg-light border rounded-3">
                 <BsQrCode size={110} className="text-dark mb-2" />
                 <div className="small fw-bold text-dark">Scan & Pay ₹{grandTotal}</div>
-                <div className="small text-muted">UPI ID: tsaritbilling@hdfcbank</div>
+                <div className="small text-muted">
+                  UPI ID: {merchantProfile?.upiId || localStorage.getItem("upiId") || (merchantProfile?.mobileNo ? `${merchantProfile.mobileNo}@upi` : (merchantProfile?.phoneNo ? `${merchantProfile.phoneNo}@upi` : "Configure UPI in Business Settings"))}
+                </div>
               </div>
             )}
           </div>
@@ -597,8 +736,8 @@ export default function PosBilling() {
               <span>₹{taxableValue.toFixed(2)}</span>
             </div>
             <div className="d-flex justify-content-between small text-muted mb-1">
-              <span>GST (CGST + SGST):</span>
-              <span>₹{totalTax.toFixed(2)}</span>
+              <span>{isInterStateSale ? "GST (IGST):" : "GST (CGST + SGST):"}</span>
+              <span>₹{totalTax.toFixed(2)}{isInterStateSale ? " (Inter-State)" : ""}</span>
             </div>
             <hr className="my-2" />
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -619,134 +758,15 @@ export default function PosBilling() {
         </div>
       </div>
 
-      {/* 58mm / 80mm Thermal Receipt Print Preview Modal */}
+      {/* Print, Download, Bluetooth & WiFi Connection Hub Modal */}
       {printModalOpen && lastCompletedBill && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '400px' }}>
-            <div className="modal-content shadow-lg">
-              <div className="modal-header py-2 bg-dark text-white">
-                <h6 className="modal-title fw-bold">
-                  <BsPrinterFill className="me-1" /> Thermal Receipt Slip
-                </h6>
-                <button type="button" className="btn-close btn-close-white" onClick={() => setPrintModalOpen(false)}></button>
-              </div>
-
-              <div className="modal-body p-3 font-monospace small bg-white text-dark" id="thermal-receipt-area">
-                <div className="text-center mb-2">
-                  <h5 className="fw-bold mb-0">TSAR IT BILLING</h5>
-                  <div>GSTIN: 36AAAAA0000A1Z5</div>
-                  <div>Madhapur, Hyderabad, TS - 500081</div>
-                  <div>Ph: +91 98765 43210</div>
-                </div>
-                <div className="border-top border-bottom py-1 mb-2">
-                  <div>Bill No: <strong>{lastCompletedBill.invoiceId}</strong></div>
-                  <div>Date: {lastCompletedBill.date}</div>
-                  <div>Mode: {lastCompletedBill.paymentMode}</div>
-                </div>
-
-                <table className="w-100 mb-2 small">
-                  <thead>
-                    <tr className="border-bottom">
-                      <th className="text-start">Item</th>
-                      <th className="text-center">Qty</th>
-                      <th className="text-end">Amt</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lastCompletedBill.items.map((it, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <div>{it.name}</div>
-                          {(it.size || it.color || it.imei || it.batchNo || it.weight) && (
-                            <div style={{ fontSize: '9px', color: '#555' }}>
-                              {[
-                                it.size && `Size:${it.size}`,
-                                it.color && `${it.color}`,
-                                it.imei && `IMEI:${it.imei}`,
-                                it.batchNo && `Batch:${it.batchNo}`,
-                                it.weight && `Wt:${it.weight}`
-                              ].filter(Boolean).join(' | ')}
-                            </div>
-                          )}
-                        </td>
-                        <td className="text-center">{it.quantity}</td>
-                        <td className="text-end">₹{it.total}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                <div className="border-top pt-1">
-                  <div className="d-flex justify-content-between">
-                    <span>Taxable Value:</span>
-                    <span>₹{lastCompletedBill.subtotal ? (lastCompletedBill.subtotal / 1.18).toFixed(2) : 0}</span>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span>CGST + SGST (18%):</span>
-                    <span>₹{(lastCompletedBill.cgst + lastCompletedBill.sgst).toFixed(2)}</span>
-                  </div>
-                  <div className="d-flex justify-content-between fw-bold fs-6 border-top mt-1 pt-1">
-                    <span>NET TOTAL:</span>
-                    <span>₹{lastCompletedBill.totalAmount}</span>
-                  </div>
-                  {lastCompletedBill.paymentMode === 'CASH' && (
-                    <>
-                      <div className="d-flex justify-content-between text-muted">
-                        <span>Tendered:</span>
-                        <span>₹{lastCompletedBill.cashTendered}</span>
-                      </div>
-                      <div className="d-flex justify-content-between text-muted">
-                        <span>Change Due:</span>
-                        <span>₹{lastCompletedBill.changeDue.toFixed(2)}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="text-center mt-3 border-top pt-2">
-                  <div className="small fw-bold">Thank You! Visit Again</div>
-                  <div className="small text-muted">GST Compliant E-Bill</div>
-                </div>
-              </div>
-
-              <div className="modal-footer py-2 d-flex justify-content-between align-items-center flex-wrap gap-1">
-                <button className="btn btn-sm btn-secondary" onClick={() => setPrintModalOpen(false)}>Close</button>
-                <div className="d-flex gap-1">
-                  <button 
-                    className="btn btn-sm btn-outline-dark"
-                    onClick={() => printEnterpriseInvoice({
-                      invoice: lastCompletedBill,
-                      items: lastCompletedBill.items,
-                      printSize: "58mm"
-                    })}
-                  >
-                    58mm Slip
-                  </button>
-                  <button 
-                    className="btn btn-sm btn-dark"
-                    onClick={() => printEnterpriseInvoice({
-                      invoice: lastCompletedBill,
-                      items: lastCompletedBill.items,
-                      printSize: "80mm"
-                    })}
-                  >
-                    <BsPrinterFill className="me-1" /> 80mm Roll
-                  </button>
-                  <button 
-                    className="btn btn-sm btn-primary"
-                    onClick={() => printEnterpriseInvoice({
-                      invoice: lastCompletedBill,
-                      items: lastCompletedBill.items,
-                      printSize: "A4"
-                    })}
-                  >
-                    A4 Invoice
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BillPrintAndShareModal
+          isOpen={printModalOpen}
+          onClose={() => setPrintModalOpen(false)}
+          billData={lastCompletedBill}
+          items={lastCompletedBill.items || []}
+          merchantProfile={merchantProfile}
+        />
       )}
     </PortalLayout>
   );

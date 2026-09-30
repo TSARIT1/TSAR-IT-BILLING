@@ -200,9 +200,9 @@
 }
 
 .prc-save-btn {
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
-  box-shadow: 0 6px 18px rgba(77,124,255,0.06);
+  box-shadow: 0 6px 18px rgba(156, 61, 82,0.06);
 }
 .prc-body {
   display: flex;
@@ -231,7 +231,7 @@
 
 .prc-party-select {
   background: #fff;
-  border: 2px dashed #6a5acd;
+  border: 2px dashed #8a2438;
   padding: 22px;
   height: 125px;
   border-radius: 10px;
@@ -242,7 +242,7 @@
 }
 
 .prc-party-select div { text-align: center; }
-.prc-add-text { color: #6a5acd; font-weight: 700; }
+.prc-add-text { color: #8a2438; font-weight: 700; }
 .prc-small { color: #666; margin-top: 6px; font-size: 13px; }
 .prc-items-box {
   background: #fff;
@@ -291,7 +291,7 @@
   padding: 9px 14px;
   border-radius: 8px;
   border: none;
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
   margin-right: 10px;
   font-weight: 600;
@@ -364,12 +364,12 @@
 .prc-sign-box { margin-top: 18px; text-align: left; }
 .prc-sign-btn {
   padding: 14px;
-  border: 2px dashed #6a5acd;
+  border: 2px dashed #8a2438;
   text-align: center;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  color: #6a5acd;
+  color: #8a2438;
   margin-top: 8px;
 }
 
@@ -419,7 +419,7 @@
 }
 
 .prc-cancel { background: #f0f0f0; color: #333; }
-.prc-save { background: #6a5acd; color: #fff; }
+.prc-save { background: #8a2438; color: #fff; }
 
 
 .prc-party-item {

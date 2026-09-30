@@ -4,6 +4,7 @@ import "../dashboard.css";
 import "../nextpart.css";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
+import { getAllCustomers } from "../../services/api";
 
 function CreateProformaInvoice() {
    const navigate = useNavigate();
@@ -41,9 +42,10 @@ function CreateProformaInvoice() {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("proformas")) || [];
     setInvoiceNo(stored.length + 1);
-
-    const savedParties = JSON.parse(localStorage.getItem("parties")) || [];
-    setPartyList(savedParties);
+    // Load real customers from API
+    getAllCustomers()
+      .then(list => { if (Array.isArray(list)) setPartyList(list.map(c => ({ name: c.name, mobile: c.phone || c.mobile || '' }))); })
+      .catch(() => setPartyList([]));
   }, []);
 
   useEffect(() => {

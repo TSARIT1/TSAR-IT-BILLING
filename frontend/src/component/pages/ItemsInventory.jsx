@@ -20,6 +20,7 @@ import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../itemInventory.css";
 import { getProductStockSummary, createProduct, updateProduct, deleteProduct, downloadInventoryReport } from "../../services/api";
+import { hsnError } from "../../utils/hsnUtils";
 
 function ItemsInventory() {
   const [items, setItems] = useState([]);
@@ -43,7 +44,8 @@ function ItemsInventory() {
     minStockLevel: "10",
     taxRate: "18",
     unit: "PCS",
-    productCode: ""
+    productCode: "",
+    hsnCode: ""
   });
 
   // Categories for dropdown
@@ -71,7 +73,8 @@ function ItemsInventory() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await getProductStockSummary();
+      const userBusinessId = localStorage.getItem("userBusinessId");
+      const data = await getProductStockSummary(userBusinessId);
       console.log("Fetched product stock summary:", data);
 
       // Map backend DTO to frontend format
@@ -172,7 +175,8 @@ function ItemsInventory() {
       minStockLevel: "10",
       taxRate: "18",
       unit: "PCS",
-      productCode: ""
+      productCode: "",
+      hsnCode: ""
     });
     setShowAddModal(true);
   };
@@ -183,8 +187,14 @@ function ItemsInventory() {
       alert("Product name is required.");
       return;
     }
+    const hsnErr = hsnError(newProduct.hsnCode);
+    if (hsnErr) {
+      alert(`Invalid HSN: ${hsnErr}.`);
+      return;
+    }
     try {
       setLoading(true);
+      const userBusinessId = localStorage.getItem("userBusinessId");
       const payload = {
         productName: newProduct.productName.trim(),
         category: newProduct.category || "General",
@@ -195,7 +205,9 @@ function ItemsInventory() {
         minStockLevel: parseInt(newProduct.minStockLevel) || 10,
         taxRate: parseFloat(newProduct.taxRate) || 0,
         unit: newProduct.unit || "PCS",
-        productCode: newProduct.productCode || `SKU-${Date.now().toString().slice(-6)}`
+        productCode: newProduct.productCode || `SKU-${Date.now().toString().slice(-6)}`,
+        hsnCode: (newProduct.hsnCode || "").trim(),
+        userBusinessId: userBusinessId || null
       };
       await createProduct(payload);
       setShowAddModal(false);
@@ -841,7 +853,7 @@ function ItemsInventory() {
                       <input 
                         type="text" 
                         className="form-control rounded-3" 
-                        placeholder="e.g. Urea 46-0-0 50kg or Cotton Shirt XL" 
+                        placeholder="Enter product or item name" 
                         required
                         value={newProduct.productName} 
                         onChange={(e) => setNewProduct({ ...newProduct, productName: e.target.value })}
@@ -937,15 +949,28 @@ function ItemsInventory() {
                       />
                     </div>
 
-                    <div className="col-md-12">
+                    <div className="col-md-6">
                       <label className="form-label fw-semibold">Product Code / SKU (Optional)</label>
-                      <input 
-                        type="text" 
-                        className="form-control rounded-3" 
-                        placeholder="Leave blank to auto-generate" 
-                        value={newProduct.productCode} 
+                      <input
+                        type="text"
+                        className="form-control rounded-3"
+                        placeholder="Leave blank to auto-generate"
+                        value={newProduct.productCode}
                         onChange={(e) => setNewProduct({ ...newProduct, productCode: e.target.value })}
                       />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">HSN / SAC (4/6/8 digits)</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className="form-control rounded-3"
+                        placeholder="e.g. 1006, 8517, 998311"
+                        value={newProduct.hsnCode}
+                        onChange={(e) => setNewProduct({ ...newProduct, hsnCode: e.target.value.replace(/[^0-9]/g, "").slice(0, 8) })}
+                      />
+                      <small className="text-muted">Prints on GST bills + feeds GSTR-1 HSN summary.</small>
                     </div>
                   </div>
                 </div>

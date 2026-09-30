@@ -1,6 +1,6 @@
 {
-  "short_name": "TSAR IT Billing",
-  "name": "TSAR IT Billing — Enterprise GST Billing, POS & Inventory Platform",
+  "short_name": "TSAR IT BILLING",
+  "name": "TSAR IT BILLING PRIVATE LIMITED",
   "description": "India's premier enterprise GST billing, multi-godown inventory management, and POS thermal counter billing software.",
   "icons": [
     {
@@ -9,18 +9,18 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "tsar-icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "tsar-icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#4f46e5",
-  "background_color": "#090d16"
+  "theme_color": "#7c1e2e",
+  "background_color": "#faf6f4"
 }

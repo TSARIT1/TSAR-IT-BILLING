@@ -14,8 +14,10 @@ import {
   BsShop,
   BsClockHistory,
   BsCheck2All,
-  BsList
+  BsList,
+  BsInfoCircleFill
 } from 'react-icons/bs';
+import { getPortalNotifications, markAllNotificationsRead, markNotificationRead } from '../services/api';
 
 export default function PortalHeader({ onToggleSidebar, onOpenSearch, title }) {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ export default function PortalHeader({ onToggleSidebar, onOpenSearch, title }) {
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
   const quickCreateRef = useRef(null);
@@ -37,11 +40,30 @@ export default function PortalHeader({ onToggleSidebar, onOpenSearch, title }) {
   } catch (e) {
     storedUser = {};
   }
-  const businessName = storedUser.businessName || 'TSAR IT Solutions';
-  const ownerName = storedUser.ownerName || 'TSAR Admin';
-  const userEmail = storedUser.email || 'admin@tsarit.com';
+  const businessName = storedUser.businessName || '';
+  const ownerName = storedUser.ownerName || '';
+  const userEmail = storedUser.email || '';
+  const userId = localStorage.getItem('userId') || storedUser.userId || '';
+  const userBusinessId = localStorage.getItem('userBusinessId') || storedUser.userBusinessId || '';
   const companyLogo = localStorage.getItem('companyLogo') || '';
   const userProfileImage = localStorage.getItem('userProfileImage') || '';
+
+  const loadNotifications = async () => {
+    try {
+      const data = await getPortalNotifications(userId, userBusinessId);
+      if (Array.isArray(data)) {
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.error('Failed to load notifications:', e);
+    }
+  };
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000); // Poll every 30s for live alerts
+    return () => clearInterval(interval);
+  }, [userId, userBusinessId]);
 
   useEffect(() => {
     // Update clock every minute (we only show hours:minutes, no need for 1s interval)
@@ -61,6 +83,26 @@ export default function PortalHeader({ onToggleSidebar, onOpenSearch, title }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsRead(userId, userBusinessId);
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleNotificationClick = async (notif) => {
+    if (notif.unread) {
+      try {
+        await markNotificationRead(notif.id);
+        setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, unread: false } : n));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -143,41 +185,61 @@ export default function PortalHeader({ onToggleSidebar, onOpenSearch, title }) {
         {/* Notifications */}
         <div className="portal-dropdown-wrap" ref={notifRef}>
           <button 
-            className="portal-icon-btn" 
+            className="portal-icon-btn position-relative" 
             onClick={() => setShowNotifications(!showNotifications)}
             title="Notifications"
           >
             <BsBellFill />
-            <span className="notif-badge">3</span>
+            {notifications.filter(n => n.unread).length > 0 && (
+              <span className="notif-badge">
+                {notifications.filter(n => n.unread).length}
+              </span>
+            )}
           </button>
 
           {showNotifications && (
-            <div className="portal-dropdown-menu notifications-menu animate-fade-in">
+            <div className="portal-dropdown-menu notifications-menu animate-fade-in" style={{ width: "320px", maxHeight: "400px", overflowY: "auto" }}>
               <div className="dropdown-menu-header d-flex justify-content-between align-items-center">
-                <span>Notifications</span>
-                <span className="mark-read"><BsCheck2All /> Mark all read</span>
+                <span>Notifications ({notifications.length})</span>
+                {notifications.some(n => n.unread) && (
+                  <span 
+                    className="mark-read cursor-pointer" 
+                    onClick={handleMarkAllRead} 
+                    style={{ cursor: "pointer", fontSize: "11px" }}
+                  >
+                    <BsCheck2All /> Mark all read
+                  </span>
+                )}
               </div>
               <div className="notif-list">
-                <div className="notif-item unread">
-                  <div className="notif-dot"></div>
-                  <div className="notif-text">
-                    <p>Low stock warning: <strong>Server Rack 42U</strong> has 2 units left.</p>
-                    <span className="notif-time"><BsClockHistory /> 10 mins ago</span>
+                {notifications.map((notif, idx) => (
+                  <div 
+                    key={notif.id || idx} 
+                    className={`notif-item ${notif.unread ? 'unread' : ''}`}
+                    onClick={() => handleNotificationClick(notif)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {notif.unread && <div className="notif-dot"></div>}
+                    <div className="notif-text">
+                      <p className="mb-1 text-dark" style={{ fontSize: "13px" }}>
+                        {notif.title && <strong className="d-block text-primary">{notif.title}</strong>}
+                        {notif.message}
+                      </p>
+                      <span className="notif-time text-muted" style={{ fontSize: "11px" }}>
+                        <BsClockHistory className="me-1" />
+                        {notif.timestamp ? new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="notif-item unread">
-                  <div className="notif-dot"></div>
-                  <div className="notif-text">
-                    <p>Payment received: <strong>₹ 45,000</strong> from Apex Global.</p>
-                    <span className="notif-time"><BsClockHistory /> 1 hour ago</span>
+                ))}
+
+                {notifications.length === 0 && (
+                  <div className="p-4 text-center text-muted small">
+                    <BsBellFill className="mb-2 text-secondary fs-4" />
+                    <div>No new notifications.</div>
+                    <div className="text-secondary" style={{ fontSize: "11px" }}>You are all caught up!</div>
                   </div>
-                </div>
-                <div className="notif-item">
-                  <div className="notif-text">
-                    <p>Monthly GST Return (GSTR-1) preview is ready for export.</p>
-                    <span className="notif-time"><BsClockHistory /> Yesterday</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}

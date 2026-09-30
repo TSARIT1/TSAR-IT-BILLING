@@ -4,13 +4,16 @@ import PortalLayout from "./PortalLayout";
 import "./dashboard.css";
 import "./createPaymentIn.css";
 import { FiArrowLeft, FiSettings, FiSave, FiX } from "react-icons/fi";
+import { getAllCustomers, createPayment } from "../services/api";
 
 function CreatePaymentIn() {
   const navigate = useNavigate();
 
-  const [paymentNo, setPaymentNo] = useState(1);
-  const [party, setParty] = useState("");
+  const [customers, setCustomers] = useState([]);
+  const [customerId, setCustomerId] = useState("");
   const [amount, setAmount] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [paymentDate, setPaymentDate] = useState(() => {
     const d = new Date();
     return d.toISOString().split("T")[0];
@@ -20,31 +23,41 @@ function CreatePaymentIn() {
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("payments")) || [];
-    setPaymentNo(stored.length + 1);
+    getAllCustomers()
+      .then((data) => setCustomers(Array.isArray(data) ? data : []))
+      .catch(() => setCustomers([]));
   }, []);
 
-  const handleSave = () => {
-    if (!party || !amount) {
-      alert("Please enter Party Name and Amount!");
+  const selectedCustomer = customers.find((c) => String(c.id) === String(customerId));
+
+  const handleSave = async () => {
+    setError("");
+    if (!customerId) {
+      setError("Please select a customer (party).");
+      return;
+    }
+    const value = Number(amount);
+    if (!value || value <= 0) {
+      setError("Please enter an amount greater than zero.");
       return;
     }
 
-    const stored = JSON.parse(localStorage.getItem("payments")) || [];
-    const newPayment = {
-      id: Date.now(),
-      paymentNo,
-      party,
-      amount,
-      paymentDate,
-      paymentMode,
-      receivedIn,
-      notes,
-    };
-    stored.push(newPayment);
-    localStorage.setItem("payments", JSON.stringify(stored));
-    alert("Payment Saved Successfully!");
-    navigate("/payment-in");
+    setSaving(true);
+    try {
+      await createPayment({
+        customerId: Number(customerId),
+        amount: value,
+        paymentDate,
+        paymentMode,
+        receivedIn: receivedIn || null,
+        notes: notes || null,
+      });
+      navigate("/payment-in");
+    } catch (err) {
+      setError(typeof err === "string" ? err : "Could not save the payment. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -54,10 +67,7 @@ function CreatePaymentIn() {
           {/* Enhanced Header with Icons */}
           <div className="payment-header">
             <div className="left">
-              <FiArrowLeft
-                className="back-icon"
-                onClick={() => navigate("/payment-in")}
-              />
+              <FiArrowLeft className="back-icon" onClick={() => navigate("/payment-in")} />
               <div className="header-text">
                 <h2>
                   <i className="bi bi-cash-coin"></i> Record Payment In
@@ -72,11 +82,28 @@ function CreatePaymentIn() {
               <button className="cancel-btn" onClick={() => navigate("/payment-in")}>
                 <FiX /> Cancel
               </button>
-              <button className="save-btn" onClick={handleSave}>
-                <FiSave /> Save
+              <button className="save-btn" onClick={handleSave} disabled={saving}>
+                <FiSave /> {saving ? "Saving…" : "Save"}
               </button>
             </div>
           </div>
+
+          {error && (
+            <div
+              style={{
+                background: "#fdecec",
+                border: "1px solid #f3c2c2",
+                color: "#b23a48",
+                padding: "10px 14px",
+                borderRadius: 10,
+                marginBottom: 12,
+                fontWeight: 600,
+                fontSize: 14,
+              }}
+            >
+              {error}
+            </div>
+          )}
 
           {/* Summary Cards */}
           <div className="payment-summary-cards">
@@ -86,7 +113,7 @@ function CreatePaymentIn() {
               </div>
               <div className="card-content">
                 <h4>Payment No.</h4>
-                <p>PAY-{paymentNo}</p>
+                <p>Auto-generated</p>
               </div>
             </div>
             <div className="summary-card orange">
@@ -95,7 +122,7 @@ function CreatePaymentIn() {
               </div>
               <div className="card-content">
                 <h4>Payment Date</h4>
-                <p>{new Date(paymentDate).toLocaleDateString('en-IN')}</p>
+                <p>{new Date(paymentDate).toLocaleDateString("en-IN")}</p>
               </div>
             </div>
             <div className="summary-card green">
@@ -122,25 +149,19 @@ function CreatePaymentIn() {
                 <label>
                   <i className="bi bi-building"></i> Party Name *
                 </label>
-                <input
-                  type="text"
-                  placeholder="Enter Party Name"
-                  value={party}
-                  onChange={(e) => setParty(e.target.value)}
-                  className="input-with-icon"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>
-                  <i className="bi bi-wallet2"></i> Current Balance
-                </label>
-                <input
-                  type="text"
-                  value="₹ 1,00,000"
-                  readOnly
-                  className="balance-input"
-                />
+                <select
+                  value={customerId}
+                  onChange={(e) => setCustomerId(e.target.value)}
+                  className="select-with-icon"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8 }}
+                >
+                  <option value="">Select a customer…</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}{c.phone ? ` — ${c.phone}` : ""}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group amount-group">
@@ -160,10 +181,15 @@ function CreatePaymentIn() {
                 {amount && (
                   <div className="amount-display">
                     <i className="bi bi-check-circle-fill"></i>
-                    Amount: ₹ {parseFloat(amount).toLocaleString('en-IN')}
+                    Amount: ₹ {parseFloat(amount).toLocaleString("en-IN")}
                   </div>
                 )}
               </div>
+
+              <p style={{ fontSize: 13, color: "#8a7d6f", marginTop: 8 }}>
+                The payment is applied to this customer's oldest unpaid bills automatically —
+                fully settled bills are marked paid right away.
+              </p>
             </div>
 
             {/* Right Section - Payment Details */}
@@ -222,7 +248,7 @@ function CreatePaymentIn() {
                   </label>
                   <input
                     type="text"
-                    value={`PAY-${paymentNo}`}
+                    value="Auto-generated"
                     readOnly
                     className="payment-number-input"
                   />
@@ -243,19 +269,19 @@ function CreatePaymentIn() {
 
               {/* Payment Mode Icons */}
               <div className="payment-mode-icons">
-                <div className={`mode-icon ${paymentMode === 'Cash' ? 'active' : ''}`}>
+                <div className={`mode-icon ${paymentMode === "Cash" ? "active" : ""}`}>
                   <i className="bi bi-cash-stack"></i>
                   <span>Cash</span>
                 </div>
-                <div className={`mode-icon ${paymentMode === 'UPI' ? 'active' : ''}`}>
+                <div className={`mode-icon ${paymentMode === "UPI" ? "active" : ""}`}>
                   <i className="bi bi-phone"></i>
                   <span>UPI</span>
                 </div>
-                <div className={`mode-icon ${paymentMode === 'Bank Transfer' ? 'active' : ''}`}>
+                <div className={`mode-icon ${paymentMode === "Bank Transfer" ? "active" : ""}`}>
                   <i className="bi bi-bank2"></i>
                   <span>Bank</span>
                 </div>
-                <div className={`mode-icon ${paymentMode === 'Cheque' ? 'active' : ''}`}>
+                <div className={`mode-icon ${paymentMode === "Cheque" ? "active" : ""}`}>
                   <i className="bi bi-file-earmark-text"></i>
                   <span>Cheque</span>
                 </div>

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import Navbar from '../Navbar';
+import NavbarV6 from "../NavbarV6";
+import '../style.css';
+import "../landing-v6.css";
 import Footer from '../Footer';
 import { 
   BsEnvelopeFill, 
@@ -37,7 +39,7 @@ export default function ContactPage() {
       icon: 'success',
       title: 'Inquiry Received!',
       text: `Thank you ${formData.name}. A TSAR IT billing consultant will contact you within 30 minutes.`,
-      confirmButtonColor: '#4f46e5'
+      confirmButtonColor: '#7c1e2e'
     });
     setFormData({
       name: '',
@@ -51,18 +53,18 @@ export default function ContactPage() {
 
   return (
     <div className="contact-page-wrapper">
-      <Navbar />
+      <NavbarV6 />
 
       {/* Header Banner */}
-      <section className="bg-dark text-white py-5" style={{ paddingTop: '110px' }}>
+      <section className="text-white py-5" style={{ background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 55%, #4a0f1a 100%)', paddingTop: '110px' }}>
         <div className="container text-center py-4">
-          <span className="badge bg-primary px-3 py-2 text-uppercase fw-bold mb-3">
+          <span className="badge px-3 py-2 text-uppercase fw-bold mb-3 shadow-sm" style={{ backgroundColor: '#c9973f', color: '#ffffff' }}>
             WE ARE HERE TO HELP
           </span>
           <h1 className="display-5 fw-bold text-white mb-3">
-            Get in Touch with Our <span className="text-primary">Product Experts</span>
+            Get in Touch with Our <span style={{ color: '#fde047' }}>Product Experts</span>
           </h1>
-          <p className="lead text-light text-opacity-75 mx-auto mb-2" style={{ maxWidth: '650px', fontSize: '1.1rem' }}>
+          <p className="lead text-light text-opacity-90 mx-auto mb-2" style={{ maxWidth: '650px', fontSize: '1.1rem' }}>
             Have questions about GST compliance, hardware POS integration, custom pricing, or data migration from other software? Let us assist you.
           </p>
         </div>
@@ -126,7 +128,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-muted small fw-semibold">Headquarters</div>
-                    <div className="fw-bold text-dark fs-6">TSAR IT Solutions Tower</div>
+                    <div className="fw-bold text-dark fs-6">TSAR IT Services</div>
                     <div className="text-muted small">Tech Park, Bengaluru, Karnataka 560100</div>
                   </div>
                 </div>

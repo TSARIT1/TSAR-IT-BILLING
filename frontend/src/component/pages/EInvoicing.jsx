@@ -12,6 +12,7 @@ import {
 } from "react-icons/bs";
 import PortalLayout from "../PortalLayout";
 import { getInvoices, generateEInvoiceIrn, generateEWayBill, cancelEInvoiceIrn } from "../../services/api";
+import { printEnterpriseInvoice } from "../../utils/invoicePrintUtil";
 import Swal from "sweetalert2";
 
 export default function EInvoicing() {
@@ -24,21 +25,27 @@ export default function EInvoicing() {
 
   // E-Way Bill form state
   const [ewbForm, setEwbForm] = useState({
-    transporterName: "National Road Express Logistics",
-    vehicleNo: "TS09EA9924",
-    distanceKm: "120"
+    transporterName: "",
+    vehicleNo: "",
+    distanceKm: ""
   });
 
   useEffect(() => {
     const fetchInv = async () => {
       try {
-        const list = await getInvoices();
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+        const list = await getInvoices(userId);
         if (Array.isArray(list) && list.length > 0) {
           setInvoices(list);
           setSelectedInvoiceId(list[0].invoiceId || "");
+        } else {
+          setInvoices([]);
+          setSelectedInvoiceId("");
         }
       } catch (e) {
         console.error(e);
+        setInvoices([]);
       }
     };
     fetchInv();
@@ -177,13 +184,14 @@ export default function EInvoicing() {
                   className="form-select"
                   value={selectedInvoiceId}
                   onChange={(e) => setSelectedInvoiceId(e.target.value)}
+                  disabled={invoices.length === 0}
                 >
                   {invoices.map((inv, idx) => (
                     <option key={idx} value={inv.invoiceId}>
                       {inv.invoiceId} - {inv.customerName || "Customer"} (₹ {Number(inv.totalAmount || 0).toLocaleString('en-IN')})
                     </option>
                   ))}
-                  {invoices.length === 0 && <option value="INV-2026-DEMO">INV-2026-DEMO (Apex Global - ₹ 48,500)</option>}
+                  {invoices.length === 0 && <option value="">No sales invoices created yet</option>}
                 </select>
               </div>
 
@@ -236,7 +244,22 @@ export default function EInvoicing() {
                   </div>
 
                   <div className="d-flex gap-2">
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => alert('Printing e-invoice with signed QR code.')}>
+                    <button 
+                      className="btn btn-sm btn-outline-primary" 
+                      onClick={() => {
+                        const curInv = invoices.find(i => i.invoiceId === selectedInvoiceId) || { invoiceId: selectedInvoiceId };
+                        printEnterpriseInvoice({
+                          invoice: {
+                            ...curInv,
+                            irn: irnResult.irn,
+                            ackNo: irnResult.ackNo,
+                            ackDate: irnResult.ackDate
+                          },
+                          items: curInv.items || [],
+                          printSize: "A4"
+                        });
+                      }}
+                    >
                       <BsPrinterFill className="me-1" /> Print Signed E-Invoice
                     </button>
                     <button className="btn btn-sm btn-outline-danger" onClick={handleCancelIrn}>
@@ -327,7 +350,22 @@ export default function EInvoicing() {
                     <div><strong>Generated Date:</strong> {ewbResult.ewayBillDate}</div>
                   </div>
 
-                  <button className="btn btn-sm btn-outline-primary" onClick={() => alert('Printing official government 2-page E-Way Bill challan.')}>
+                  <button 
+                    className="btn btn-sm btn-outline-primary" 
+                    onClick={() => {
+                      const curInv = invoices.find(i => i.invoiceId === selectedInvoiceId) || { invoiceId: selectedInvoiceId };
+                      printEnterpriseInvoice({
+                        invoice: {
+                          ...curInv,
+                          ewayBillNo: ewbResult.ewayBillNo,
+                          vehicleNo: ewbResult.vehicleNo,
+                          transporterName: ewbResult.transporterName
+                        },
+                        items: curInv.items || [],
+                        printSize: "A4"
+                      });
+                    }}
+                  >
                     <BsPrinterFill className="me-1" /> Print E-Way Bill (PDF)
                   </button>
                 </div>

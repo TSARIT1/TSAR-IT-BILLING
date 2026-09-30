@@ -6,14 +6,14 @@
 
 /* Page Header */
 .expenses-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 25px 35px;
     border-radius: 16px;
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -102,13 +102,13 @@
 .expenses-header .btn-primary {
     background: rgba(255, 255, 255, 0.95) !important;
     border: none !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .expenses-header .btn-primary:hover {
     background: #ffffff !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
@@ -145,11 +145,11 @@
 }
 
 .expense-summary-cards .summary-card.blue::before {
-    background: linear-gradient(180deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(180deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .expense-summary-cards .summary-card.orange::before {
-    background: linear-gradient(180deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(180deg, #b45309 0%, #f5a842 100%);
 }
 
 .expense-summary-cards .summary-card.green::before {
@@ -183,11 +183,11 @@
 }
 
 .expense-summary-cards .summary-card.blue .card-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .expense-summary-cards .summary-card.orange .card-icon {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a842 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a842 100%);
 }
 
 .expense-summary-cards .summary-card.green .card-icon {
@@ -251,9 +251,9 @@
 }
 
 .expenses-filters-card .search-box:focus-within {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 .expenses-filters-card .search-box .search-icon {
@@ -287,7 +287,7 @@
 }
 
 .expenses-filters-card .filter-group:hover {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
 }
 
 .expenses-filters-card .filter-group i {
@@ -348,7 +348,7 @@
 }
 
 .expenses-table-card .table-header-row .header-cell i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 14px;
 }
 
@@ -388,16 +388,16 @@
 }
 
 .expenses-table-card .empty-state .btn-primary {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%) !important;
     border: none !important;
     padding: 12px 28px;
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .expenses-table-card .empty-state .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Responsive Design */

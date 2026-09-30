@@ -24,7 +24,7 @@ export default function Footer() {
           <div className="footer-cta-card">
             <div className="cta-left">
               <h2>Ready to streamline your billing & invoicing?</h2>
-              <p>Join over 100,000+ growing enterprises powering their financial operations with TSAR IT Billing.</p>
+              <p>Join over 100,000+ growing enterprises powering their financial operations with {process.env.REACT_APP_BUSINESS_NAME}.</p>
             </div>
             <div className="cta-right">
               <Link to="/register" className="btn-saas-primary cta-btn">
@@ -45,7 +45,7 @@ export default function Footer() {
             {/* Column 1: Brand & Bio */}
             <div className="col-lg-4 col-md-6 footer-brand-col">
               <div className="footer-logo">
-                <span className="logo-brand-mark">TSAR IT</span>
+                <span className="logo-brand-mark">{process.env.REACT_APP_BUSINESS_NAME}</span>
                 <span className="logo-product-mark">BILLING</span>
               </div>
               <p className="footer-desc">
@@ -113,7 +113,7 @@ export default function Footer() {
           {/* Bottom Copyright */}
           <div className="footer-bottom-row">
             <p className="copyright-text fw-semibold">
-              All Copys are rights 2026 @TSAR IT PRIVATE LIMITED
+              © 2026 {process.env.REACT_APP_BUSINESS_NAME} PRIVATE LIMITED. All rights reserved.
             </p>
             <div className="footer-legal-links d-flex align-items-center gap-3">
               <a href="#privacy">Privacy Policy</a>

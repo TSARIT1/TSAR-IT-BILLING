@@ -751,7 +751,7 @@ function SmsPromotion() {
                           <span className="msg-time">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         {audience && (
-                          <div className="recipient-tag" style={{ alignSelf: 'center', background: '#3e4e96', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '10px', marginTop: '10px' }}>
+                          <div className="recipient-tag" style={{ alignSelf: 'center', background: '#7c1e2e', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '10px', marginTop: '10px' }}>
                             To: {getTargetCount()} Recipients ({audience.toUpperCase()})
                           </div>
                         )}

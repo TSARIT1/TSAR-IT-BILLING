@@ -6,7 +6,7 @@
 
 /* Page Header */
 .cashbank-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     margin-top: 25px;
     padding: 25px 30px;
     border-radius: 16px;
@@ -14,7 +14,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -116,13 +116,13 @@
 .cashbank-header .btn-primary {
     background: rgba(255, 255, 255, 0.95) !important;
     border: none !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .cashbank-header .btn-primary:hover {
     background: #ffffff !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
@@ -145,19 +145,19 @@
 .balance-card-enhanced {
     border-radius: 16px !important;
     border-width: 2px !important;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.15) !important;
     transition: all 0.3s ease;
 }
 
 .balance-card-enhanced:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(62, 78, 150, 0.25) !important;
+    box-shadow: 0 8px 25px rgba(124, 30, 46, 0.25) !important;
 }
 
 .balance-card-enhanced .balance-icon {
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #eef2ff 0%, #dbeafe 100%);
+    background: linear-gradient(135deg, #faf1ee 0%, #dbeafe 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -208,8 +208,8 @@
 
 .account-item-enhanced:hover {
     background: #ffffff;
-    border-color: #3e4e96;
-    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.15);
+    border-color: #7c1e2e;
+    box-shadow: 0 4px 12px rgba(124, 30, 46, 0.15);
     transform: translateX(5px);
 }
 
@@ -275,13 +275,13 @@
 
 .transactions-header-enhanced .nav-link:hover {
     background: #f3f4f6;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .transactions-header-enhanced .nav-link.active {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 30, 46, 0.3);
 }
 
 /* Transaction Filter Enhanced */
@@ -311,8 +311,8 @@
 }
 
 .transaction-filter-enhanced .form-select:focus {
-    border-color: #3e4e96;
-    box-shadow: 0 0 0 3px rgba(62, 78, 150, 0.1);
+    border-color: #7c1e2e;
+    box-shadow: 0 0 0 3px rgba(124, 30, 46, 0.1);
 }
 
 .transaction-filter-enhanced .filter-actions {
@@ -373,16 +373,16 @@
 }
 
 .no-transactions-enhanced .btn-primary {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%) !important;
     border: none !important;
     padding: 12px 28px;
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .no-transactions-enhanced .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Responsive Design */

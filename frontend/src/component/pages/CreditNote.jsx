@@ -21,6 +21,7 @@ export default function CreditNote() {
   const [notes, setNotes] = useState([]);
 
   useEffect(() => {
+    // Credit notes are saved in localStorage until a backend endpoint exists
     const stored = JSON.parse(localStorage.getItem("creditNotes")) || [];
     setNotes(stored);
   }, []);

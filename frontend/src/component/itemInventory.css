@@ -5,11 +5,12 @@
 
 /* Page Header */
 .inventory-page-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #611726 50%, #4a0f1a 100%);
     padding: 30px;
     border-radius: 16px;
     margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 14px 36px -10px rgba(124, 30, 46, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .inventory-header-content {
@@ -26,24 +27,25 @@
 
 .inventory-page-title {
     font-size: 32px;
-    font-weight: 700;
+    font-weight: 800;
     color: #ffffff;
     margin: 0;
     display: flex;
     align-items: center;
     gap: 12px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 .inventory-title-icon {
     font-size: 36px;
-    color: #ffffff;
+    color: #c9973f;
 }
 
 .inventory-page-subtitle {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
+    color: #e2e8f0;
+    font-size: 15px;
     margin: 8px 0 0 0;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .inventory-header-actions {
@@ -52,9 +54,9 @@
 }
 
 .inventory-report-btn {
-    background: rgba(255, 255, 255, 0.9);
-    color: #3e4e96;
-    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
     padding: 12px 24px;
     border-radius: 10px;
     font-size: 15px;
@@ -63,14 +65,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 .inventory-report-btn:hover {
     background: #ffffff;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    color: #7c1e2e;
+    border-color: #94a3b8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
 /* Summary Cards */
@@ -99,41 +103,42 @@
 }
 
 .inventory-summary-card.total-items {
-    border-left-color: #3e4e96;
+    border-left-color: #7c1e2e;
 }
 
 .inventory-summary-card.stock-value {
-    border-left-color: #e8961b;
+    border-left-color: #059669;
 }
 
 .inventory-summary-card.low-stock {
-    border-left-color: #ef4444;
+    border-left-color: #dc2626;
 }
 
 .inventory-card-icon-wrapper {
-    width: 70px;
-    height: 70px;
+    width: 66px;
+    height: 66px;
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .total-items-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #9c2738 100%);
 }
 
 .stock-value-icon {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a623 100%);
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 .low-stock-icon {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
 }
 
 .inventory-card-icon {
-    font-size: 32px;
+    font-size: 30px;
     color: #ffffff;
 }
 
@@ -142,19 +147,20 @@
 }
 
 .inventory-card-content h4 {
-    font-size: 14px;
-    font-weight: 600;
-    color: #6b7280;
-    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    margin: 0 0 6px 0;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.06em;
 }
 
 .inventory-card-content p {
     font-size: 28px;
-    font-weight: 700;
-    color: #1f2937;
+    font-weight: 800;
+    color: #0f172a;
     margin: 0;
+    letter-spacing: -0.02em;
 }
 
 /* Filters Container */
@@ -208,16 +214,16 @@
     border: 2px solid #e5e7eb;
     border-radius: 10px;
     font-size: 14px;
-    font-family: "Poppins", sans-serif;
+    font-family: "Sora", "Plus Jakarta Sans", sans-serif;
     transition: all 0.3s ease;
     background: #f9fafb;
 }
 
 .inventory-search-input:focus {
     outline: none;
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 /* Filter Group */
@@ -247,9 +253,9 @@
 
 .inventory-filter-select:focus {
     outline: none;
-    border-color: #e8961b;
+    border-color: #b45309;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(232, 150, 27, 0.1);
+    box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.1);
 }
 
 /* Low Stock Button */
@@ -270,7 +276,7 @@
 
 .inventory-low-stock-btn:hover {
     background: #fef3c7;
-    border-color: #e8961b;
+    border-color: #b45309;
     color: #92400e;
 }
 
@@ -304,7 +310,7 @@
 
 /* Create Button */
 .inventory-create-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 12px 24px;
@@ -316,12 +322,12 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .inventory-create-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Table Container */
@@ -340,51 +346,52 @@
 }
 
 .inventory-table thead {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: #f8fafc;
 }
 
 .inventory-table th {
     padding: 16px 14px;
     text-align: left;
-    font-size: 13px;
-    font-weight: 700;
-    color: #374151;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #0f172a;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #e5e7eb;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
 }
 
 .inventory-table tbody tr {
-    border-bottom: 1px solid #f3f4f6;
-    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.18s ease;
 }
 
 .inventory-table tbody tr:hover {
-    background: #f9fafb;
+    background: #f8faff;
 }
 
 .inventory-table tbody tr.low-stock-row {
-    background: #fef3c7;
+    background: #fffbeb;
 }
 
 .inventory-table tbody tr.low-stock-row:hover {
-    background: #fde68a;
+    background: #fef3c7;
 }
 
 .inventory-table td {
     padding: 14px;
     font-size: 14px;
-    color: #1f2937;
+    color: #0f172a;
+    font-weight: 500;
 }
 
 .item-name-cell {
     font-weight: 600;
-    color: #1f2937;
+    color: #0f172a;
 }
 
 .item-row-icon {
     margin-right: 8px;
-    color: #3e4e96;
+    color: #7c1e2e;
     vertical-align: middle;
 }
 
@@ -394,28 +401,29 @@
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
-    background: linear-gradient(135deg, #e8961b 0%, #f5a623 100%);
+    background: linear-gradient(135deg, #c9973f 0%, #d97706 100%);
     color: #ffffff;
 }
 
 .stock-qty {
-    color: #22c55e;
-    font-weight: 600;
+    color: #059669;
+    font-weight: 700;
 }
 
 .low-stock-qty {
-    color: #ef4444;
-    font-weight: 700;
+    color: #dc2626;
+    font-weight: 800;
 }
 
 .price-cell {
     font-weight: 600;
-    color: #6b7280;
+    color: #0f172a;
 }
 
 .value-cell {
     font-weight: 700;
-    color: #3e4e96;
+    color: #0f2a4f;
+    font-family: var(--font-mono);
 }
 
 .actions-cell {
@@ -435,12 +443,12 @@
 }
 
 .inventory-action-btn.edit-btn {
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .inventory-action-btn.edit-btn:hover {
-    background: #eef2ff;
-    color: #1e3a8a;
+    background: #faf1ee;
+    color: #4a1524;
 }
 
 .inventory-action-btn.delete-btn {
@@ -453,7 +461,7 @@
 }
 
 .inventory-action-btn.history-btn {
-    color: #e8961b;
+    color: #b45309;
 }
 
 .inventory-action-btn.history-btn:hover {
@@ -554,7 +562,7 @@
 }
 
 .stock-history-modal-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 25px 30px;
     border-radius: 20px 20px 0 0;
     display: flex;
@@ -669,7 +677,7 @@
 }
 
 .transaction-type-badge.sale {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
     color: #ffffff;
 }
 
@@ -682,7 +690,7 @@
 }
 
 .quantity-cell.sale {
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .balance-cell {
@@ -716,7 +724,7 @@
 }
 
 .inventory-empty-add-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 12px 28px;
@@ -728,12 +736,12 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .inventory-empty-add-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Upload Section */
@@ -763,7 +771,7 @@
 }
 
 .inventory-upload-info h4 svg {
-    color: #e8961b;
+    color: #b45309;
     font-size: 24px;
 }
 
@@ -796,34 +804,34 @@
 }
 
 .inventory-import-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
     color: #ffffff;
 }
 
 .inventory-import-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 30, 46, 0.3);
 }
 
 .inventory-library-btn {
     background: #ffffff;
-    color: #3e4e96;
-    border-color: #3e4e96;
+    color: #7c1e2e;
+    border-color: #7c1e2e;
 }
 
 .inventory-library-btn:hover {
-    background: #eef2ff;
+    background: #faf1ee;
     transform: translateY(-2px);
 }
 
 .inventory-excel-btn {
-    background: linear-gradient(135deg, #e8961b 0%, #f5a623 100%);
+    background: linear-gradient(135deg, #b45309 0%, #f5a623 100%);
     color: #ffffff;
 }
 
 .inventory-excel-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(232, 150, 27, 0.3);
+    box-shadow: 0 4px 12px rgba(180, 83, 9, 0.3);
 }
 
 .inventory-upload-illustration {

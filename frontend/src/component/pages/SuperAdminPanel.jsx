@@ -1,762 +1,851 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  BsShieldLockFill, 
-  BsSnow2, 
-  BsSunFill, 
-  BsTicketDetailedFill, 
-  BsHddNetworkFill, 
-  BsRobot, 
-  BsSendFill, 
-  BsCheckCircleFill, 
+import {
+  BsShieldLockFill,
+  BsTicketDetailedFill,
   BsSearch,
   BsBoxArrowRight,
-  BsFillLightningChargeFill,
-  BsTerminalFill,
-  BsDatabaseFillCheck,
-  BsCreditCardFill,
+  BsArrowRepeat,
   BsPersonBadgeFill,
-  BsBuildingCheck
+  BsBuildingCheck,
+  BsMegaphoneFill,
+  BsGraphUp,
+  BsPeopleFill,
+  BsReceiptCutoff,
+  BsCashCoin,
+  BsClockHistory,
+  BsSnow2,
+  BsCheckCircleFill,
+  BsExclamationOctagonFill,
+  BsStars,
+  BsReplyFill,
+  BsTrash,
+  BsPhoneFill,
+  BsToggleOn,
+  BsToggleOff,
+  BsCloudUploadFill,
 } from "react-icons/bs";
 import Swal from "sweetalert2";
+import {
+  getPlatformStats,
+  getAllTenants,
+  setTenantFreeze,
+  setTenantPlan,
+  setTicketStatus,
+  superAdminBroadcast,
+  getPlatformAudit,
+  getTickets,
+  getTicketReplies,
+  addTicketReply,
+  deleteTenantAccount,
+  getAppConfig,
+  updateAppConfig,
+  getAppPlans,
+} from "../../services/api";
+import "./SuperAdminPanel.css";
+
+const PLANS = [
+  { id: "trial_15_days", name: "15-Day Trial" },
+  { id: "plan_1_month", name: "1 Month" },
+  { id: "plan_3_months", name: "3 Months" },
+  { id: "plan_6_months", name: "6 Months" },
+  { id: "plan_1_year", name: "1 Year" },
+  { id: "plan_2_years", name: "2 Years" },
+];
+
+const TABS = [
+  { id: "overview", label: "Overview", icon: <BsGraphUp /> },
+  { id: "tenants", label: "Tenants & Users", icon: <BsBuildingCheck /> },
+  { id: "tickets", label: "Support Tickets", icon: <BsTicketDetailedFill /> },
+  { id: "apk", label: "APK Control", icon: <BsPhoneFill /> },
+  { id: "broadcast", label: "Broadcast", icon: <BsMegaphoneFill /> },
+  { id: "audit", label: "Platform Audit", icon: <BsClockHistory /> },
+];
+
+/** Modules the super admin can switch on/off for every install, without a new APK. */
+const APP_MODULES = [
+  { key: "smsMarketing", label: "SMS & WhatsApp Marketing" },
+  { key: "caAudit", label: "CA Audit Hub (GSTR + exports)" },
+  { key: "smsGateway", label: "SMS Marketing Campaigns" },
+  { key: "smsFreeGateway", label: "Free own-SIM SMS Gateway" },
+  { key: "eInvoice", label: "E-Invoicing" },
+  { key: "pos", label: "Point of Sale" },
+  { key: "whatsapp", label: "WhatsApp Sharing" },
+  { key: "aiAssistant", label: "AI Assistant" },
+  { key: "subscription", label: "Subscription / Plans" },
+];
 
 export default function SuperAdminPanel() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("tenants"); // 'tenants', 'subscriptions', 'tickets', 'infrastructure', 'raki_ai'
+  const [activeTab, setActiveTab] = useState("overview");
+  const [stats, setStats] = useState(null);
+  const [tenants, setTenants] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [audit, setAudit] = useState({ content: [], totalElements: 0 });
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL"); // 'ALL', 'ACTIVE', 'FROZEN'
-  
-  // Seed / Live Tenants
-  const [tenants, setTenants] = useState([
-    {
-      tenantId: "TENANT-001",
-      businessName: "Kaveri Agro Chemicals Ltd",
-      ownerName: "Ramesh Kumar",
-      email: "ramesh@kaveriagro.in",
-      phone: "+91 98450 12345",
-      plan: "VIP 2 YEARS (₹25,000)",
-      planDuration: "2 Years",
-      sector: "Fertilizers & Agro",
-      isFrozen: false,
-      freezeReason: null,
-      monthlyInvoices: 3420,
-      joinedDate: "12 Jan 2026"
-    },
-    {
-      tenantId: "TENANT-002",
-      businessName: "Lotus Garments & Textiles",
-      ownerName: "Priya Sundaram",
-      email: "priya@lotustextiles.com",
-      phone: "+91 97890 23456",
-      plan: "1 YEAR PLAN (₹5,000)",
-      planDuration: "1 Year",
-      sector: "Clothing & Garments",
-      isFrozen: true,
-      freezeReason: "Compliance Verification Pending",
-      monthlyInvoices: 1840,
-      joinedDate: "18 Feb 2026"
-    },
-    {
-      tenantId: "TENANT-003",
-      businessName: "Apex Electronics & Mobiles",
-      ownerName: "Amit Deshmukh",
-      email: "amit@apexelectronics.com",
-      phone: "+91 99220 34567",
-      plan: "6 MONTHS (₹2,700)",
-      planDuration: "6 Months",
-      sector: "Electronics & IMEI",
-      isFrozen: false,
-      freezeReason: null,
-      monthlyInvoices: 920,
-      joinedDate: "02 Mar 2026"
-    },
-    {
-      tenantId: "TENANT-004",
-      businessName: "National Freight & Logistics Express",
-      ownerName: "Sardar Gurpreet Singh",
-      email: "gurpreet@nationalfreight.in",
-      phone: "+91 98110 54321",
-      plan: "1 MONTH (₹500)",
-      planDuration: "1 Month",
-      sector: "Transport & LR Bilty",
-      isFrozen: false,
-      freezeReason: null,
-      monthlyInvoices: 510,
-      joinedDate: "15 Apr 2026"
-    },
-    {
-      tenantId: "TENANT-005",
-      businessName: "Reliance Daily Supermarket Hub",
-      ownerName: "Venkat Rao",
-      email: "venkat@dailyhub.com",
-      phone: "+91 99880 11223",
-      plan: "3 MONTHS (₹1,400)",
-      planDuration: "3 Months",
-      sector: "Supermarkets & Retail",
-      isFrozen: false,
-      freezeReason: null,
-      monthlyInvoices: 8900,
-      joinedDate: "20 May 2026"
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [loading, setLoading] = useState(true);
+  const [broadcastForm, setBroadcastForm] = useState({ title: "", message: "", type: "INFO", target: "ALL" });
+  const [broadcastSending, setBroadcastSending] = useState(false);
+  const [openTicketId, setOpenTicketId] = useState(null);
+  const [thread, setThread] = useState([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [replyDraft, setReplyDraft] = useState("");
+  const [replySending, setReplySending] = useState(false);
+
+  // --- Android APK remote control ---
+  const [appConfig, setAppConfig] = useState(null);
+  const [appPlans, setAppPlans] = useState([]);
+  const [appSaving, setAppSaving] = useState(false);
+  const [planDraft, setPlanDraft] = useState({});
+
+  const user = (() => {
+    try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return {}; }
+  })();
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [s, t, tk, a] = await Promise.allSettled([getPlatformStats(), getAllTenants(), getTickets(), getPlatformAudit(0, 150)]);
+      if (s.status === "fulfilled") setStats(s.value);
+      if (t.status === "fulfilled" && Array.isArray(t.value)) setTenants(t.value);
+      if (tk.status === "fulfilled" && Array.isArray(tk.value)) setTickets(tk.value);
+      if (a.status === "fulfilled" && a.value?.content) setAudit(a.value);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, []);
 
-  // Support Tickets
-  const [tickets, setTickets] = useState([
-    {
-      code: "TCK-1001",
-      tenantId: "TENANT-001",
-      business: "Kaveri Agro Chemicals Ltd",
-      user: "Ramesh Kumar",
-      subject: "DBT Fertilizer Subsidy Report format alignment query",
-      category: "GST_COMPLIANCE",
-      priority: "HIGH",
-      status: "OPEN",
-      time: "2 hours ago"
-    },
-    {
-      code: "TCK-1002",
-      tenantId: "TENANT-003",
-      business: "Apex Electronics & Mobiles",
-      user: "Amit Deshmukh",
-      subject: "Bluetooth 80mm ESC/POS Thermal Printer pairing latency",
-      category: "TECHNICAL",
-      priority: "MEDIUM",
-      status: "IN_PROGRESS",
-      time: "5 hours ago"
-    },
-    {
-      code: "TCK-1003",
-      tenantId: "TENANT-005",
-      business: "Reliance Daily Supermarket Hub",
-      user: "Venkat Rao",
-      subject: "Barcode scanner GS1-128 batch prefix configuration",
-      category: "HARDWARE",
-      priority: "LOW",
-      status: "RESOLVED",
-      time: "1 day ago"
-    }
-  ]);
+  useEffect(() => { loadAll(); }, [loadAll]);
 
-  // Razorpay Transactions
-  const transactions = [
-    { id: "pay_rzp_98472918", tenant: "Kaveri Agro Chemicals Ltd", plan: "2 Years VIP Plan", amount: "₹ 25,000", method: "UPI (Google Pay)", date: "Today, 10:14 AM", status: "SUCCESS" },
-    { id: "pay_rzp_84719283", tenant: "Lotus Garments & Textiles", plan: "1 Year Plan", amount: "₹ 5,000", method: "Cards (Visa Platinum)", date: "Yesterday, 04:30 PM", status: "SUCCESS" },
-    { id: "pay_rzp_73628192", tenant: "Apex Electronics & Mobiles", plan: "6 Months Plan", amount: "₹ 2,700", method: "NetBanking (HDFC)", date: "28 Aug 2026", status: "SUCCESS" },
-    { id: "pay_rzp_62518291", tenant: "Reliance Daily Supermarket", plan: "3 Months Plan", amount: "₹ 1,400", method: "UPI (PhonePe)", date: "25 Aug 2026", status: "SUCCESS" },
-    { id: "pay_rzp_51407382", tenant: "National Freight Logistics", plan: "1 Month Plan", amount: "₹ 500", method: "UPI (Paytm)", date: "22 Aug 2026", status: "SUCCESS" }
-  ];
-
-  // Raki AI Terminal Logs
-  const [rakiAiPrompt, setRakiAiPrompt] = useState("");
-  const [rakiAiLogs, setRakiAiLogs] = useState([
-    {
-      sender: "Raki AI",
-      text: "⚡ Raki AI Enterprise Master Copilot online. 3 Kubernetes nodes, Kafka cluster, Redis cache & Razorpay payment engine operating normally."
-    }
-  ]);
-
-  // Tenant Freeze/Unfreeze Killswitch
-  const toggleFreeze = (tenantId) => {
-    const target = tenants.find(t => t.tenantId === tenantId);
-    if (!target) return;
-
-    const actionText = target.isFrozen ? "Unfreeze and Restore" : "Freeze and Suspend";
-    const confirmColor = target.isFrozen ? "#10B981" : "#EF4444";
-
-    Swal.fire({
-      title: `${actionText} Tenant?`,
-      text: `Are you sure you want to change access state for ${target.businessName}?`,
-      icon: target.isFrozen ? "question" : "warning",
-      showCancelButton: true,
-      confirmButtonColor: confirmColor,
-      confirmButtonText: `Yes, ${actionText}`
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setTenants(tenants.map(t => {
-          if (t.tenantId === tenantId) {
-            const nextState = !t.isFrozen;
-            return {
-              ...t,
-              isFrozen: nextState,
-              freezeReason: nextState ? "Suspended by Super Administrator (Killswitch Triggered)" : null
-            };
-          }
-          return t;
-        }));
-
-        Swal.fire({
-          icon: "success",
-          title: `Tenant ${target.isFrozen ? 'Restored' : 'Suspended'}`,
-          text: `${target.businessName} has been ${target.isFrozen ? 'unfrozen and granted full access' : 'frozen immediately'}.`,
-          timer: 1500,
-          showConfirmButton: false
-        });
+  const loadAppConfig = useCallback(async () => {
+    try {
+      const [cfg, plans] = await Promise.allSettled([getAppConfig(), getAppPlans()]);
+      if (cfg.status === "fulfilled" && cfg.value) {
+        setAppConfig(cfg.value);
+        setPlanDraft(Object.fromEntries(
+          (Array.isArray(cfg.value.plansOverride) && cfg.value.plansOverride.length
+            ? cfg.value.plansOverride
+            : Array.isArray(plans.value) ? plans.value : []
+          ).map((p) => [p.planId, p.price])
+        ));
       }
-    });
-  };
-
-  const handleResolveTicket = (code) => {
-    setTickets(tickets.map(t => t.code === code ? { ...t, status: "RESOLVED" } : t));
-    Swal.fire({
-      icon: "success",
-      title: `Ticket ${code} Resolved`,
-      timer: 1200,
-      showConfirmButton: false
-    });
-  };
-
-  const handleRakiAiSubmit = (e) => {
-    e.preventDefault();
-    if (!rakiAiPrompt.trim()) return;
-
-    const userMsg = { sender: "Admin", text: rakiAiPrompt };
-    let aiReply = "🤖 Raki AI: Diagnostics complete. System invariants verified (Debit = Credit, Zero-Stock Anomalies).";
-
-    const lower = rakiAiPrompt.toLowerCase();
-    if (lower.includes("freeze") || lower.includes("killswitch")) {
-      aiReply = "⚡ Raki AI: Executing killswitch policy. Kafka tenant status event published to topic 'tenant-events'.";
-    } else if (lower.includes("ticket") || lower.includes("helpdesk")) {
-      aiReply = `🎫 Raki AI Helpdesk: There are currently ${tickets.filter(t => t.status === 'OPEN').length} OPEN tickets requiring resolution.`;
-    } else if (lower.includes("revenue") || lower.includes("payment")) {
-      aiReply = "💳 Raki AI: Razorpay Gateway processed ₹34,600 across 5 active enterprise billing cycles. 100% success rate.";
+      if (plans.status === "fulfilled" && Array.isArray(plans.value)) setAppPlans(plans.value);
+    } catch (err) {
+      Swal.fire("Failed to load APK config", err?.response?.data?.error || "Please retry", "error");
     }
+  }, []);
 
-    setRakiAiLogs([...rakiAiLogs, userMsg, { sender: "Raki AI", text: aiReply }]);
-    setRakiAiPrompt("");
+  useEffect(() => { if (activeTab === "apk") loadAppConfig(); }, [activeTab, loadAppConfig]);
+
+  const saveAppConfig = async (patch, successTitle = "APK config saved") => {
+    try {
+      setAppSaving(true);
+      const res = await updateAppConfig(patch);
+      if (res?.config) setAppConfig(res.config);
+      Swal.fire({ icon: "success", title: successTitle, text: "Every install picks this up on next launch.", timer: 1800, showConfirmButton: false });
+      loadAppConfig();
+    } catch (err) {
+      Swal.fire("Save failed", err?.response?.data?.error || "Please retry", "error");
+    } finally {
+      setAppSaving(false);
+    }
+  };
+
+  const toggleFlag = (key) => {
+    const flags = { ...(appConfig?.featureFlags || {}) };
+    flags[key] = !flags[key];
+    saveAppConfig({ featureFlags: flags }, `${APP_MODULES.find((m) => m.key === key)?.label || key} ${flags[key] ? "enabled" : "disabled"}`);
+  };
+
+  const savePlanPrices = () => {
+    const override = appPlans.map((p) => ({
+      ...p,
+      price: Number(planDraft[p.planId] ?? p.price) || 0,
+    }));
+    saveAppConfig({ plansOverride: override }, "Plan prices updated for all tenants");
+  };
+
+  const clearPlanOverride = () =>
+    saveAppConfig({ plansOverride: [] }, "Plan prices reset to defaults");
+
+  const handleFreeze = async (tenant) => {
+    const freezing = !tenant.isFrozen;
+    const { value: reason } = await Swal.fire({
+      title: freezing ? "Freeze this tenant?" : "Unfreeze this tenant?",
+      html: `<strong>${tenant.businessName || tenant.ownerName}</strong><br>${
+        freezing
+          ? "They will be blocked from logging in immediately."
+          : "Full access will be restored."}`,
+      icon: freezing ? "warning" : "question",
+      input: freezing ? "text" : undefined,
+      inputLabel: freezing ? "Reason (shown to the tenant)" : undefined,
+      inputValue: freezing ? "Account suspended by platform administrator" : undefined,
+      showCancelButton: true,
+      confirmButtonColor: freezing ? "#b23b3b" : "#1a7f4e",
+      confirmButtonText: freezing ? "Freeze now" : "Unfreeze",
+    });
+    if (!reason && freezing) return;
+    if (!reason && !freezing && !tenant.isFrozen) return;
+
+    try {
+      await setTenantFreeze(tenant.businessId, freezing, reason);
+      Swal.fire({ icon: "success", title: freezing ? "Tenant frozen" : "Tenant restored", timer: 1300, showConfirmButton: false });
+      loadAll();
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Action failed", "error");
+    }
+  };
+
+  const handlePlan = async (tenant) => {
+    const { value: planId } = await Swal.fire({
+      title: `Activate plan — ${tenant.businessName || tenant.ownerName}`,
+      input: "select",
+      inputOptions: Object.fromEntries(PLANS.map(p => [p.id, p.name])),
+      inputPlaceholder: "Choose a plan",
+      showCancelButton: true,
+      confirmButtonColor: "#7c1e2e",
+    });
+    if (!planId) return;
+    try {
+      await setTenantPlan(tenant.businessId, planId);
+      Swal.fire({ icon: "success", title: "Plan activated", text: PLANS.find(p => p.id === planId)?.name, timer: 1400, showConfirmButton: false });
+      loadAll();
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Action failed", "error");
+    }
+  };
+
+  const handleTicketStatus = async (ticket, status) => {
+    try {
+      await setTicketStatus(ticket.id, status);
+      setTickets(ts => ts.map(t => (t.id === ticket.id ? { ...t, status } : t)));
+      Swal.fire({ icon: "success", title: `Ticket #${ticket.id} → ${status}`, timer: 1100, showConfirmButton: false });
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Action failed", "error");
+    }
+  };
+
+  const openThread = async (ticket) => {
+    const id = ticket.id;
+    if (openTicketId === id) { setOpenTicketId(null); return; }
+    setOpenTicketId(id);
+    setThread([]);
+    setThreadLoading(true);
+    setReplyDraft("");
+    try {
+      const data = await getTicketReplies(id);
+      setThread(Array.isArray(data?.replies) ? data.replies : []);
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Could not load the conversation", "error");
+      setOpenTicketId(null);
+    } finally {
+      setThreadLoading(false);
+    }
+  };
+
+  const sendReply = async (ticket) => {
+    if (!replyDraft.trim()) return;
+    setReplySending(true);
+    try {
+      const data = await addTicketReply(ticket.id, replyDraft.trim());
+      if (data?.reply) setThread(th => [...th, data.reply]);
+      if (data?.status) setTickets(ts => ts.map(t => (t.id === ticket.id ? { ...t, status: data.status } : t)));
+      setReplyDraft("");
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Reply failed", "error");
+    } finally {
+      setReplySending(false);
+    }
+  };
+
+  const handleDeleteTenant = async (tenant) => {
+    const label = tenant.businessName || tenant.ownerName || tenant.email;
+    const { value: confirmText } = await Swal.fire({
+      title: "Delete this tenant permanently?",
+      html: `<strong>${label}</strong><br><br>` +
+        "This wipes the account, business profile, customers, products, invoices, " +
+        "expenses, staff, subscriptions — <b>everything</b>.<br><br>" +
+        "Audit history is retained for compliance. <b>This cannot be undone.</b>",
+      icon: "warning",
+      input: "text",
+      inputLabel: 'Type DELETE to confirm',
+      inputPlaceholder: "DELETE",
+      showCancelButton: true,
+      confirmButtonColor: "#b23b3b",
+      confirmButtonText: "Delete forever",
+      preConfirm: (v) => (v === "DELETE" ? v : Swal.showValidationMessage("Type DELETE exactly to confirm")),
+    });
+    if (confirmText !== "DELETE") return;
+    try {
+      const res = await deleteTenantAccount(tenant.userId);
+      Swal.fire({
+        icon: "success",
+        title: "Tenant deleted",
+        html: `${label} removed.<br>Businesses wiped: <b>${res.businessesDeleted ?? 0}</b>`,
+        timer: 2200,
+        showConfirmButton: false,
+      });
+      loadAll();
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Delete failed", "error");
+    }
+  };
+
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    if (!broadcastForm.message.trim()) {
+      Swal.fire("Required", "Message cannot be empty.", "warning");
+      return;
+    }
+    setBroadcastSending(true);
+    try {
+      await superAdminBroadcast(broadcastForm);
+      Swal.fire({ icon: "success", title: "Broadcast sent", timer: 1500, showConfirmButton: false });
+      setBroadcastForm({ title: "", message: "", type: "INFO", target: "ALL" });
+    } catch (err) {
+      Swal.fire("Failed", err?.response?.data?.error || "Broadcast failed", "error");
+    } finally {
+      setBroadcastSending(false);
+    }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isSuperAdmin");
+    ["token", "user", "userId", "businessData"].forEach(k => localStorage.removeItem(k));
     navigate("/super-admin-login");
   };
 
-  // Filtered Tenants
   const filteredTenants = tenants.filter(t => {
-    const matchesSearch = t.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          t.tenantId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          t.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          t.sector.toLowerCase().includes(searchTerm.toLowerCase());
-    if (statusFilter === "ACTIVE") return matchesSearch && !t.isFrozen;
-    if (statusFilter === "FROZEN") return matchesSearch && t.isFrozen;
-    return matchesSearch;
+    const q = searchTerm.toLowerCase();
+    const matches =
+      (t.businessName || "").toLowerCase().includes(q) ||
+      (t.ownerName || "").toLowerCase().includes(q) ||
+      (t.email || "").toLowerCase().includes(q) ||
+      (t.mobileNo || "").includes(searchTerm);
+    if (statusFilter === "ACTIVE") return matches && !t.isFrozen;
+    if (statusFilter === "FROZEN") return matches && t.isFrozen;
+    return matches;
   });
 
+  const statCards = stats ? [
+    { icon: <BsPeopleFill />, label: "Registered Users", value: stats.totalUsers, tone: "bur" },
+    { icon: <BsBuildingCheck />, label: "Businesses (Tenants)", value: stats.totalBusinesses, tone: "gold" },
+    { icon: <BsReceiptCutoff />, label: "Invoices Created", value: stats.totalInvoices, tone: "bur" },
+    { icon: <BsCashCoin />, label: "Platform Revenue", value: `₹${Number(stats.platformRevenue || 0).toLocaleString("en-IN")}`, tone: "gold" },
+    { icon: <BsTicketDetailedFill />, label: "Open Tickets", value: stats.openTickets, tone: "bur" },
+    { icon: <BsStars />, label: "Active Subscriptions", value: stats.activeSubscriptions, tone: "gold" },
+    { icon: <BsExclamationOctagonFill />, label: "Frozen Tenants", value: stats.frozenTenants, tone: "red" },
+    { icon: <BsClockHistory />, label: "Audit Events", value: Number(stats.auditEvents).toLocaleString("en-IN"), tone: "grey" },
+  ] : [];
+
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#F8FAFC", color: "#1E293B", fontFamily: "Inter, system-ui, sans-serif" }}>
-      
-      {/* Top Super Admin Navigation Header - Light Theme */}
-      <header className="bg-white border-bottom px-4 py-3 sticky-top shadow-sm" style={{ borderColor: "#E2E8F0" }}>
-        <div className="container-fluid d-flex flex-wrap justify-content-between align-items-center gap-3">
-          <div className="d-flex align-items-center gap-3">
-            <div className="d-inline-flex p-2 rounded-3 bg-danger-subtle border border-danger-subtle">
-              <BsShieldLockFill className="text-danger fs-4" />
+    <div className="sap-shell">
+      {/* ---------- Top bar ---------- */}
+      <header className="sap-topbar">
+        <div className="sap-topbar-left">
+          <span className="sap-shield"><BsShieldLockFill /></span>
+          <div>
+            <div className="sap-title-row">
+              <h1>TSAR IT Command Center</h1>
+              <span className="sap-badge">SUPER ADMIN</span>
             </div>
-            <div>
-              <div className="d-flex align-items-center gap-2">
-                <h5 className="fw-bold text-dark mb-0">TSAR IT Super Admin Command Center</h5>
-                <span className="badge bg-danger text-white px-2 py-1 small">
-                  SUPER ADMIN OVERRIDE
-                </span>
-              </div>
-              <span className="text-muted small" style={{ fontSize: "12px" }}>
-                Master Multi-Tenant Console • Production Kubernetes & Kafka Mesh
-              </span>
-            </div>
+            <span className="sap-subtitle">{user.email || "admin"} · full platform control, every action audited</span>
           </div>
-
-          <div className="d-flex align-items-center gap-3">
-            {/* Quick Status Pill */}
-            <div className="d-none d-md-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-light border border-light-subtle small">
-              <span className="spinner-grow spinner-grow-sm text-success" role="status" style={{ width: '8px', height: '8px' }}></span>
-              <span className="text-success fw-bold">Cluster Health: 100% Operational</span>
-            </div>
-
-            {/* Super Admin User Tag */}
-            <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-3 bg-light border">
-              <BsPersonBadgeFill className="text-primary" />
-              <div className="small text-start">
-                <div className="fw-bold text-dark lh-1">tsaritservices@gmail.com</div>
-                <span className="text-muted" style={{ fontSize: '10px' }}>Master Controller</span>
-              </div>
-            </div>
-
-            {/* Exit / Logout */}
-            <button 
-              className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3 py-2 fw-semibold"
-              onClick={handleLogout}
-              title="Lock Super Admin Gate"
-            >
-              <BsBoxArrowRight /> Exit Console
-            </button>
-          </div>
+        </div>
+        <div className="sap-topbar-right">
+          <button className="sap-btn sap-btn-ghost" onClick={loadAll} disabled={loading}>
+            <BsArrowRepeat className={loading ? "sap-spin" : ""} /> Refresh
+          </button>
+          <button className="sap-btn sap-btn-dark" onClick={handleLogout}>
+            <BsBoxArrowRight /> Sign out
+          </button>
         </div>
       </header>
 
-      {/* Navigation Sub-Tabs Bar - Light Theme */}
-      <div className="bg-white border-bottom px-4 py-2" style={{ borderColor: "#E2E8F0" }}>
-        <div className="container-fluid d-flex flex-wrap gap-2">
-          <button 
-            className={`btn btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-2 ${activeTab === 'tenants' ? 'btn-primary' : 'btn-light border text-dark'}`}
-            onClick={() => setActiveTab('tenants')}
-          >
-            <BsBuildingCheck /> Enterprise Tenants & Killswitch ({tenants.length})
+      {/* ---------- Tabs ---------- */}
+      <nav className="sap-tabs">
+        {TABS.map(t => (
+          <button key={t.id} className={`sap-tab ${activeTab === t.id ? "active" : ""}`} onClick={() => setActiveTab(t.id)}>
+            {t.icon} {t.label}
+            {t.id === "tickets" && tickets.filter(x => (x.status || "").toLowerCase() !== "closed" && x.status !== "RESOLVED").length > 0 && (
+              <span className="sap-count">{tickets.filter(x => (x.status || "").toLowerCase() !== "closed" && x.status !== "RESOLVED").length}</span>
+            )}
           </button>
-          <button 
-            className={`btn btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-2 ${activeTab === 'subscriptions' ? 'btn-primary' : 'btn-light border text-dark'}`}
-            onClick={() => setActiveTab('subscriptions')}
-          >
-            <BsCreditCardFill /> Razorpay Subscriptions
-          </button>
-          <button 
-            className={`btn btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-2 ${activeTab === 'tickets' ? 'btn-primary' : 'btn-light border text-dark'}`}
-            onClick={() => setActiveTab('tickets')}
-          >
-            <BsTicketDetailedFill /> Support Tickets & Helpdesk ({tickets.filter(t => t.status === 'OPEN').length})
-          </button>
-          <button 
-            className={`btn btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-2 ${activeTab === 'raki_ai' ? 'btn-primary' : 'btn-light border text-dark'}`}
-            onClick={() => setActiveTab('raki_ai')}
-          >
-            <BsRobot /> Raki AI Autonomous Terminal
-          </button>
-          <button 
-            className={`btn btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-2 ${activeTab === 'infrastructure' ? 'btn-primary' : 'btn-light border text-dark'}`}
-            onClick={() => setActiveTab('infrastructure')}
-          >
-            <BsHddNetworkFill /> Kubernetes & Infrastructure
-          </button>
-        </div>
-      </div>
+        ))}
+      </nav>
 
-      {/* Main Console Content - Light Theme */}
-      <div className="container-fluid p-4">
-        
-        {/* Metric Cards Row */}
-        <div className="row g-3 mb-4">
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="p-3 rounded-4 bg-white border shadow-sm">
-              <div className="d-flex justify-content-between align-items-start">
-                <span className="text-muted small fw-bold">TOTAL ENTERPRISES</span>
-                <span className="badge bg-primary-subtle text-primary border border-primary-subtle">All Tenants</span>
-              </div>
-              <h2 className="fw-bold text-dark mt-2 mb-1">{tenants.length}</h2>
-              <div className="small text-muted d-flex gap-2">
-                <span className="text-success fw-semibold"><BsSunFill /> {tenants.filter(t => !t.isFrozen).length} Active</span>
-                <span>•</span>
-                <span className="text-danger fw-semibold"><BsSnow2 /> {tenants.filter(t => t.isFrozen).length} Frozen</span>
-              </div>
+      <main className="sap-body">
+        {/* ================= OVERVIEW ================= */}
+        {activeTab === "overview" && (
+          <>
+            <div className="sap-stat-grid">
+              {statCards.map(c => (
+                <div className={`sap-stat tone-${c.tone}`} key={c.label}>
+                  <span className="sap-stat-icon">{c.icon}</span>
+                  <span className="sap-stat-value">{loading ? "…" : c.value}</span>
+                  <span className="sap-stat-label">{c.label}</span>
+                </div>
+              ))}
             </div>
-          </div>
 
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="p-3 rounded-4 bg-white border shadow-sm">
-              <div className="d-flex justify-content-between align-items-start">
-                <span className="text-muted small fw-bold">SUBSCRIPTION REVENUE</span>
-                <span className="badge bg-success-subtle text-success border border-success-subtle">Razorpay</span>
-              </div>
-              <h2 className="fw-bold text-success mt-2 mb-1">₹ 34,600</h2>
-              <div className="small text-muted">100% Successful Settlements</div>
+            <div className="sap-two-col">
+              <section className="sap-card">
+                <div className="sap-card-head">
+                  <h3>Latest platform activity</h3>
+                  <button className="sap-link" onClick={() => setActiveTab("audit")}>View all</button>
+                </div>
+                <div className="sap-feed">
+                  {audit.content.slice(0, 8).map((a, i) => (
+                    <div className="sap-feed-row" key={i}>
+                      <span className="sap-feed-ev">{a.actionType || a.action || "EVENT"}</span>
+                      <span className="sap-feed-desc">{a.notes || a.description || a.moduleName || "—"}</span>
+                      <span className="sap-feed-time">{a.createdAt ? new Date(a.createdAt).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : ""}</span>
+                    </div>
+                  ))}
+                  {audit.content.length === 0 && <div className="sap-empty">No activity recorded yet.</div>}
+                </div>
+              </section>
+
+              <section className="sap-card">
+                <div className="sap-card-head">
+                  <h3>Tenants needing attention</h3>
+                  <button className="sap-link" onClick={() => setActiveTab("tenants")}>Manage</button>
+                </div>
+                <div className="sap-feed">
+                  {tenants.filter(t => t.isFrozen || t.planStatus === "EXPIRED" || t.planStatus === "NONE").slice(0, 8).map((t, i) => (
+                    <div className="sap-feed-row" key={i}>
+                      <span className={`sap-feed-ev ${t.isFrozen ? "ev-red" : "ev-gold"}`}>{t.isFrozen ? "FROZEN" : t.planStatus}</span>
+                      <span className="sap-feed-desc">{t.businessName || t.ownerName} · {t.email || "—"}</span>
+                      <button className="sap-link" onClick={() => handleFreeze(t)}>{t.isFrozen ? "Unfreeze" : "Review"}</button>
+                    </div>
+                  ))}
+                  {tenants.filter(t => t.isFrozen || t.planStatus === "EXPIRED" || t.planStatus === "NONE").length === 0 &&
+                    <div className="sap-empty">All tenants are healthy. <BsCheckCircleFill className="text-success" /></div>}
+                </div>
+              </section>
             </div>
-          </div>
+          </>
+        )}
 
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="p-3 rounded-4 bg-white border shadow-sm">
-              <div className="d-flex justify-content-between align-items-start">
-                <span className="text-muted small fw-bold">KAFKA EVENT STREAM</span>
-                <span className="badge bg-warning-subtle text-warning border border-warning-subtle">Apache Kafka</span>
-              </div>
-              <h2 className="fw-bold text-dark mt-2 mb-1">2,410 /min</h2>
-              <div className="small text-muted">3 Brokers Online • 0 Lag</div>
-            </div>
-          </div>
-
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="p-3 rounded-4 bg-white border shadow-sm">
-              <div className="d-flex justify-content-between align-items-start">
-                <span className="text-muted small fw-bold">OPEN SUPPORT TICKETS</span>
-                <span className="badge bg-info-subtle text-info border border-info-subtle">Raki AI</span>
-              </div>
-              <h2 className="fw-bold text-primary mt-2 mb-1">{tickets.filter(t => t.status === 'OPEN').length}</h2>
-              <div className="small text-muted">Auto-Responding via WhatsApp Bot</div>
-            </div>
-          </div>
-        </div>
-
-        {/* TAB 1: TENANTS & KILLSWITCH */}
-        {activeTab === 'tenants' && (
-          <div className="card border-0 rounded-4 shadow-sm overflow-hidden bg-white">
-            {/* Table Header Controls */}
-            <div className="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 bg-light">
-              <div className="d-flex flex-wrap align-items-center gap-2">
-                <h6 className="fw-bold text-dark mb-0 me-3">Enterprise Tenant Registry & Freeze Controls</h6>
-                <div className="btn-group btn-group-sm">
-                  <button 
-                    className={`btn ${statusFilter === 'ALL' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                    onClick={() => setStatusFilter('ALL')}
-                  >
-                    All ({tenants.length})
-                  </button>
-                  <button 
-                    className={`btn ${statusFilter === 'ACTIVE' ? 'btn-success' : 'btn-outline-secondary'}`}
-                    onClick={() => setStatusFilter('ACTIVE')}
-                  >
-                    Active ({tenants.filter(t => !t.isFrozen).length})
-                  </button>
-                  <button 
-                    className={`btn ${statusFilter === 'FROZEN' ? 'btn-danger' : 'btn-outline-secondary'}`}
-                    onClick={() => setStatusFilter('FROZEN')}
-                  >
-                    Frozen ({tenants.filter(t => t.isFrozen).length})
-                  </button>
+        {/* ================= TENANTS ================= */}
+        {activeTab === "tenants" && (
+          <section className="sap-card">
+            <div className="sap-card-head sap-wrap">
+              <h3>All tenants & users <span className="sap-muted">({filteredTenants.length})</span></h3>
+              <div className="sap-filters">
+                <div className="sap-search">
+                  <BsSearch />
+                  <input placeholder="Search name, email, phone…" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                </div>
+                <div className="sap-seg">
+                  {["ALL", "ACTIVE", "FROZEN"].map(s => (
+                    <button key={s} className={statusFilter === s ? "on" : ""} onClick={() => setStatusFilter(s)}>{s}</button>
+                  ))}
                 </div>
               </div>
-
-              {/* Search Bar */}
-              <div className="input-group input-group-sm" style={{ maxWidth: "320px" }}>
-                <span className="input-group-text bg-white border-end-0">
-                  <BsSearch className="text-muted" />
-                </span>
-                <input 
-                  type="text" 
-                  className="form-control border-start-0"
-                  placeholder="Search tenant, owner, or sector..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
             </div>
 
-            {/* Table */}
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0">
-                <thead className="small border-bottom text-uppercase table-light text-muted">
+            <div className="sap-table-wrap">
+              <table className="sap-table">
+                <thead>
                   <tr>
-                    <th>Tenant ID</th>
-                    <th>Enterprise / Business</th>
-                    <th>Sector / Market</th>
-                    <th>Owner / Contact</th>
-                    <th>Subscription Plan</th>
+                    <th>Business / Owner</th>
+                    <th>Contact</th>
+                    <th>Plan</th>
+                    <th>Invoices</th>
                     <th>Status</th>
-                    <th>Killswitch Reason</th>
-                    <th className="text-end">Master Killswitch</th>
+                    <th className="sap-actions-col">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="small">
-                  {filteredTenants.map((t) => (
-                    <tr key={t.tenantId} className={t.isFrozen ? "table-danger bg-danger-subtle" : ""}>
-                      <td className="fw-bold text-primary font-monospace">{t.tenantId}</td>
+                <tbody>
+                  {filteredTenants.map(t => (
+                    <tr key={t.userId} className={t.isFrozen ? "row-frozen" : ""}>
                       <td>
-                        <div className="fw-bold text-dark">{t.businessName}</div>
-                        <div className="text-muted small">Joined: {t.joinedDate} • {t.monthlyInvoices} Invoices/mo</div>
-                      </td>
-                      <td>
-                        <span className="badge bg-light text-dark border">
-                          {t.sector}
-                        </span>
+                        <div className="sap-cell-main">{t.businessName || "—"}</div>
+                        <div className="sap-cell-sub">{t.ownerName || "—"}{t.isSuperAdmin ? " · platform admin" : ""}</div>
                       </td>
                       <td>
-                        <div className="fw-semibold text-dark">{t.ownerName}</div>
-                        <div className="text-muted small">{t.phone}</div>
+                        <div className="sap-cell-main">{t.email || "—"}</div>
+                        <div className="sap-cell-sub">{t.mobileNo || "—"}</div>
                       </td>
                       <td>
-                        <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
-                          {t.plan}
-                        </span>
+                        <div className="sap-cell-main">{t.planName || "—"}</div>
+                        <div className="sap-cell-sub">{t.planStatus || ""}{t.planEndDate ? ` · till ${new Date(t.planEndDate).toLocaleDateString("en-IN")}` : ""}</div>
                       </td>
+                      <td>{t.invoiceCount ?? 0}</td>
                       <td>
-                        {t.isFrozen ? (
-                          <span className="badge bg-danger d-inline-flex align-items-center gap-1">
-                            <BsSnow2 /> FROZEN
-                          </span>
-                        ) : (
-                          <span className="badge bg-success d-inline-flex align-items-center gap-1">
-                            <BsSunFill /> ACTIVE
-                          </span>
-                        )}
+                        {t.isFrozen
+                          ? <span className="sap-pill pill-red">Frozen</span>
+                          : <span className="sap-pill pill-green">Active</span>}
                       </td>
-                      <td className="text-muted">
-                        {t.freezeReason ? (
-                          <span className="text-danger fw-semibold small">{t.freezeReason}</span>
-                        ) : (
-                          <span className="text-muted small">Standard Access</span>
-                        )}
-                      </td>
-                      <td className="text-end">
-                        <button 
-                          className={`btn btn-sm ${t.isFrozen ? 'btn-success' : 'btn-outline-danger'} fw-bold px-3 d-inline-flex align-items-center gap-1 shadow-sm`}
-                          onClick={() => toggleFreeze(t.tenantId)}
-                        >
-                          {t.isFrozen ? (
-                            <>
-                              <BsSunFill /> Unfreeze Tenant
-                            </>
-                          ) : (
-                            <>
-                              <BsSnow2 /> Freeze Tenant
-                            </>
-                          )}
+                      <td className="sap-actions-col">
+                        <button className="sap-btn sap-btn-sm sap-btn-ghost" onClick={() => handleFreeze(t)}>
+                          <BsSnow2 /> {t.isFrozen ? "Unfreeze" : "Freeze"}
+                        </button>
+                        <button className="sap-btn sap-btn-sm sap-btn-ghost" onClick={() => handlePlan(t)}>
+                          <BsStars /> Plan
+                        </button>
+                        <button className="sap-btn sap-btn-sm sap-btn-danger" onClick={() => handleDeleteTenant(t)}>
+                          <BsTrash /> Delete
                         </button>
                       </td>
                     </tr>
                   ))}
                   {filteredTenants.length === 0 && (
-                    <tr>
-                      <td colSpan="8" className="text-center py-4 text-muted">
-                        No tenants match your search filter.
-                      </td>
-                    </tr>
+                    <tr><td colSpan="6" className="sap-empty">No tenants match your filters.</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* TAB 2: RAZORPAY SUBSCRIPTIONS */}
-        {activeTab === 'subscriptions' && (
-          <div className="card border-0 rounded-4 shadow-sm overflow-hidden bg-white">
-            <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
-              <h6 className="fw-bold text-dark mb-0">Razorpay Gateway Transaction Ledger</h6>
-              <span className="badge bg-success">Automated Webhooks Active</span>
-            </div>
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0 small">
-                <thead className="small text-uppercase table-light text-muted">
-                  <tr>
-                    <th>Payment ID</th>
-                    <th>Enterprise Tenant</th>
-                    <th>Plan Purchased</th>
-                    <th>Amount</th>
-                    <th>Payment Rail</th>
-                    <th>Timestamp</th>
-                    <th>Settlement</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map(tx => (
-                    <tr key={tx.id}>
-                      <td className="font-monospace text-primary fw-bold">{tx.id}</td>
-                      <td className="fw-bold text-dark">{tx.tenant}</td>
-                      <td><span className="badge bg-primary-subtle text-primary border border-primary-subtle">{tx.plan}</span></td>
-                      <td className="fw-bold text-success">{tx.amount}</td>
-                      <td>{tx.method}</td>
-                      <td className="text-muted">{tx.date}</td>
-                      <td>
-                        <span className="badge bg-success-subtle text-success border border-success-subtle">
-                          <BsCheckCircleFill className="me-1" /> {tx.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: SUPPORT TICKETS & HELPDESK */}
-        {activeTab === 'tickets' && (
-          <div className="card border-0 rounded-4 shadow-sm overflow-hidden bg-white">
-            <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
-              <h6 className="fw-bold text-dark mb-0">Enterprise Support & Helpdesk Tickets</h6>
-              <span className="badge bg-info-subtle text-info border border-info-subtle">Integrated with Email & WhatsApp Bot</span>
-            </div>
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0 small">
-                <thead className="small text-uppercase table-light text-muted">
-                  <tr>
-                    <th>Ticket Code</th>
-                    <th>Business</th>
-                    <th>Subject</th>
-                    <th>Category</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th className="text-end">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tickets.map(tk => (
-                    <tr key={tk.code}>
-                      <td className="font-monospace text-primary fw-bold">{tk.code}</td>
-                      <td>
-                        <div className="fw-bold text-dark">{tk.business}</div>
-                        <div className="text-muted small">{tk.user}</div>
-                      </td>
-                      <td className="text-dark">{tk.subject}</td>
-                      <td><span className="badge bg-light text-dark border">{tk.category}</span></td>
-                      <td>
-                        <span className={`badge ${tk.priority === 'HIGH' ? 'bg-danger' : tk.priority === 'MEDIUM' ? 'bg-warning text-dark' : 'bg-info'}`}>
-                          {tk.priority}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`badge ${tk.status === 'OPEN' ? 'bg-danger' : tk.status === 'IN_PROGRESS' ? 'bg-warning text-dark' : 'bg-success'}`}>
-                          {tk.status}
-                        </span>
-                      </td>
-                      <td className="text-end">
-                        {tk.status !== "RESOLVED" ? (
-                          <button 
-                            className="btn btn-sm btn-outline-success fw-bold"
-                            onClick={() => handleResolveTicket(tk.code)}
-                          >
-                            Mark Resolved
-                          </button>
-                        ) : (
-                          <span className="text-success small fw-bold">✓ Closed</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: RAKI AI AUTONOMOUS TERMINAL */}
-        {activeTab === 'raki_ai' && (
-          <div className="row g-4">
-            <div className="col-lg-8">
-              <div className="card border-0 rounded-4 shadow-sm overflow-hidden bg-white h-100">
-                <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
-                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                    <BsTerminalFill className="text-primary" /> Raki AI Autonomous Copilot Console
-                  </h6>
-                  <span className="badge bg-success-subtle text-success border border-success-subtle">
-                    Real-Time Diagnostic Agent
-                  </span>
-                </div>
-
-                {/* Log terminal view - Clean modern developer box */}
-                <div className="p-4" style={{ height: "350px", overflowY: "auto", backgroundColor: "#F1F5F9", fontFamily: "monospace", fontSize: "13px" }}>
-                  {rakiAiLogs.map((log, idx) => (
-                    <div key={idx} className="mb-3">
-                      <strong className={log.sender === 'Admin' ? 'text-primary' : 'text-success'}>
-                        [{log.sender}]:
-                      </strong>{" "}
-                      <span className="text-dark">{log.text}</span>
+        {/* ================= TICKETS ================= */}
+        {activeTab === "tickets" && (
+          <section className="sap-card">
+            <div className="sap-card-head"><h3>Support tickets <span className="sap-muted">({tickets.length})</span></h3></div>
+            <div className="sap-tickets">
+              {tickets.map(t => {
+                const open = (t.status || "").toLowerCase() !== "closed" && t.status !== "RESOLVED";
+                const ticketCode = `TCK-${String(t.id).padStart(4, "0")}`;
+                const isOpen = openTicketId === t.id;
+                return (
+                  <div className={`sap-ticket ${open ? "" : "done"}`} key={t.id}>
+                    <div className="sap-ticket-main" role="button" onClick={() => openThread(t)} style={{ cursor: "pointer" }}>
+                      <div className="sap-cell-main">
+                        <span className="sap-tck-code">{ticketCode}</span>
+                        {t.subject || "Support request"}
+                      </div>
+                      <div className="sap-cell-sub clamp2">{t.message}</div>
+                      <div className="sap-cell-sub">
+                        {t.priority ? `Priority: ${t.priority}` : ""} · {t.createdAt ? new Date(t.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : ""}
+                        {thread.length > 0 && isOpen ? ` · ${thread.length} message${thread.length > 1 ? "s" : ""}` : " · click to open conversation"}
+                      </div>
                     </div>
-                  ))}
+                    <div className="sap-ticket-side">
+                      <span className={`sap-pill ${open ? "pill-amber" : "pill-green"}`}>{(t.status || "open").toUpperCase()}</span>
+                      <div className="sap-ticket-actions">
+                        <button className="sap-btn sap-btn-sm sap-btn-ghost" onClick={() => openThread(t)}>
+                          <BsReplyFill /> {isOpen ? "Hide" : "Reply"}
+                        </button>
+                        {open && (
+                          <>
+                            <button className="sap-btn sap-btn-sm sap-btn-ghost" onClick={() => handleTicketStatus(t, "in-progress")}>In progress</button>
+                            <button className="sap-btn sap-btn-sm sap-btn-primary" onClick={() => handleTicketStatus(t, "closed")}>Resolve</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {isOpen && (
+                      <div className="sap-thread" onClick={e => e.stopPropagation()}>
+                        {threadLoading ? (
+                          <div className="sap-empty">Loading conversation…</div>
+                        ) : (
+                          <>
+                            <div className="sap-thread-msg merchant"><b>{t.subject}</b><p>{t.message}</p></div>
+                            {thread.map(r => (
+                              <div key={r.id} className={`sap-thread-msg ${r.fromSupport ? "support" : "merchant"}`}>
+                                <b>{r.authorName || (r.fromSupport ? "TSAR IT Support" : "Merchant")}
+                                  <span className="sap-thread-time">{r.createdAt ? new Date(r.createdAt).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : ""}</span>
+                                </b>
+                                <p>{r.message}</p>
+                              </div>
+                            ))}
+                            <div className="sap-thread-compose">
+                              <textarea
+                                rows="2"
+                                placeholder="Write your answer to the merchant…"
+                                value={replyDraft}
+                                onChange={e => setReplyDraft(e.target.value)}
+                              />
+                              <button
+                                className="sap-btn sap-btn-sm sap-btn-primary"
+                                disabled={replySending || !replyDraft.trim()}
+                                onClick={() => sendReply(t)}
+                              >
+                                <BsReplyFill /> {replySending ? "Sending…" : "Send reply"}
+                              </button>
+                            </div>
+                            <div className="sap-hint">Merchant sees your reply in their Support Desk instantly. First reply moves the ticket to IN-PROGRESS.</div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {tickets.length === 0 && <div className="sap-empty">No tickets — the helpdesk is clear.</div>}
+            </div>
+          </section>
+        )}
+
+        {/* ================= ANDROID APK REMOTE CONTROL ================= */}
+        {activeTab === "apk" && (
+          <section className="sap-card">
+            <div className="sap-card-head">
+              <h3><BsPhoneFill /> Android APK Control</h3>
+              <p className="sap-hint">
+                Change app behaviour for every install instantly — no new APK needed.
+                Apps read this on launch and cache it for offline use.
+              </p>
+            </div>
+
+            {!appConfig ? (
+              <div className="sap-empty">Loading app configuration…</div>
+            ) : (
+              <>
+                {/* ---- Maintenance kill switch ---- */}
+                <div className="sap-form">
+                  <h4>Maintenance mode</h4>
+                  <p className="sap-hint">Blocks all app logins until switched off.</p>
+                  <button
+                    className="sap-btn"
+                    disabled={appSaving}
+                    onClick={() => saveAppConfig(
+                      { maintenanceMode: !appConfig.maintenanceMode },
+                      !appConfig.maintenanceMode ? "Maintenance mode ON" : "Maintenance mode OFF")}
+                  >
+                    {appConfig.maintenanceMode ? <BsToggleOn /> : <BsToggleOff />}
+                    {appConfig.maintenanceMode ? "ON — app is blocked" : "OFF — app is live"}
+                  </button>
+                  <label>Message shown during maintenance</label>
+                  <input
+                    defaultValue={appConfig.maintenanceMessage || ""}
+                    onBlur={(e) => e.target.value !== appConfig.maintenanceMessage &&
+                      saveAppConfig({ maintenanceMessage: e.target.value }, "Maintenance message updated")}
+                  />
                 </div>
 
-                {/* Input prompt */}
-                <div className="p-3 border-top bg-white">
-                  <form onSubmit={handleRakiAiSubmit} className="d-flex gap-2">
-                    <input 
-                      type="text" 
-                      className="form-control"
-                      placeholder="Ask Raki AI (e.g. 'Show revenue breakdown', 'Scan for frozen tenants')..."
-                      value={rakiAiPrompt}
-                      onChange={(e) => setRakiAiPrompt(e.target.value)}
-                    />
-                    <button type="submit" className="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2">
-                      <BsSendFill /> Execute
+                {/* ---- Forced update gate ---- */}
+                <div className="sap-form">
+                  <h4>Release &amp; forced update</h4>
+                  <div className="sap-grid-2">
+                    <div>
+                      <label>Latest version name</label>
+                      <input
+                        defaultValue={appConfig.latestVersionName || ""}
+                        onBlur={(e) => e.target.value !== appConfig.latestVersionName &&
+                          saveAppConfig({ latestVersionName: e.target.value }, "Version name updated")}
+                      />
+                    </div>
+                    <div>
+                      <label>Latest version code</label>
+                      <input
+                        type="number"
+                        defaultValue={appConfig.latestVersionCode ?? 0}
+                        onBlur={(e) => Number(e.target.value) !== appConfig.latestVersionCode &&
+                          saveAppConfig({ latestVersionCode: Number(e.target.value) }, "Latest version code updated")}
+                      />
+                    </div>
+                    <div>
+                      <label>Minimum version code (force update below this)</label>
+                      <input
+                        type="number"
+                        defaultValue={appConfig.minVersionCode ?? 0}
+                        onBlur={(e) => Number(e.target.value) !== appConfig.minVersionCode &&
+                          saveAppConfig({ minVersionCode: Number(e.target.value) }, "Minimum version updated")}
+                      />
+                    </div>
+                    <div>
+                      <label>APK download URL</label>
+                      <input
+                        defaultValue={appConfig.apkUrl || ""}
+                        onBlur={(e) => e.target.value !== appConfig.apkUrl &&
+                          saveAppConfig({ apkUrl: e.target.value }, "APK URL updated")}
+                      />
+                    </div>
+                  </div>
+                  <label>Release notes</label>
+                  <textarea
+                    rows={3}
+                    defaultValue={appConfig.releaseNotes || ""}
+                    onBlur={(e) => e.target.value !== appConfig.releaseNotes &&
+                      saveAppConfig({ releaseNotes: e.target.value }, "Release notes updated")}
+                  />
+                  <label>Forced-update message</label>
+                  <input
+                    defaultValue={appConfig.minVersionNotes || ""}
+                    onBlur={(e) => e.target.value !== appConfig.minVersionNotes &&
+                      saveAppConfig({ minVersionNotes: e.target.value }, "Update message updated")}
+                  />
+                  <p className="sap-hint">Last updated by {appConfig.updatedBy} at {appConfig.updatedAt}</p>
+                </div>
+
+                {/* ---- Module feature flags ---- */}
+                <div className="sap-form">
+                  <h4>Module feature flags</h4>
+                  <p className="sap-hint">Hide or roll out a module for everyone instantly.</p>
+                  <div className="sap-flag-grid">
+                    {APP_MODULES.map((m) => {
+                      const on = appConfig.featureFlags?.[m.key] !== false;
+                      return (
+                        <button
+                          key={m.key}
+                          className={`sap-flag ${on ? "on" : "off"}`}
+                          disabled={appSaving}
+                          onClick={() => toggleFlag(m.key)}
+                        >
+                          {on ? <BsToggleOn /> : <BsToggleOff />}
+                          <span>{m.label}</span>
+                          <em>{on ? "ON" : "OFF"}</em>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ---- Plan pricing across all tenants ---- */}
+                <div className="sap-form">
+                  <h4>Plan pricing (all tenants)</h4>
+                  <p className="sap-hint">Price changes apply to the Buy screen in the app immediately.</p>
+                  <table className="sap-table">
+                    <thead>
+                      <tr><th>Plan</th><th>Duration</th><th style={{ width: 160 }}>Price (₹)</th></tr>
+                    </thead>
+                    <tbody>
+                      {appPlans.map((p) => (
+                        <tr key={p.planId}>
+                          <td>{p.name}{p.badge ? ` · ${p.badge}` : ""}</td>
+                          <td>{p.duration}</td>
+                          <td>
+                            <input
+                              type="number"
+                              value={planDraft[p.planId] ?? p.price}
+                              onChange={(e) => setPlanDraft({ ...planDraft, [p.planId]: e.target.value })}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="sap-actions">
+                    <button className="sap-btn primary" disabled={appSaving} onClick={savePlanPrices}>
+                      <BsCloudUploadFill /> Save prices
                     </button>
-                  </form>
+                    <button className="sap-btn" disabled={appSaving} onClick={clearPlanOverride}>
+                      Reset to defaults
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Quick Diagnostic Actions */}
-            <div className="col-lg-4">
-              <div className="card border-0 rounded-4 shadow-sm p-4 bg-white h-100">
-                <h6 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                  <BsFillLightningChargeFill className="text-warning" /> Quick Autonomous Actions
-                </h6>
-                <div className="d-flex flex-column gap-2">
-                  <button 
-                    className="btn btn-light border text-start text-dark small py-2 px-3 d-flex align-items-center justify-content-between"
-                    onClick={() => {
-                      setRakiAiPrompt("Run accounting invariant balance check");
-                      setRakiAiLogs(prev => [...prev, { sender: "Admin", text: "Run accounting invariant check" }, { sender: "Raki AI", text: "✓ Double-Entry Balance Sheet: Assets = Liabilities + Equity. All general ledgers verified." }]);
-                    }}
-                  >
-                    <span>Check Accounting Invariants</span>
-                    <span className="badge bg-success">Pass</span>
-                  </button>
-                  <button 
-                    className="btn btn-light border text-start text-dark small py-2 px-3 d-flex align-items-center justify-content-between"
-                    onClick={() => {
-                      setRakiAiLogs(prev => [...prev, { sender: "Admin", text: "Test Kafka Broker Connectivity" }, { sender: "Raki AI", text: "✓ Kafka Mesh: 3/3 Brokers responding with 0.4ms latency. Topics: 'invoices', 'tenant-events'." }]);
-                    }}
-                  >
-                    <span>Ping Kafka Event Brokers</span>
-                    <span className="badge bg-primary">Active</span>
-                  </button>
-                  <button 
-                    className="btn btn-light border text-start text-dark small py-2 px-3 d-flex align-items-center justify-content-between"
-                    onClick={() => {
-                      setRakiAiLogs(prev => [...prev, { sender: "Admin", text: "Audit Frozen Tenants" }, { sender: "Raki AI", text: `⚠️ Audit: 1 Tenant currently FROZEN (Lotus Garments - Compliance Pending). 4 Tenants active.` }]);
-                    }}
-                  >
-                    <span>Audit Frozen Tenants</span>
-                    <span className="badge bg-danger">1 Alert</span>
-                  </button>
+                {/* ---- In-app banner + support ---- */}
+                <div className="sap-form">
+                  <h4>In-app banner &amp; support</h4>
+                  <label>Announcement banner (empty = hidden)</label>
+                  <input
+                    defaultValue={appConfig.announcementBanner || ""}
+                    onBlur={(e) => e.target.value !== appConfig.announcementBanner &&
+                      saveAppConfig({ announcementBanner: e.target.value }, "Banner updated")}
+                  />
+                  <div className="sap-grid-2">
+                    <div>
+                      <label>Support phone</label>
+                      <input
+                        defaultValue={appConfig.supportPhone || ""}
+                        onBlur={(e) => e.target.value !== appConfig.supportPhone &&
+                          saveAppConfig({ supportPhone: e.target.value }, "Support phone updated")}
+                      />
+                    </div>
+                    <div>
+                      <label>Support email</label>
+                      <input
+                        defaultValue={appConfig.supportEmail || ""}
+                        onBlur={(e) => e.target.value !== appConfig.supportEmail &&
+                          saveAppConfig({ supportEmail: e.target.value }, "Support email updated")}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
+
+                {/* ---- Blocked tenants ---- */}
+                <div className="sap-form">
+                  <h4>Blocked installs</h4>
+                  <label>Business IDs to block (one per line)</label>
+                  <textarea
+                    rows={3}
+                    defaultValue={(appConfig.blockedTenants || []).join("\n")}
+                    onBlur={(e) => saveAppConfig(
+                      { blockedTenants: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) },
+                      "Block list updated")}
+                  />
+                </div>
+              </>
+            )}
+          </section>
         )}
 
-        {/* TAB 5: KUBERNETES & INFRASTRUCTURE */}
-        {activeTab === 'infrastructure' && (
-          <div className="row g-4">
-            <div className="col-md-6">
-              <div className="card border-0 rounded-4 shadow-sm p-4 bg-white">
-                <h6 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                  <BsHddNetworkFill className="text-primary" /> Kubernetes Production Topology
-                </h6>
-                <ul className="list-unstyled small d-flex flex-column gap-3 mb-0">
-                  <li className="d-flex justify-content-between align-items-center border-bottom pb-2">
-                    <span className="fw-semibold text-dark">Cluster Master Node (k8s-master-01)</span>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle">Ready • CPU: 18%</span>
-                  </li>
-                  <li className="d-flex justify-content-between align-items-center border-bottom pb-2">
-                    <span className="fw-semibold text-dark">Worker Node 01 (k8s-worker-backend)</span>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle">Ready • Pods: 6/12</span>
-                  </li>
-                  <li className="d-flex justify-content-between align-items-center border-bottom pb-2">
-                    <span className="fw-semibold text-dark">Worker Node 02 (k8s-worker-frontend)</span>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle">Ready • Pods: 4/12</span>
-                  </li>
-                  <li className="d-flex justify-content-between align-items-center">
-                    <span className="fw-semibold text-dark">Nginx Ingress Controller</span>
-                    <span className="badge bg-primary-subtle text-primary border border-primary-subtle">SSL Managed • Port 80/443</span>
-                  </li>
-                </ul>
+        {/* ================= BROADCAST ================= */}
+        {activeTab === "broadcast" && (
+          <section className="sap-card sap-narrow">
+            <div className="sap-card-head"><h3>Broadcast a platform notification</h3></div>
+            <form className="sap-form" onSubmit={handleBroadcast}>
+              <label>Title</label>
+              <input
+                placeholder="e.g. Scheduled maintenance on Sunday 2 AM"
+                value={broadcastForm.title}
+                onChange={e => setBroadcastForm({ ...broadcastForm, title: e.target.value })}
+              />
+              <label>Message *</label>
+              <textarea
+                rows="4"
+                placeholder="What should every tenant know?"
+                value={broadcastForm.message}
+                onChange={e => setBroadcastForm({ ...broadcastForm, message: e.target.value })}
+                required
+              />
+              <div className="sap-form-row">
+                <div>
+                  <label>Type</label>
+                  <select value={broadcastForm.type} onChange={e => setBroadcastForm({ ...broadcastForm, type: e.target.value })}>
+                    <option value="INFO">Info</option>
+                    <option value="WARNING">Warning</option>
+                    <option value="CRITICAL">Critical</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Target</label>
+                  <select value={broadcastForm.target} onChange={e => setBroadcastForm({ ...broadcastForm, target: e.target.value })}>
+                    <option value="ALL">All tenants</option>
+                  </select>
+                </div>
               </div>
-            </div>
-
-            <div className="col-md-6">
-              <div className="card border-0 rounded-4 shadow-sm p-4 bg-white">
-                <h6 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                  <BsDatabaseFillCheck className="text-success" /> Database & Cache Telemetry
-                </h6>
-                <ul className="list-unstyled small d-flex flex-column gap-3 mb-0">
-                  <li className="d-flex justify-content-between align-items-center border-bottom pb-2">
-                    <span className="fw-semibold text-dark">MySQL 8.0 Primary Node (billing_db)</span>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle">Connected • 10 Active Pools</span>
-                  </li>
-                  <li className="d-flex justify-content-between align-items-center border-bottom pb-2">
-                    <span className="fw-semibold text-dark">Redis 7 In-Memory Cache</span>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle">Hit Rate: 98.4%</span>
-                  </li>
-                  <li className="d-flex justify-content-between align-items-center border-bottom pb-2">
-                    <span className="fw-semibold text-dark">Apache Kafka 3.6 Cluster</span>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle">Zookeeper Sync OK</span>
-                  </li>
-                  <li className="d-flex justify-content-between align-items-center">
-                    <span className="fw-semibold text-dark">Backup & Disaster Recovery</span>
-                    <span className="badge bg-primary-subtle text-primary border border-primary-subtle">Automated Hourly Snapshots</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+              <button className="sap-btn sap-btn-primary sap-btn-wide" disabled={broadcastSending}>
+                {broadcastSending ? "Sending…" : (<><BsMegaphoneFill /> Send broadcast</>)}
+              </button>
+              <p className="sap-hint">Delivered to the in-app notification inbox of every tenant. Recorded in the audit trail.</p>
+            </form>
+          </section>
         )}
 
-      </div>
+        {/* ================= AUDIT ================= */}
+        {activeTab === "audit" && (
+          <section className="sap-card">
+            <div className="sap-card-head">
+              <h3>Platform audit trail <span className="sap-muted">({Number(audit.totalElements).toLocaleString("en-IN")} events)</span></h3>
+            </div>
+            <div className="sap-table-wrap">
+              <table className="sap-table">
+                <thead>
+                  <tr><th>When</th><th>Actor</th><th>Role</th><th>Action</th><th>Entity</th><th>Note</th></tr>
+                </thead>
+                <tbody>
+                  {audit.content.map((a, i) => (
+                    <tr key={i}>
+                      <td className="nowrap">{a.createdAt ? new Date(a.createdAt).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "medium" }) : "—"}</td>
+                      <td>{a.userName || a.userId || "—"}</td>
+                      <td>{a.userName === "SUPER_ADMIN" ? "SUPER_ADMIN" : a.userName || "—"}</td>
+                      <td><span className="sap-feed-ev">{a.actionType || a.action || "—"}</span></td>
+                      <td>{a.moduleName || "—"}{a.recordId ? ` · ${String(a.recordId).slice(0, 12)}` : ""}</td>
+                      <td className="sap-note">{a.notes || a.description || "—"}</td>
+                    </tr>
+                  ))}
+                  {audit.content.length === 0 && <tr><td colSpan="6" className="sap-empty">No audit events yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }

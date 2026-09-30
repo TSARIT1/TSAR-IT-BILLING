@@ -17,7 +17,9 @@ import {
   BsGraphUpArrow,
   BsPhoneFill
 } from 'react-icons/bs';
-import Navbar from '../Navbar';
+import NavbarV6 from "../NavbarV6";
+import '../style.css';
+import "../landing-v6.css";
 import Footer from '../Footer';
 
 export default function FeaturesPage() {
@@ -135,22 +137,22 @@ export default function FeaturesPage() {
 
   return (
     <div className="features-page-wrapper">
-      <Navbar />
+      <NavbarV6 />
 
       {/* Hero Header */}
-      <section className="bg-dark text-white py-5" style={{ paddingTop: '110px' }}>
+      <section className="text-white py-5" style={{ background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 55%, #4a0f1a 100%)', paddingTop: '110px' }}>
         <div className="container text-center py-4">
-          <span className="badge bg-primary px-3 py-2 text-uppercase fw-bold mb-3">
+          <span className="badge px-3 py-2 text-uppercase fw-bold mb-3 shadow-sm" style={{ backgroundColor: '#c9973f', color: '#ffffff' }}>
             ENTERPRISE PLATFORM CAPABILITIES
           </span>
           <h1 className="display-5 fw-bold text-white mb-3">
-            Everything You Need to Run Your <span className="text-primary">Business Finances</span>
+            Everything You Need to Run Your <span style={{ color: '#fde047' }}>Business Finances</span>
           </h1>
-          <p className="lead text-light text-opacity-75 mx-auto mb-4" style={{ maxWidth: '750px', fontSize: '1.1rem' }}>
+          <p className="lead text-light text-opacity-90 mx-auto mb-4" style={{ maxWidth: '750px', fontSize: '1.1rem' }}>
             From high-speed retail POS to multi-godown stock logistics, e-invoicing compliance, and automated payroll — all unified in one cloud portal.
           </p>
           <div className="d-flex justify-content-center gap-3 flex-wrap">
-            <Link to="/register" className="btn btn-primary px-4 py-3 rounded-pill fw-bold d-inline-flex align-items-center gap-2">
+            <Link to="/register" className="btn btn-warning px-4 py-3 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow" style={{ backgroundColor: '#c9973f', borderColor: '#c9973f', color: '#ffffff' }}>
               Start 15-Day Free Trial <BsArrowRight />
             </Link>
             <Link to="/pricing" className="btn btn-outline-light px-4 py-3 rounded-pill fw-bold">

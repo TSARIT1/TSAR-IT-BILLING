@@ -1,8 +1,8 @@
 /* ===== Sidebar Container ===== */
 .sidebar {
   width: 260px;
-  background: #0f1c39;
-  color: white;
+  background: #ffffff;
+  color: #1e293b;
   padding: 15px;
   position: fixed;
   top: 8%;
@@ -14,6 +14,8 @@
   scrollbar-width: thin;
   transition: all 0.3s ease;
   z-index: 100;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 4px 0 20px -10px rgba(0, 0, 0, 0.05);
 }
 
 /* Scrollbar Styling */
@@ -39,7 +41,7 @@
 .profile-circle {
   width: 50px;
   height: 50px;
-  background: #f47520;
+  background: var(--gold-gradient);
   margin: 0 auto;
   display: flex;
   justify-content: center;
@@ -47,7 +49,8 @@
   border-radius: 50%;
   font-weight: 700;
   font-size: 18px;
-  color: black;
+  color: #111827;
+  box-shadow: 0 14px 28px -18px rgba(245, 158, 11, 0.8);
 }
 
 .business-profile h4 {
@@ -66,26 +69,31 @@
 /* ===== Create Invoice Button ===== */
 .create-invoice-btn {
   width: 100%;
-  background: #132452;
+  background: linear-gradient(135deg, rgba(124, 30, 46, 0.95) 0%, rgba(74, 21, 36, 0.95) 100%);
   padding: 12px;
   border: none;
   color: #fff;
   font-size: 14px;
   margin: 18px 0;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.25s ease;
+  box-shadow: 0 14px 28px -18px rgba(74, 21, 36, 0.9);
 }
 
 .create-invoice-btn:hover {
-  background: #1f3673;
+  background: linear-gradient(135deg, #1e40af 0%, #4a1524 100%);
+  transform: translateY(-1px);
 }
 
 /* ===== Menu Sections ===== */
 .menu-title {
   font-size: 11px;
   font-weight: 600;
-  opacity: 0.65;
+  opacity: 0.75;
+  color: #93c5fd;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   margin: 14px 0 6px;
 }
 
@@ -97,7 +105,7 @@
 
 .menu-section li {
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: 10px;
   margin-bottom: 5px;
   font-size: 14px;
   cursor: pointer;
@@ -106,7 +114,7 @@
 
 .menu-section li a {
   text-decoration: none;
-  color: #dfe6ff;
+  color: #dbeafe;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -114,7 +122,7 @@
 }
 
 .menu-section li:hover {
-  background: #1d2d55;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .menu-section li a:hover {
@@ -123,9 +131,10 @@
 
 .menu-section li.active,
 .menu-section li.active a {
-  background: #21335b;
+  background: linear-gradient(135deg, rgba(124, 30, 46, 0.55) 0%, rgba(8, 145, 178, 0.28) 100%);
   color: #ffffff;
   font-weight: 600;
+  box-shadow: inset 3px 0 0 #f59e0b;
 }
 
 .icon {
@@ -136,18 +145,18 @@
 /* ===== Dropdown Menu Styling ===== */
 .dropdown-parent {
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: 10px;
   display: block;
   /* Important for vertical stacking */
   margin-bottom: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: 0.3s;
-  color: #dfe6ff;
+  color: #dbeafe;
 }
 
 .dropdown-parent:hover {
-  background: #1d2d55;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Dropdown Header (The Clickable Part) */
@@ -171,8 +180,9 @@
   list-style: none;
   padding-left: 0;
   margin: 5px 0 0 0;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
   /* Animation */
   display: block !important;
   /* Override navbar.css with !important */
@@ -181,7 +191,7 @@
 
 .sidebar .dropdown-menu li {
   padding: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 4px;
   font-size: 13px;
 }
@@ -195,7 +205,7 @@
   display: block;
   padding: 10px 12px 10px 25px;
   /* Indentation */
-  color: #cfd8dc;
+  color: #cbd5e1;
   text-decoration: none;
   font-size: 14px;
   transition: all 0.2s ease-in-out;

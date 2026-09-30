@@ -24,14 +24,16 @@ import {
   BsGear,
   BsPrinter,
   BsFileEarmarkPdf,
-  BsFileEarmarkSpreadsheet
+  BsFileEarmarkSpreadsheet,
+  BsPencilSquare
 } from "react-icons/bs";
 import PortalLayout from "../PortalLayout";
 import "../dashboard.css";
 import "../salesInvoicesList.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getSales, markSaleAsPaid, getSaleItems, downloadSalesSlip } from "../../services/api";
 import { printEnterpriseInvoice, exportInvoiceToWord, exportInvoicesToExcel } from "../../utils/invoicePrintUtil";
+import BillPrintAndShareModal from "../BillPrintAndShareModal";
 
 function SalesInvoices() {
   const [invoices, setInvoices] = useState([]);
@@ -55,12 +57,21 @@ function SalesInvoices() {
 
   // Modal states for viewing items
   const [showItemsModal, setShowItemsModal] = useState(false);
+  const [showPrintHub, setShowPrintHub] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
   const [saleItems, setSaleItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
 
   // Reports dropdown state
   const [showReportsDropdown, setShowReportsDropdown] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleEditBill = (inv) => {
+    if (!inv) return;
+    const targetId = inv.invoiceId || inv.id || inv.saleId;
+    navigate(`/create-invoice?edit=true&invoiceId=${encodeURIComponent(targetId)}`);
+  };
 
   useEffect(() => {
     fetchSales();
@@ -74,6 +85,8 @@ function SalesInvoices() {
         createdAt: sale.date,           // LocalDateTime from backend
         totalAmount: sale.amount,       // Double from backend
         invoiceId: sale.saleId,         // Using saleId as invoiceId for display
+        saleId: sale.saleId,
+        id: sale.saleId,
         saleItemId: sale.saleItemId,    // Sale Item ID from backend
         totalItems: sale.totalItems || 0, // Total number of items from backend
         customerName: sale.customerName,
@@ -201,8 +214,9 @@ function SalesInvoices() {
     setSaleItems([]);
 
     try {
-      // Fetch sale items from backend using the saleId (invoiceId)
-      const items = await getSaleItems(invoice.invoiceId);
+      // Fetch sale items from backend using the saleId
+      const targetId = invoice.saleId || invoice.id || invoice.invoiceId;
+      const items = await getSaleItems(targetId);
       setSaleItems(Array.isArray(items) ? items : []);
     } catch (error) {
       console.error("Error fetching sale items:", error);
@@ -272,7 +286,7 @@ function SalesInvoices() {
               box-sizing: border-box;
             }
             body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-family: "Sora", "Plus Jakarta Sans", sans-serif;
               padding: 20px;
               background: white;
             }
@@ -501,37 +515,32 @@ function SalesInvoices() {
 
   // Handle Download Sales Slip
   const handleDownloadSlip = async () => {
-    if (!selectedSale || !saleItems || saleItems.length === 0) {
-      alert("No sale items to download");
+    if (!selectedSale) {
+      alert("No sale selected to download");
       return;
     }
 
     try {
-      // Get business ID from localStorage
-      const userBusinessId = localStorage.getItem("userBusinessId");
+      // Get business ID from localStorage with fallbacks
+      const userBusinessId = localStorage.getItem("userBusinessId") || localStorage.getItem("businessId") || "";
 
-      if (!userBusinessId) {
-        alert("Business ID not found. Please log in again.");
-        return;
-      }
-
-      console.log("Downloading sales slip for invoice:", selectedSale.invoiceId);
+      const targetId = selectedSale.saleId || selectedSale.id || selectedSale.invoiceId;
+      console.log("Downloading sales slip for invoice:", targetId);
 
       // Call API to download sales slip
-      const blob = await downloadSalesSlip(selectedSale.invoiceId, userBusinessId);
+      const blob = await downloadSalesSlip(targetId, userBusinessId);
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `sales-slip-${selectedSale.invoiceId}.pdf`;
+      link.download = `sales-slip-${selectedSale.invoiceId || targetId}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
       console.log("Sales slip downloaded successfully");
-      alert("Sales slip downloaded successfully!");
     } catch (error) {
       console.error("Error downloading sales slip:", error);
       alert("Failed to download sales slip: " + (error.message || "Unknown error"));
@@ -539,12 +548,16 @@ function SalesInvoices() {
   };
 
   // Filtered & Sorted Data
+  const normalizeSearchValue = (value) =>
+    value === null || value === undefined ? "" : String(value).toLowerCase();
+
   const filteredInvoices = invoices
     .filter((i) => {
       // SEARCH FILTER
+      const searchText = search.toLowerCase();
       const matchesSearch =
-        i.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-        i.invoiceId?.toLowerCase().includes(search.toLowerCase());
+        normalizeSearchValue(i.customerName).includes(searchText) ||
+        normalizeSearchValue(i.invoiceId || i.saleId || i.id).includes(searchText);
 
       if (advancedFilter === "none") return matchesSearch;
 
@@ -987,7 +1000,7 @@ function SalesInvoices() {
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        <BsFileEarmarkPdf style={{ color: '#e8961b' }} /> Download as PDF
+                        <BsFileEarmarkPdf style={{ color: '#b45309' }} /> Download as PDF
                       </button>
                       <button
                         onClick={() => {
@@ -1293,22 +1306,66 @@ function SalesInvoices() {
                           </span>
                         </td>
                         <td>
-                          <button
-                            className="btn btn-sm btn-primary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewItems(inv);
-                            }}
-                            style={{
-                              padding: '5px 10px',
-                              fontSize: '0.875rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '5px'
-                            }}
-                          >
-                            <BsEye /> View Items
-                          </button>
+                          <div className="d-flex align-items-center gap-1">
+                            <button
+                              className="btn btn-sm btn-primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewItems(inv);
+                              }}
+                              style={{
+                                padding: '5px 10px',
+                                fontSize: '0.875rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                              }}
+                            >
+                              <BsEye /> View Items
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-warning"
+                              title="Edit or Update Generated Bill"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditBill(inv);
+                              }}
+                              style={{
+                                padding: '5px 8px',
+                                fontSize: '0.875rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <BsPencilSquare /> Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-success"
+                              title="Print & Connectivity Hub (Bluetooth, WiFi, PDF)"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const targetId = inv.saleId || inv.id || inv.invoiceId;
+                                  const items = await getSaleItems(targetId);
+                                  setSaleItems(Array.isArray(items) ? items : []);
+                                } catch (err) {
+                                  console.error("Error loading items for print hub:", err);
+                                  setSaleItems([]);
+                                }
+                                setSelectedSale(inv);
+                                setShowPrintHub(true);
+                              }}
+                              style={{
+                                padding: '5px 8px',
+                                fontSize: '0.875rem'
+                              }}
+                            >
+                              <BsPrinter />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1526,6 +1583,36 @@ function SalesInvoices() {
                 <div className="d-flex align-items-center gap-2">
                   <button
                     type="button"
+                    className="btn btn-sm btn-outline-warning fw-bold shadow-sm"
+                    onClick={() => {
+                      handleCloseModal();
+                      handleEditBill(selectedSale);
+                    }}
+                    disabled={loadingItems}
+                    title="Edit or Update this Bill"
+                  >
+                    <BsPencilSquare className="me-1" /> Edit Bill
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary text-white fw-bold shadow-sm"
+                    onClick={() => setShowPrintHub(true)}
+                    disabled={loadingItems}
+                    title="Open Universal Print & Connectivity Hub (Bluetooth, WiFi Network, PDF, System Print)"
+                  >
+                    <BsPrinter className="me-1" /> Print Hub 🖨️
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={handleDownloadSlip}
+                    disabled={loadingItems}
+                    title="Download Official Server-Generated PDF Slip with Logo"
+                  >
+                    <BsDownload className="me-1" /> PDF Slip
+                  </button>
+                  <button
+                    type="button"
                     className="btn btn-sm btn-outline-info"
                     onClick={() => exportInvoiceToWord(selectedSale, saleItems)}
                     disabled={loadingItems || saleItems.length === 0}
@@ -1552,6 +1639,18 @@ function SalesInvoices() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Universal Print & Connectivity Hub Modal */}
+      {showPrintHub && selectedSale && (
+        <BillPrintAndShareModal
+          isOpen={showPrintHub}
+          onClose={() => setShowPrintHub(false)}
+          saleData={selectedSale}
+          saleItems={saleItems}
+          invoiceId={selectedSale.invoiceId || selectedSale.id}
+          customerName={selectedSale.customerName}
+        />
       )}
       </div>
     </PortalLayout>

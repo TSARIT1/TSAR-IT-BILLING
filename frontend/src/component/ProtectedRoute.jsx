@@ -22,7 +22,9 @@ export default function ProtectedRoute({ children, requiredRole }) {
   // Authorization Role Check — if requiredRole is set, user MUST have that exact role
   // (or be a SUPER_ADMIN). If user.role is missing/undefined, access is denied.
   if (requiredRole) {
-    const userRole = user.role;
+    // Login responses keep tenant role at the top level, while older sessions
+    // store it in the user object. Support both formats consistently.
+    const userRole = user.role || localStorage.getItem("userRole");
     if (!userRole || (userRole !== requiredRole && userRole !== "SUPER_ADMIN")) {
       return <Navigate to="/dashboard" replace />;
     }

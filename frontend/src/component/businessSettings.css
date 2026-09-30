@@ -1,6 +1,6 @@
 /* ========================================
    BUSINESS SETTINGS PAGE - PREMIUM THEME
-   Color Scheme: Orange (#FF6B35), Blue (#2C5F9E), White
+   Color Scheme: Orange (#c9973f), Blue (#2C5F9E), White
    ======================================== */
 
 /* Main Container */
@@ -9,7 +9,7 @@
   padding: 20px;
   background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 100%);
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Sora", "Plus Jakarta Sans", sans-serif;
 }
 
 /* ========================================
@@ -33,11 +33,11 @@
 .empty-state-icon {
   font-size: 100px;
   margin-bottom: 24px;
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  background: linear-gradient(135deg, #c9973f 0%, #FF8C42 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 4px 8px rgba(255, 107, 53, 0.2));
+  filter: drop-shadow(0 4px 8px rgba(201, 151, 63, 0.2));
 }
 
 .empty-state h2 {
@@ -94,16 +94,16 @@
 
 .business-tab:hover {
   background: linear-gradient(135deg, #fff5f2 0%, #ffe8e0 100%);
-  border-color: #FF6B35;
+  border-color: #c9973f;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+  box-shadow: 0 4px 12px rgba(201, 151, 63, 0.15);
 }
 
 .business-tab.active {
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-  border-color: #FF6B35;
+  background: linear-gradient(135deg, #c9973f 0%, #FF8C42 100%);
+  border-color: #c9973f;
   color: white;
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+  box-shadow: 0 6px 20px rgba(201, 151, 63, 0.35);
   transform: translateY(-2px);
 }
 
@@ -133,7 +133,7 @@
   display: inline-block;
   padding: 3px 10px;
   background: rgba(255, 255, 255, 0.95);
-  color: #FF6B35;
+  color: #c9973f;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
@@ -244,15 +244,15 @@
 .add-business-btn {
   padding: 14px 24px;
   background: white;
-  border: 2px dashed #FF6B35;
+  border: 2px dashed #c9973f;
   border-radius: 10px;
-  color: #FF6B35;
+  color: #c9973f;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 2px 8px rgba(201, 151, 63, 0.1);
 }
 
 .add-business-btn:hover {
@@ -260,7 +260,7 @@
   border-color: #FF5722;
   color: #FF5722;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  box-shadow: 0 4px 12px rgba(201, 151, 63, 0.2);
 }
 
 /* ========================================
@@ -310,14 +310,14 @@
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  background: linear-gradient(135deg, #c9973f 0%, #FF8C42 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.35);
+  box-shadow: 0 4px 12px rgba(201, 151, 63, 0.35);
 }
 
 .btn.primary:hover {
   background: linear-gradient(135deg, #FF5722 0%, #FF7B32 100%);
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.45);
+  box-shadow: 0 6px 16px rgba(201, 151, 63, 0.45);
   transform: translateY(-2px);
 }
 
@@ -344,11 +344,11 @@
   padding: 16px 32px;
   font-size: 16px;
   font-weight: 700;
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 20px rgba(201, 151, 63, 0.3);
 }
 
 .btn.large:hover {
-  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 8px 24px rgba(201, 151, 63, 0.4);
 }
 
 .btn.danger {
@@ -441,9 +441,9 @@
 .field-group select:focus,
 .field-group textarea:focus {
   outline: none;
-  border-color: #FF6B35;
+  border-color: #c9973f;
   background: white;
-  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 4px rgba(201, 151, 63, 0.1);
   transform: translateY(-1px);
 }
 
@@ -476,7 +476,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
-  border: 3px dashed #FF6B35;
+  border: 3px dashed #c9973f;
   border-radius: 12px;
   background: linear-gradient(135deg, #fff5f2 0%, #ffe8e0 100%);
   cursor: pointer;
@@ -488,13 +488,13 @@
   border-color: #FF5722;
   background: linear-gradient(135deg, #ffe8e0 0%, #ffd4c4 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
+  box-shadow: 0 4px 16px rgba(201, 151, 63, 0.15);
 }
 
 .upload-icon {
   font-size: 48px;
   margin-bottom: 12px;
-  filter: drop-shadow(0 2px 4px rgba(255, 107, 53, 0.2));
+  filter: drop-shadow(0 2px 4px rgba(201, 151, 63, 0.2));
 }
 
 .logo-preview-container,
@@ -549,7 +549,7 @@
   height: 18px;
   margin: 0;
   cursor: pointer;
-  accent-color: #FF6B35;
+  accent-color: #c9973f;
 }
 
 /* ========================================
@@ -613,8 +613,8 @@
 }
 
 .toggle input:checked+.slider {
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  background: linear-gradient(135deg, #c9973f 0%, #FF8C42 100%);
+  box-shadow: 0 2px 8px rgba(201, 151, 63, 0.3);
 }
 
 .toggle input:checked+.slider:before {
@@ -703,8 +703,8 @@
 
 .extra-row input:focus {
   outline: none;
-  border-color: #FF6B35;
-  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+  border-color: #c9973f;
+  box-shadow: 0 0 0 4px rgba(201, 151, 63, 0.1);
 }
 
 .extras-list {
@@ -817,7 +817,7 @@
 }
 
 .extras-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  background: linear-gradient(135deg, #c9973f 0%, #FF8C42 100%);
   border-radius: 4px;
 }
 
@@ -974,14 +974,14 @@
 
 .business-tab:hover {
   background: #fff5f2;
-  border-color: #ff6b35;
+  border-color: #c9973f;
 }
 
 .business-tab.active {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
-  border-color: #ff6b35;
+  background: linear-gradient(135deg, #c9973f 0%, #ff8c42 100%);
+  border-color: #c9973f;
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4px 12px rgba(201, 151, 63, 0.3);
 }
 
 .tab-content {
@@ -1008,7 +1008,7 @@
   display: inline-block;
   padding: 2px 8px;
   background: rgba(255, 255, 255, 0.9);
-  color: #ff6b35;
+  color: #c9973f;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
@@ -1100,9 +1100,9 @@
 .add-business-btn {
   padding: 10px 20px;
   background: white;
-  border: 2px dashed #ff6b35;
+  border: 2px dashed #c9973f;
   border-radius: 8px;
-  color: #ff6b35;
+  color: #c9973f;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1154,14 +1154,14 @@
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  background: linear-gradient(135deg, #c9973f 0%, #ff8c42 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 2px 8px rgba(201, 151, 63, 0.3);
 }
 
 .btn.primary:hover {
   background: linear-gradient(135deg, #ff5722 0%, #ff7b32 100%);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 4px 12px rgba(201, 151, 63, 0.4);
   transform: translateY(-1px);
 }
 
@@ -1256,9 +1256,9 @@
 .field-group select:focus,
 .field-group textarea:focus {
   outline: none;
-  border-color: #ff6b35;
+  border-color: #c9973f;
   background: white;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 3px rgba(201, 151, 63, 0.1);
 }
 
 .field-group textarea {
@@ -1295,7 +1295,7 @@
 }
 
 .upload-placeholder:hover {
-  border-color: #ff6b35;
+  border-color: #c9973f;
   background: #fff5f2;
 }
 
@@ -1398,7 +1398,7 @@
 }
 
 .toggle input:checked+.slider {
-  background-color: #ff6b35;
+  background-color: #c9973f;
 }
 
 .toggle input:checked+.slider:before {
@@ -1429,9 +1429,9 @@
 }
 
 .signature-placeholder:hover {
-  border-color: #ff6b35;
+  border-color: #c9973f;
   background: #fff5f2;
-  color: #ff6b35;
+  color: #c9973f;
 }
 
 .signature-preview {
@@ -1477,8 +1477,8 @@
 
 .extra-row input:focus {
   outline: none;
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  border-color: #c9973f;
+  box-shadow: 0 0 0 3px rgba(201, 151, 63, 0.1);
 }
 
 .extras-list {

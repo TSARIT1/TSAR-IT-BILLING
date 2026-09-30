@@ -17,7 +17,9 @@ import {
   BsShareFill,
   BsSendCheckFill
 } from 'react-icons/bs';
-import Navbar from '../Navbar';
+import NavbarV6 from "../NavbarV6";
+import '../style.css';
+import "../landing-v6.css";
 import Footer from '../Footer';
 
 export default function SolutionsPage() {
@@ -176,22 +178,22 @@ export default function SolutionsPage() {
 
   return (
     <div className="solutions-page-wrapper">
-      <Navbar />
+      <NavbarV6 />
 
       {/* Hero Section */}
-      <section className="bg-dark text-white py-5" style={{ paddingTop: '110px' }}>
+      <section className="text-white py-5" style={{ background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 55%, #4a0f1a 100%)', paddingTop: '110px' }}>
         <div className="container text-center py-4">
-          <span className="badge bg-primary px-3 py-2 text-uppercase fw-bold mb-3">
+          <span className="badge px-3 py-2 text-uppercase fw-bold mb-3 shadow-sm" style={{ backgroundColor: '#c9973f', color: '#ffffff' }}>
             ENTERPRISE INDIAN BILLING & SECTORS
           </span>
           <h1 className="display-5 fw-bold text-white mb-3">
-            Tailored Specifically for Your <span className="text-primary">Industry Sector</span>
+            Tailored Specifically for Your <span style={{ color: '#fde047' }}>Industry Sector</span>
           </h1>
-          <p className="lead text-light text-opacity-75 mx-auto mb-4" style={{ maxWidth: '780px', fontSize: '1.1rem' }}>
+          <p className="lead text-light text-opacity-90 mx-auto mb-4" style={{ maxWidth: '780px', fontSize: '1.1rem' }}>
             From high-speed retail supermarkets and distributors to restaurants, hotels, pharmacies, textile boutiques, and electronics shops — TSAR IT Billing delivers deep operational compliance.
           </p>
           <div className="d-flex justify-content-center gap-3 flex-wrap">
-            <Link to="/register" className="btn btn-primary px-4 py-3 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
+            <Link to="/register" className="btn btn-warning px-4 py-3 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow" style={{ backgroundColor: '#c9973f', borderColor: '#c9973f', color: '#ffffff' }}>
               Start Free Trial <BsArrowRight />
             </Link>
             <Link to="/contact" className="btn btn-outline-light px-4 py-3 rounded-pill fw-bold">
@@ -279,12 +281,12 @@ export default function SolutionsPage() {
                 </ul>
               </div>
 
-              <div className="card border-0 shadow-sm rounded-4 p-4 text-white" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}>
+              <div className="card border-0 shadow-sm rounded-4 p-4 text-white" style={{ background: 'linear-gradient(135deg, #7c1e2e, #611726)' }}>
                 <h5 className="fw-bold mb-2">Need a Custom Industry Configuration?</h5>
-                <p className="small text-light text-opacity-75 mb-3">
+                <p className="small text-light text-opacity-90 mb-3">
                   Our engineering team can create customized print slips, barcode layouts, and tax classifications for your specialized trade.
                 </p>
-                <Link to="/contact" className="btn btn-light text-dark fw-bold rounded-3 btn-sm align-self-start">
+                <Link to="/contact" className="btn btn-warning fw-bold rounded-3 btn-sm align-self-start shadow-sm" style={{ backgroundColor: '#c9973f', borderColor: '#c9973f', color: '#ffffff' }}>
                   Speak with Product Engineer
                 </Link>
               </div>

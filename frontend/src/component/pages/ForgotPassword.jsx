@@ -11,9 +11,10 @@ import {
   BsEyeSlashFill
 } from "react-icons/bs";
 import Swal from "sweetalert2";
-import Navbar from "../Navbar";
+import NavbarV6 from "../NavbarV6";
 import Footer from "../Footer";
 import "../login.css";
+import "../landing-v6.css";
 import { forgotPassword, resetPassword } from "../../services/api";
 
 export default function ForgotPassword() {
@@ -42,7 +43,7 @@ export default function ForgotPassword() {
         icon: "success",
         title: "Verification Code Sent!",
         text: `A 6-digit security reset code has been sent to ${identifier}.${codeHint}`,
-        confirmButtonColor: "#4f46e5"
+        confirmButtonColor: "#7c1e2e"
       });
     } catch (err) {
       setLoading(false);
@@ -73,7 +74,7 @@ export default function ForgotPassword() {
         icon: "success",
         title: "Password Updated Successfully!",
         text: "Your password has been reset. You can now log in with your new credentials.",
-        confirmButtonColor: "#4f46e5"
+        confirmButtonColor: "#7c1e2e"
       }).then(() => {
         navigate("/login");
       });
@@ -86,7 +87,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="auth-page-wrapper">
-      <Navbar />
+      <NavbarV6 />
 
       <div className="auth-split-container" style={{ paddingTop: "100px", paddingBottom: "60px" }}>
         <div className="auth-form-side mx-auto" style={{ maxWidth: "500px", width: "100%" }}>

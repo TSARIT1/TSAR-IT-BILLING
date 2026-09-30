@@ -1091,7 +1091,7 @@ function OnlineOrders() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
                 {stores.map(store => (
                   <div key={store.id} style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
-                    <div style={{ background: "linear-gradient(135deg, #10b981, #3e4e96)", padding: "16px 20px" }}>
+                    <div style={{ background: "linear-gradient(135deg, #10b981, #7c1e2e)", padding: "16px 20px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                         <div>
                           <h5 style={{ color: "#fff", margin: 0, fontWeight: 700, fontSize: 16 }}>
@@ -1125,7 +1125,7 @@ function OnlineOrders() {
                           <div style={{ fontSize: 11, color: "#6b7280" }}>Products</div>
                         </div>
                         <div style={{ textAlign: "center", flex: 1, background: "#eef0fb", borderRadius: 8, padding: "10px 0" }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#3e4e96" }}>{store.id}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#7c1e2e" }}>{store.id}</div>
                           <div style={{ fontSize: 11, color: "#6b7280" }}>Store ID</div>
                         </div>
                       </div>
@@ -1165,7 +1165,7 @@ function OnlineOrders() {
                               <tbody>
                                 {viewStoreProducts.map((p, idx) => (
                                   <tr key={p.id} style={{ borderBottom: "1px solid #f3f4f6", background: idx % 2 === 0 ? "#fff" : "#f9fafb" }}>
-                                    <td style={{ padding: "6px 8px", color: "#3e4e96", fontWeight: 600 }}>{p.productId}</td>
+                                    <td style={{ padding: "6px 8px", color: "#7c1e2e", fontWeight: 600 }}>{p.productId}</td>
                                     <td style={{ padding: "6px 8px", color: "#1f2937" }}>{p.productName}</td>
                                     <td style={{ padding: "6px 8px", color: "#6b7280" }}>{p.productCode}</td>
                                     <td style={{ padding: "6px 8px", textAlign: "center", fontWeight: 700, color: "#10b981" }}>{p.totalStock}</td>
@@ -1327,7 +1327,7 @@ function OnlineOrders() {
               }}>
                 {/* Header */}
                 <div style={{
-                  background: "linear-gradient(135deg,#3e4e96,#e8961b)",
+                  background: "linear-gradient(135deg,#7c1e2e,#b45309)",
                   padding: "16px 22px", borderRadius: "14px 14px 0 0",
                   display: "flex", justifyContent: "space-between", alignItems: "center"
                 }}>
@@ -1505,7 +1505,7 @@ function OnlineOrders() {
               }}>
                 {/* Modal Header */}
                 <div style={{
-                  background: "linear-gradient(135deg, #3e4e96 0%, #e8961b 100%)",
+                  background: "linear-gradient(135deg, #7c1e2e 0%, #b45309 100%)",
                   padding: "20px 28px", borderRadius: "16px 16px 0 0",
                   display: "flex", justifyContent: "space-between", alignItems: "center"
                 }}>
@@ -1522,7 +1522,7 @@ function OnlineOrders() {
 
                 <div style={{ padding: "24px 28px" }}>
                   {/* Customer Info */}
-                  <h6 style={{ fontWeight: 700, color: "#3e4e96", marginBottom: 12 }}>
+                  <h6 style={{ fontWeight: 700, color: "#7c1e2e", marginBottom: 12 }}>
                     <i className="bi bi-person-circle"></i> Customer Information
                   </h6>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 20 }}>
@@ -1560,7 +1560,7 @@ function OnlineOrders() {
                   </div>
 
                   {/* Product Search */}
-                  <h6 style={{ fontWeight: 700, color: "#3e4e96", marginBottom: 12 }}>
+                  <h6 style={{ fontWeight: 700, color: "#7c1e2e", marginBottom: 12 }}>
                     <i className="bi bi-box-seam"></i> Add Products
                   </h6>
                   <div style={{ position: "relative", marginBottom: 16 }}>
@@ -1598,9 +1598,9 @@ function OnlineOrders() {
                               <div style={{ fontSize: 11, color: "#6b7280" }}>Code: {p.productCode} | Stock: {p.remainingStock}</div>
                             </div>
                             <div style={{ textAlign: "right" }}>
-                              <div style={{ fontWeight: 700, color: "#3e4e96", fontSize: 13 }}>₹{p.sellingPrice}</div>
+                              <div style={{ fontWeight: 700, color: "#7c1e2e", fontSize: 13 }}>₹{p.sellingPrice}</div>
                               {p.expiryDate && (
-                                <div style={{ fontSize: 11, color: "#e8961b" }}>Exp: {p.expiryDate}</div>
+                                <div style={{ fontSize: 11, color: "#b45309" }}>Exp: {p.expiryDate}</div>
                               )}
                             </div>
                           </div>
@@ -1615,7 +1615,7 @@ function OnlineOrders() {
                       <div style={{ overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                           <thead>
-                            <tr style={{ background: "linear-gradient(135deg, #3e4e96, #5a6fb8)", color: "#fff" }}>
+                            <tr style={{ background: "linear-gradient(135deg, #7c1e2e, #8a2438)", color: "#fff" }}>
                               <th style={{ padding: "10px 12px", textAlign: "left" }}>#</th>
                               <th style={{ padding: "10px 12px", textAlign: "left" }}>Product</th>
                               <th style={{ padding: "10px 12px", textAlign: "center" }}>Qty</th>
@@ -1656,7 +1656,7 @@ function OnlineOrders() {
                                     onChange={e => handleItemChange(idx, "sellingPrice", e.target.value)}
                                   />
                                 </td>
-                                <td style={{ padding: "8px 12px", textAlign: "center", color: item.expiryDate ? "#e8961b" : "#9ca3af", fontSize: 12 }}>
+                                <td style={{ padding: "8px 12px", textAlign: "center", color: item.expiryDate ? "#b45309" : "#9ca3af", fontSize: 12 }}>
                                   {item.expiryDate || "N/A"}
                                 </td>
                                 <td style={{ padding: "8px 12px", textAlign: "center", color: "#6b7280" }}>
@@ -1665,7 +1665,7 @@ function OnlineOrders() {
                                 <td style={{ padding: "8px 12px", textAlign: "center", color: "#6b7280" }}>
                                   {item.discount || 0}%
                                 </td>
-                                <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, color: "#3e4e96" }}>
+                                <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, color: "#7c1e2e" }}>
                                   ₹{calcItemTotal(item).toFixed(2)}
                                 </td>
                                 <td style={{ padding: "8px 12px", textAlign: "center" }}>
@@ -1685,7 +1685,7 @@ function OnlineOrders() {
                               <td colSpan={7} style={{ padding: "10px 12px", textAlign: "right", color: "#374151" }}>
                                 Order Total:
                               </td>
-                              <td style={{ padding: "10px 12px", textAlign: "right", color: "#3e4e96", fontSize: 15 }}>
+                              <td style={{ padding: "10px 12px", textAlign: "right", color: "#7c1e2e", fontSize: 15 }}>
                                 ₹{orderTotal.toFixed(2)}
                               </td>
                               <td></td>
@@ -1697,7 +1697,7 @@ function OnlineOrders() {
                   )}
 
                   {/* Terms & Conditions */}
-                  <h6 style={{ fontWeight: 700, color: "#3e4e96", marginBottom: 12 }}>
+                  <h6 style={{ fontWeight: 700, color: "#7c1e2e", marginBottom: 12 }}>
                     <i className="bi bi-file-text"></i> Terms & Conditions
                   </h6>
                   <textarea
@@ -1734,7 +1734,7 @@ function OnlineOrders() {
                       className="btn btn-primary"
                       onClick={handleSubmitOrder}
                       disabled={submitting}
-                      style={{ background: "linear-gradient(135deg, #3e4e96, #e8961b)", border: "none", fontWeight: 700 }}
+                      style={{ background: "linear-gradient(135deg, #7c1e2e, #b45309)", border: "none", fontWeight: 700 }}
                     >
                       {submitting ? "Creating..." : "Create Order"}
                     </button>
@@ -1757,7 +1757,7 @@ function OnlineOrders() {
                 boxShadow: "0 20px 60px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto"
               }}>
                 <div style={{
-                  background: "linear-gradient(135deg, #3e4e96 0%, #e8961b 100%)",
+                  background: "linear-gradient(135deg, #7c1e2e 0%, #b45309 100%)",
                   padding: "18px 24px", borderRadius: "16px 16px 0 0",
                   display: "flex", justifyContent: "space-between", alignItems: "center"
                 }}>
@@ -1784,12 +1784,12 @@ function OnlineOrders() {
                     <div><span style={{ fontSize: 12, color: "#6b7280" }}>Status</span><br />{getStatusBadge(viewOrder.status)}</div>
                     <div><span style={{ fontSize: 12, color: "#6b7280" }}>Customer Phone</span><br /><strong style={{ color: "#1f2937" }}>{viewOrder.customerPhone || "-"}</strong></div>
                     <div><span style={{ fontSize: 12, color: "#6b7280" }}>Payment Mode</span><br /><strong style={{ color: "#1f2937" }}>{viewOrder.paymentMode || "-"}</strong></div>
-                    <div><span style={{ fontSize: 12, color: "#6b7280" }}>Total Amount</span><br /><strong style={{ color: "#3e4e96", fontSize: 16 }}>₹ {(viewOrder.totalAmount || 0).toFixed(2)}</strong></div>
+                    <div><span style={{ fontSize: 12, color: "#6b7280" }}>Total Amount</span><br /><strong style={{ color: "#7c1e2e", fontSize: 16 }}>₹ {(viewOrder.totalAmount || 0).toFixed(2)}</strong></div>
                     <div><span style={{ fontSize: 12, color: "#6b7280" }}>Total Items</span><br /><strong style={{ color: "#1f2937" }}>{viewOrder.totalItems}</strong></div>
                   </div>
 
                   {/* Items Table */}
-                  <h6 style={{ fontWeight: 700, color: "#3e4e96", marginBottom: 10 }}>
+                  <h6 style={{ fontWeight: 700, color: "#7c1e2e", marginBottom: 10 }}>
                     <i className="bi bi-box-seam"></i> Order Items
                   </h6>
                   {loadingItems ? (
@@ -1799,7 +1799,7 @@ function OnlineOrders() {
                   ) : (
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                       <thead>
-                        <tr style={{ background: "#3e4e96", color: "#fff" }}>
+                        <tr style={{ background: "#7c1e2e", color: "#fff" }}>
                           <th style={{ padding: "9px 12px", textAlign: "left" }}>#</th>
                           <th style={{ padding: "9px 12px", textAlign: "left" }}>Product</th>
                           <th style={{ padding: "9px 12px", textAlign: "center" }}>Qty</th>
@@ -1820,12 +1820,12 @@ function OnlineOrders() {
                             </td>
                             <td style={{ padding: "8px 12px", textAlign: "center", color: "#1f2937", fontWeight: 600 }}>{item.quantity}</td>
                             <td style={{ padding: "8px 12px", textAlign: "right", color: "#1f2937", fontWeight: 600 }}>₹{(item.sellingPrice || 0).toFixed(2)}</td>
-                            <td style={{ padding: "8px 12px", textAlign: "center", color: "#e8961b", fontSize: 12, fontWeight: 600 }}>
+                            <td style={{ padding: "8px 12px", textAlign: "center", color: "#b45309", fontSize: 12, fontWeight: 600 }}>
                               {item.expiryDate || "N/A"}
                             </td>
                             <td style={{ padding: "8px 12px", textAlign: "center", color: "#374151", fontWeight: 600 }}>{item.taxRate || 0}%</td>
                             <td style={{ padding: "8px 12px", textAlign: "center", color: "#374151", fontWeight: 600 }}>{item.discount || 0}%</td>
-                            <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, color: "#3e4e96" }}>
+                            <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, color: "#7c1e2e" }}>
                               ₹{(item.totalPrice || 0).toFixed(2)}
                             </td>
                           </tr>
@@ -1834,7 +1834,7 @@ function OnlineOrders() {
                       <tfoot>
                         <tr style={{ background: "#f0f4ff", fontWeight: 700 }}>
                           <td colSpan={7} style={{ padding: "10px 12px", textAlign: "right" }}>Grand Total:</td>
-                          <td style={{ padding: "10px 12px", textAlign: "right", color: "#3e4e96", fontSize: 15 }}>
+                          <td style={{ padding: "10px 12px", textAlign: "right", color: "#7c1e2e", fontSize: 15 }}>
                             ₹{(viewOrder.totalAmount || 0).toFixed(2)}
                           </td>
                         </tr>
@@ -1867,7 +1867,7 @@ function OnlineOrders() {
                     <button
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 6,
-                        background: "linear-gradient(135deg,#3e4e96,#e8961b)",
+                        background: "linear-gradient(135deg,#7c1e2e,#b45309)",
                         color: "#fff", border: "none", borderRadius: 8,
                         padding: "8px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer",
                         opacity: orderPrintLoading ? 0.7 : 1,
@@ -1899,7 +1899,7 @@ function OnlineOrders() {
             <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px", overflowY: "auto" }}>
               <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 820, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", margin: "auto" }}>
                 {/* Header */}
-                <div style={{ background: "linear-gradient(135deg, #10b981 0%, #3e4e96 100%)", padding: "20px 28px", borderRadius: "16px 16px 0 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ background: "linear-gradient(135deg, #10b981 0%, #7c1e2e 100%)", padding: "20px 28px", borderRadius: "16px 16px 0 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h4 style={{ color: "#fff", margin: 0, fontWeight: 700 }}>
                     <i className="bi bi-shop"></i> Create Online Store
                   </h4>
@@ -1993,7 +1993,7 @@ function OnlineOrders() {
                           {selectedStoreProducts.map((p, idx) => (
                             <tr key={p.productId} style={{ borderBottom: "1px solid #f3f4f6", background: idx % 2 === 0 ? "#fff" : "#f9fafb" }}>
                               <td style={{ padding: "8px 12px", color: "#6b7280" }}>{idx + 1}</td>
-                              <td style={{ padding: "8px 12px", fontWeight: 600, color: "#3e4e96" }}>{p.productId}</td>
+                              <td style={{ padding: "8px 12px", fontWeight: 600, color: "#7c1e2e" }}>{p.productId}</td>
                               <td style={{ padding: "8px 12px", fontWeight: 600, color: "#1f2937" }}>{p.productName}</td>
                               <td style={{ padding: "8px 12px", color: "#6b7280" }}>{p.productCode}</td>
                               <td style={{ padding: "8px 12px", textAlign: "center", fontWeight: 700, color: "#10b981" }}>{p.totalStock}</td>

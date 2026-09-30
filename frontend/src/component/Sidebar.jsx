@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   BsSpeedometer2, 
@@ -63,10 +63,27 @@ export default function Sidebar({ isOpen, onCloseMobile }) {
   const ownerName = storedUser.ownerName || "Administrator";
   const isSuperAdmin = storedUser.role === "SUPER_ADMIN";
 
+  const scrollRef = useRef(null);
+
+  // Restore scroll position on navigation
+  useEffect(() => {
+    const savedPos = sessionStorage.getItem("sidebar_scroll_pos");
+    if (savedPos && scrollRef.current) {
+      scrollRef.current.scrollTop = Number(savedPos);
+    }
+  }, [location.pathname]);
+
+  const handleMenuScroll = () => {
+    if (scrollRef.current) {
+      sessionStorage.setItem("sidebar_scroll_pos", scrollRef.current.scrollTop);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("userId");
+    sessionStorage.removeItem("sidebar_scroll_pos");
     navigate("/login");
   };
 
@@ -77,15 +94,15 @@ export default function Sidebar({ isOpen, onCloseMobile }) {
       {/* Mobile Backdrop */}
       {isOpen && <div className="sidebar-mobile-backdrop" onClick={onCloseMobile}></div>}
 
-      <aside className={`portal-sidebar-dark ${isOpen ? "mobile-open" : ""}`}>
+      <aside className={`portal-sidebar ${isOpen ? "mobile-open" : ""}`}>
         {/* Sidebar Brand Top */}
         <div className="sidebar-brand-box">
           <Link to="/dashboard" className="sidebar-logo-link d-flex align-items-center gap-2" onClick={onCloseMobile}>
-            <div className="sidebar-brand-logo-icon p-1 bg-dark rounded border border-secondary" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="sidebar-brand-logo-icon p-1 rounded" style={{ width: '38px', height: '38px', background: 'linear-gradient(135deg, rgba(124, 30, 46, 0.12) 0%, rgba(201, 151, 63, 0.15) 100%)', border: '1px solid rgba(124, 30, 46, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img src={tsarItLogo} alt="TSAR IT BILLING" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
             </div>
             <div className="sidebar-brand-text">
-              <span className="brand-title text-white fw-bold" style={{ fontSize: '0.95rem', letterSpacing: '0.02em' }}>TSAR IT BILLING</span>
+              <span className="brand-title fw-bold" style={{ fontSize: '0.96rem', letterSpacing: '0.02em', color: '#0f172a' }}>TSAR IT BILLING</span>
             </div>
           </Link>
         </div>
@@ -112,7 +129,7 @@ export default function Sidebar({ isOpen, onCloseMobile }) {
         </div>
 
         {/* Navigation Sections */}
-        <div className="sidebar-menu-scroll">
+        <div className="sidebar-menu-scroll" ref={scrollRef} onScroll={handleMenuScroll}>
           {/* GENERAL */}
           <div className="menu-group">
             <span className="group-label">GENERAL</span>

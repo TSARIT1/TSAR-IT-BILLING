@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ErrorBoundary from "./component/ErrorBoundary";
 
 import LandingPage from "./component/pages/LandingPage";
 import Dashboard from "./component/pages/Dashboard";
@@ -74,11 +75,11 @@ function NotFound() {
       background: '#f8fafc',
       fontFamily: 'Inter, system-ui, sans-serif'
     }}>
-      <div style={{ fontSize: '5rem', fontWeight: 800, color: '#4f46e5' }}>404</div>
+      <div style={{ fontSize: '5rem', fontWeight: 800, color: '#7c1e2e' }}>404</div>
       <h2 style={{ fontSize: '1.5rem', color: '#1e293b', margin: '1rem 0 0.5rem' }}>Page Not Found</h2>
       <p style={{ color: '#64748b', marginBottom: '2rem' }}>The page you're looking for doesn't exist or has been moved.</p>
       <a href="/dashboard" style={{
-        background: '#4f46e5',
+        background: '#7c1e2e',
         color: '#fff',
         padding: '0.75rem 2rem',
         borderRadius: '10px',
@@ -91,7 +92,8 @@ function NotFound() {
 
 function App() {
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       {/* Public Marketing & Landing Site */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/features" element={<FeaturesPage />} />
@@ -161,6 +163,7 @@ function App() {
       {/* 404 Catch-All */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </ErrorBoundary>
   );
 }
 

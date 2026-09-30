@@ -22,8 +22,8 @@ export default function Dashboard() {
   } catch (e) {
     storedUser = {};
   }
-  const businessName = storedUser.businessName || "TSAR IT Solutions";
-  const ownerName = storedUser.ownerName || "Administrator";
+  const businessName = storedUser.businessName || "";
+  const ownerName = storedUser.ownerName || "";
   const companyLogo = localStorage.getItem("companyLogo") || "";
 
   const todayStr = new Date().toLocaleDateString('en-US', {

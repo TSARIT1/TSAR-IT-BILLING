@@ -62,19 +62,13 @@ function CreatePurchaseInvoice() {
     fetchProductsFromBackend();
   }, []);
 
-  // Fetch products from backend
   const fetchProductsFromBackend = async () => {
     try {
-      console.log("Fetching products from backend...");
       const products = await getAllProducts();
-      console.log("Products fetched from backend:", products);
       setAvailableProducts(Array.isArray(products) ? products : []);
     } catch (error) {
       console.error("Error fetching products:", error);
-      // Fallback to localStorage if backend fails
-      const storedProducts = JSON.parse(localStorage.getItem("items")) || [];
-      setAvailableProducts(storedProducts);
-      alert("Could not fetch products from server. Using local data.");
+      setAvailableProducts([]);
     }
   };
 

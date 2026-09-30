@@ -8,12 +8,14 @@ import {
   BsShieldCheck,
   BsArrowRepeat,
   BsWallet2,
-  BsCreditCard2FrontFill
+  BsCreditCard2FrontFill,
+  BsTrash
 } from "react-icons/bs";
 import PortalLayout from "../PortalLayout";
 import {
   getBankAccounts,
   createBankAccount,
+  deleteBankAccount,
   getBankTransactions,
   recordBankTransaction,
   reconcileBankTransaction
@@ -145,6 +147,27 @@ export default function CashBank() {
     }
   };
 
+  const handleDeleteAccount = async (accId, accName) => {
+    const confirm = await Swal.fire({
+      title: `Delete ${accName}?`,
+      text: "This will remove the bank account and its ledger transactions.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, Delete"
+    });
+    if (confirm.isConfirmed) {
+      try {
+        await deleteBankAccount(accId);
+        Swal.fire("Deleted", "Bank account deleted.", "success");
+        setSelectedAccountId(null);
+        loadData();
+      } catch (e) {
+        Swal.fire("Error", "Could not delete account.", "error");
+      }
+    }
+  };
+
   const totalBalance = accounts.reduce((acc, a) => acc + Number(a.currentBalance || 0), 0);
   const currentAcc = accounts.find(a => a.id === selectedAccountId) || accounts[0];
 
@@ -233,6 +256,9 @@ export default function CashBank() {
                   </button>
                   <button className="btn btn-sm btn-outline-danger" onClick={() => handleRecordTransaction('WITHDRAWAL')}>
                     <BsPlusCircleFill className="me-1" /> Payment / Expense
+                  </button>
+                  <button className="btn btn-sm btn-outline-secondary text-danger" title="Delete Account" onClick={() => handleDeleteAccount(currentAcc.id, currentAcc.bankName)}>
+                    <BsTrash className="me-1" /> Delete
                   </button>
                 </div>
               </div>

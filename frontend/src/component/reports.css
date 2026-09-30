@@ -5,11 +5,11 @@
 
 /* Page Header */
 .reports-page-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 30px;
     border-radius: 16px;
     margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
 }
 
 .reports-header-content {
@@ -71,10 +71,10 @@
 }
 
 .reports-filter-chip:hover {
-    border-color: #3e4e96;
-    background: #eef2ff;
+    border-color: #7c1e2e;
+    background: #faf1ee;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(62, 78, 150, 0.15);
+    box-shadow: 0 4px 12px rgba(124, 30, 46, 0.15);
 }
 
 .reports-chip-close-icon {
@@ -115,7 +115,7 @@
 
 /* Section Header */
 .reports-section-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
     padding: 16px 20px;
     display: flex;
     align-items: center;
@@ -164,10 +164,10 @@
 }
 
 .reports-list-item:hover {
-    background: #eef2ff;
-    border-left-color: #3e4e96;
+    background: #faf1ee;
+    border-left-color: #7c1e2e;
     transform: translateX(5px);
-    color: #3e4e96;
+    color: #7c1e2e;
     font-weight: 600;
 }
 

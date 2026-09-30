@@ -2053,7 +2053,7 @@ function PurchaseReturn() {
                                           background: 'linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%)',
                                           padding: '16px',
                                           borderRadius: '10px',
-                                          border: '1px solid #e0e7ff',
+                                          border: '1px solid #f6e8e4',
                                           transition: 'all 0.3s ease'
                                         }}>
                                           <label style={{
@@ -2431,7 +2431,7 @@ function PurchaseReturn() {
                       disabled={loadingInvoicePrintData}
                       style={{
                         padding: '12px 28px',
-                        backgroundColor: loadingInvoicePrintData ? '#9ca3af' : '#6366f1',
+                        backgroundColor: loadingInvoicePrintData ? '#9ca3af' : '#9c3d52',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
@@ -2447,14 +2447,14 @@ function PurchaseReturn() {
                       }}
                       onMouseEnter={(e) => {
                         if (!loadingInvoicePrintData) {
-                          e.target.style.backgroundColor = '#4f46e5';
+                          e.target.style.backgroundColor = '#7c1e2e';
                           e.target.style.transform = 'translateY(-2px)';
                           e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!loadingInvoicePrintData) {
-                          e.target.style.backgroundColor = '#6366f1';
+                          e.target.style.backgroundColor = '#9c3d52';
                           e.target.style.transform = 'translateY(0)';
                           e.target.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.2)';
                         }
@@ -2996,7 +2996,7 @@ function PurchaseReturn() {
                       disabled={loadingPrintData}
                       style={{
                         padding: '12px 24px',
-                        backgroundColor: loadingPrintData ? '#9ca3af' : '#6366f1',
+                        backgroundColor: loadingPrintData ? '#9ca3af' : '#9c3d52',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
@@ -3012,14 +3012,14 @@ function PurchaseReturn() {
                       }}
                       onMouseEnter={(e) => {
                         if (!loadingPrintData) {
-                          e.target.style.backgroundColor = '#4f46e5';
+                          e.target.style.backgroundColor = '#7c1e2e';
                           e.target.style.transform = 'translateY(-2px)';
                           e.target.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.4)';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!loadingPrintData) {
-                          e.target.style.backgroundColor = '#6366f1';
+                          e.target.style.backgroundColor = '#9c3d52';
                           e.target.style.transform = 'translateY(0)';
                           e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
                         }

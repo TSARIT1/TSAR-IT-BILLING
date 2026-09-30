@@ -1,7 +1,7 @@
 
 .delivery-page, 
 .create-delivery {
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   padding: 20px;
   color: #222;
 }
@@ -22,7 +22,7 @@
 
 .back-icon {
   font-size: 24px;
-  color: #4d7cff;
+  color: #9c3d52;
   cursor: pointer;
   margin-right: 10px;
 }
@@ -35,7 +35,7 @@
 
 .create-delivery-btn,
 .save-btn {
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
   border: none;
   padding: 10px 18px;
@@ -161,13 +161,13 @@
 }
 
 .party-box {
-  border: 2px dashed #4d7cff;
+  border: 2px dashed #9c3d52;
   border-radius: 8px;
   padding: 30px;
   text-align: center;
   cursor: pointer;
   font-weight: 600;
-  color: #4d7cff;
+  color: #9c3d52;
 }
 
 .bill-right label,
@@ -193,14 +193,14 @@
 .bill-right input:focus,
 .items-box input:focus,
 .right-summary input:focus {
-  border-color: #4d7cff;
-  box-shadow: 0 0 0 3px rgba(77,124,255,0.15);
+  border-color: #9c3d52;
+  box-shadow: 0 0 0 3px rgba(156, 61, 82,0.15);
 }
 
 .add-item-btn {
   background: #fff;
-  border: 1px solid #4d7cff;
-  color: #4d7cff;
+  border: 1px solid #9c3d52;
+  color: #9c3d52;
   padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -262,7 +262,7 @@
 
 
 .create-delivery {
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   color: #1f1f1f;
 }
 
@@ -282,7 +282,7 @@
 
 .back-icon {
   font-size: 22px;
-  color: #4d7cff;
+  color: #9c3d52;
   cursor: pointer;
 }
 
@@ -312,7 +312,7 @@
 }
 
 .save-btn {
-  background: #6a5acd;
+  background: #8a2438;
   border: none;
   color: #fff;
 }
@@ -482,7 +482,7 @@
 }
 
 .proforma-list-page {
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   color: #1f1f1f;
   margin-top: 4%;
 }
@@ -501,7 +501,7 @@
 }
 
 .proforma-create-btn {
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
   padding: 10px 18px;
   border: none;
@@ -611,7 +611,7 @@
 }
 .proforma-create {
   padding: 20px;
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   color: #1e1e1e;
 }
 .pc-top {
@@ -627,7 +627,7 @@
 }
 
 .pc-save-btn {
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
   border: none;
   padding: 10px 22px;
@@ -661,18 +661,18 @@
 }
 
 .party-box {
-  border: 2px dashed #4d7cff;
+  border: 2px dashed #9c3d52;
   padding: 16px;
   text-align: center;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  color: #4d7cff;
+  color: #9c3d52;
   transition: 0.2s;
 }
 
 .party-box:hover {
-  background: rgba(77,124,255,0.05);
+  background: rgba(156, 61, 82,0.05);
 }
 .invoice-details {
   display: grid;
@@ -695,8 +695,8 @@
 }
 
 .detail-item input:focus {
-  border-color: #4d7cff;
-  box-shadow: 0 0 0 3px rgba(77,124,255,0.17);
+  border-color: #9c3d52;
+  box-shadow: 0 0 0 3px rgba(156, 61, 82,0.17);
 }
 
 .item-section {
@@ -746,7 +746,7 @@
 .add-btn {
   background: #ffffff;
   border: 1px solid #cbd3f8;
-  color: #4d7cff;
+  color: #9c3d52;
   padding: 8px 14px;
   font-weight: 600;
   border-radius: 8px;
@@ -827,14 +827,14 @@
 }
 
 .sign-btn {
-  border: 2px dashed #4d7cff;
+  border: 2px dashed #9c3d52;
   padding: 20px;
   width: 180px;
   text-align: center;
   margin-left: auto;
   border-radius: 10px;
   margin-top: 10px;
-  color: #4d7cff;
+  color: #9c3d52;
   font-weight: 600;
   cursor: pointer;
 }
@@ -880,7 +880,7 @@
 
 .save-party-btn {
   width: 100%;
-  background: #4d7cff;
+  background: #9c3d52;
   color: #fff;
   border: none;
   padding: 10px;
@@ -902,7 +902,7 @@
 
 .purchase-invoice-page {
   margin-top: 4%;
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   color: #1f1f1f;
 }
 .purchase-top-cards {
@@ -933,7 +933,7 @@
 }
 
 .card-box.total {
-  border-left: 4px solid #6a5acd;
+  border-left: 4px solid #8a2438;
 }
 
 .card-box.paid {
@@ -982,7 +982,7 @@
 }
 .create-purchase-btn {
   margin-left: auto;
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
   padding: 10px 20px;
   font-weight: 600;
@@ -1037,7 +1037,7 @@
 
 .create-purchase-page {
   margin-top: 4%;
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   color: #1f1f1f;
 }
 .purchase-header {
@@ -1060,7 +1060,7 @@
 
 .back-btn {
   font-size: 22px;
-  color: #4d7cff;
+  color: #9c3d52;
   cursor: pointer;
 }
 
@@ -1084,7 +1084,7 @@
 }
 
 .save-btn {
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
 }
 
@@ -1111,11 +1111,11 @@
 }
 
 .add-party-box {
-  border: 2px dashed #4d7cff;
+  border: 2px dashed #9c3d52;
   border-radius: 8px;
   padding: 30px;
   text-align: center;
-  color: #4d7cff;
+  color: #9c3d52;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1226,12 +1226,12 @@
 
 .signature-btn {
   padding: 20px;
-  border: 2px dashed #4d7cff;
+  border: 2px dashed #9c3d52;
   border-radius: 8px;
   width: 200px;
   margin-left: auto;
   font-weight: 600;
-  color: #4d7cff;
+  color: #9c3d52;
   cursor: pointer;
 }
 
@@ -1272,7 +1272,7 @@
 }
 
 .modal-save {
-  background: #6a5acd;
+  background: #8a2438;
   color: #fff;
   padding: 8px 16px;
   border-radius: 8px;

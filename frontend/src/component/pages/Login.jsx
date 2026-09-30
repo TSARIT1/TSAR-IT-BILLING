@@ -8,13 +8,13 @@ import {
   BsEyeSlashFill, 
   BsArrowRight,
   BsCheckCircleFill,
-  BsRocketTakeoffFill,
-  BsReceiptCutoff
+  BsRocketTakeoffFill
 } from "react-icons/bs";
-import Navbar from "../Navbar";
+import NavbarV6 from "../NavbarV6";
 import { loginUser } from "../../services/api";
 import Swal from "sweetalert2";
 import "../login.css";
+import "../landing-v6.css";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,10 +25,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showLoginHelp, setShowLoginHelp] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrorMsg("");
+    setShowLoginHelp(false);
   };
 
   const handleSubmit = async (e) => {
@@ -44,11 +46,39 @@ export default function Login() {
 
       if (response && response.token) {
         localStorage.setItem("token", response.token);
+        const tenantRole = response.role || response.userRole || "TENANT_OWNER";
         if (response.user) {
-          localStorage.setItem("user", JSON.stringify(response.user));
+          localStorage.setItem("user", JSON.stringify({
+            ...response.user,
+            role: tenantRole,
+            businessId: response.businessId,
+            userBusinessId: response.userBusinessId
+          }));
+          localStorage.setItem("businessData", JSON.stringify({
+            businessName: response.businessName || response.user.businessName || "My Business",
+            ownerName: response.user.ownerName || response.user.userName || "",
+            phoneNo: response.user.mobileNo || "",
+            email: response.user.email || ""
+          }));
         }
         if (response.userId) {
           localStorage.setItem("userId", response.userId);
+        }
+        if (response.businessId) {
+          localStorage.setItem("businessId", response.businessId);
+        }
+        if (response.userBusinessId) {
+          localStorage.setItem("userBusinessId", response.userBusinessId);
+        }
+        localStorage.setItem("userRole", tenantRole);
+        if (response.activePlan) {
+          localStorage.setItem("userPlan", response.activePlan);
+        }
+        if (response.planId) {
+          localStorage.setItem("userPlanId", response.planId);
+        }
+        if (response.daysRemaining !== undefined) {
+          localStorage.setItem("trialDaysRemaining", String(response.daysRemaining));
         }
 
         Swal.fire({
@@ -66,11 +96,15 @@ export default function Login() {
         setErrorMsg("Authentication failed. Please check your credentials.");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Login error:", err);
+      }
       // api.js throws error.response.data directly (not the full Axios error)
       // so err IS the data object — access .error or .message directly
       const serverMsg = (err && (err.error || err.message)) || "Invalid email/mobile or password. Please try again.";
-      setErrorMsg(serverMsg);
+      const isInvalidLogin = serverMsg === "Invalid email/mobile or password";
+      setErrorMsg(isInvalidLogin ? "Login failed. Check your password or register this business first." : serverMsg);
+      setShowLoginHelp(isInvalidLogin);
     } finally {
       setLoading(false);
     }
@@ -78,7 +112,7 @@ export default function Login() {
 
   return (
     <div className="auth-page-container">
-      <Navbar />
+      <NavbarV6 />
 
       <div className="auth-split-wrapper">
         {/* Left Side: Brand Showcase */}
@@ -86,7 +120,7 @@ export default function Login() {
           <div className="brand-side-content">
             <div className="brand-pill">
               <BsRocketTakeoffFill className="text-warning me-2" />
-              <span>TSAR IT Enterprise Billing</span>
+              <span>All In One Bill</span>
             </div>
 
             <h1 className="brand-heading">
@@ -139,8 +173,14 @@ export default function Login() {
             </div>
 
             {errorMsg && (
-              <div className="alert alert-danger py-2 px-3 small rounded-3 mb-4" role="alert">
-                {errorMsg}
+              <div className="auth-alert alert alert-danger py-2 px-3 rounded-3 mb-4" role="alert">
+                <div>{errorMsg}</div>
+                {showLoginHelp && (
+                  <div className="auth-alert-actions">
+                    <Link to="/register">Register Business Free</Link>
+                    <Link to="/forgot-password">Reset Password</Link>
+                  </div>
+                )}
               </div>
             )}
 

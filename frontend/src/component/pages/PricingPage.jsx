@@ -1,5 +1,7 @@
 import React from 'react';
-import Navbar from '../Navbar';
+import NavbarV6 from "../NavbarV6";
+import '../style.css';
+import "../landing-v6.css";
 import Footer from '../Footer';
 import PricingSection from '../PricingSection';
 import { BsShieldCheck, BsHeadset, BsArrowRepeat, BsCheckCircleFill, BsQuestionCircleFill } from 'react-icons/bs';
@@ -31,18 +33,18 @@ export default function PricingPage() {
 
   return (
     <div className="pricing-page-wrapper">
-      <Navbar />
+      <NavbarV6 />
 
       {/* Header Banner */}
-      <section className="bg-dark text-white py-5" style={{ paddingTop: '110px' }}>
+      <section className="text-white py-5" style={{ background: 'linear-gradient(135deg, #7c1e2e 0%, #611726 55%, #4a0f1a 100%)', paddingTop: '110px' }}>
         <div className="container text-center py-4">
-          <span className="badge bg-primary px-3 py-2 text-uppercase fw-bold mb-3">
+          <span className="badge px-3 py-2 text-uppercase fw-bold mb-3 shadow-sm" style={{ backgroundColor: '#c9973f', color: '#ffffff' }}>
             CLEAR & TRANSPARENT PRICING
           </span>
           <h1 className="display-5 fw-bold text-white mb-3">
-            Simple, All-Inclusive Plans for <span className="text-primary">Every Business</span>
+            Simple, All-Inclusive Plans for <span style={{ color: '#fde047' }}>Every Business</span>
           </h1>
-          <p className="lead text-light text-opacity-75 mx-auto mb-2" style={{ maxWidth: '680px', fontSize: '1.1rem' }}>
+          <p className="lead text-light text-opacity-90 mx-auto mb-2" style={{ maxWidth: '680px', fontSize: '1.1rem' }}>
             No hidden charges, no per-invoice transaction fees, and no feature gates. Select your preferred tenure and start billing immediately.
           </p>
         </div>

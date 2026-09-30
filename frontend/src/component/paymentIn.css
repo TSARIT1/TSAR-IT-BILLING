@@ -5,11 +5,11 @@
 
 /* Page Header */
 .payment-in-page-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 30px;
     border-radius: 16px;
     margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
 }
 
 .payment-in-header-content {
@@ -78,7 +78,7 @@
 
 .payment-in-create-btn {
     background: rgba(255, 255, 255, 0.9);
-    color: #3e4e96;
+    color: #7c1e2e;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -114,7 +114,7 @@
 }
 
 .payment-in-summary-card.total-payments {
-    border-left-color: #3e4e96;
+    border-left-color: #7c1e2e;
 }
 
 .payment-in-summary-card.total-amount {
@@ -132,7 +132,7 @@
 }
 
 .total-payments-icon {
-    background: linear-gradient(135deg, #3e4e96 0%, #5a6fb8 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #8a2438 100%);
 }
 
 .total-amount-icon {
@@ -196,7 +196,7 @@
 .payment-in-table th svg {
     margin-right: 6px;
     vertical-align: middle;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .payment-in-table tbody tr {
@@ -216,7 +216,7 @@
 
 .payment-number-cell {
     font-weight: 600;
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .party-name-cell {
@@ -241,8 +241,8 @@
     border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
-    background: #e0e7ff;
-    color: #3730a3;
+    background: #f6e8e4;
+    color: #4a1524;
 }
 
 /* Empty State */
@@ -271,7 +271,7 @@
 }
 
 .payment-in-empty-add-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 14px 32px;
@@ -283,12 +283,12 @@
     align-items: center;
     gap: 10px;
     transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 .payment-in-empty-add-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.5);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.5);
 }
 
 /* Responsive Design */

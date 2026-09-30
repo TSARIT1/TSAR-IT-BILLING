@@ -28,10 +28,14 @@ export const printEnterpriseInvoice = ({
     // ignore parse errors
   }
 
-  const companyLogo = business.logo || business.companyLogo || localStorage.getItem("companyLogo") || storedBusiness.logo || "";
+  let companyLogo = business.logo || business.companyLogo || localStorage.getItem("companyLogo") || storedBusiness.logo || "";
+  if (companyLogo && !companyLogo.startsWith("data:") && !companyLogo.startsWith("http")) {
+    companyLogo = `data:image/png;base64,${companyLogo}`;
+  }
   const signature = business.signature || localStorage.getItem("signature") || storedBusiness.signature || "";
   
   const businessName = business.businessName || storedBusiness.businessName || storedUser.businessName || storedUser.ownerName || "Merchant Store";
+  const ownerName = business.ownerName || storedUser.ownerName || storedUser.userName || storedBusiness.ownerName || "";
   const gstNo = business.gstNo || business.gstin || storedBusiness.gstNo || "";
   const panNo = business.panNumber || storedBusiness.panNo || "";
   const address = business.address || storedBusiness.address || "";
@@ -178,6 +182,7 @@ export const printEnterpriseInvoice = ({
       <div class="thermal-center">
         ${companyLogo ? `<img src="${companyLogo}" class="logo-img" alt="Logo" /><br/>` : ""}
         <div class="thermal-bold" style="font-size:${printSize === '80mm' ? '15px' : '13px'};">${businessName}</div>
+        ${ownerName ? `<div style="font-size:10px; font-style:italic;">Billed By: ${ownerName}</div>` : ""}
         ${address || city ? `<div>${[address, city, state].filter(Boolean).join(", ")}</div>` : ""}
         ${phone ? `<div>Phone: ${phone}</div>` : ""}
         ${gstNo ? `<div>GSTIN: ${gstNo}</div>` : ""}
@@ -231,6 +236,7 @@ export const printEnterpriseInvoice = ({
           <div>
             ${companyLogo ? `<img src="${companyLogo}" class="logo-img" alt="Logo" />` : ""}
             <h2 style="margin:0; font-size:18px; color:#0f172a; font-weight:800;">${businessName}</h2>
+            ${ownerName ? `<div style="color:#0284c7; font-size:11px; font-weight:600; margin-top:2px;">Billed By: ${ownerName}${phone ? ` (${phone})` : ''}</div>` : ""}
             <div style="color:#475569; margin-top:4px; font-size:11px;">
               ${fullAddress ? `${fullAddress}<br/>` : ""}
               ${phone || email ? `<strong>Contact:</strong> ${[phone, email].filter(Boolean).join(" | ")}<br/>` : ""}

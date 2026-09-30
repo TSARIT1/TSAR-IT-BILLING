@@ -98,7 +98,7 @@ export default function ManageUsers() {
       icon: "success",
       title: `${formData.role === "CA" ? "Chartered Accountant (CA)" : "Staff User"} Added!`,
       text: `An invitation email with secure access credentials has been dispatched to ${formData.email}.`,
-      confirmButtonColor: "#4f46e5"
+      confirmButtonColor: "#7c1e2e"
     });
   };
 

@@ -1,7 +1,9 @@
 import axios from "axios";
 
-// 1. Base URL — uses REACT_APP_API_URL env var in production; falls back to localhost for development
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8081";
+// 1. Base URL — dynamic environment detection: relative in production, http://localhost:8081 for local dev
+const BASE_URL = process.env.REACT_APP_API_URL !== undefined
+  ? process.env.REACT_APP_API_URL
+  : (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "http://localhost:8081" : "");
 
 const API_URL = `${BASE_URL}/api/auth`;
 const BUSINESS_API = `${BASE_URL}/api/business`;
@@ -44,7 +46,8 @@ const apiClient = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
 });
-// NOTE: apiClient intentionally skips auth interceptor — it handles login/register
+// Profile and password-change calls share this client and require the session token.
+addAuthInterceptor(apiClient);
 
 const businessClient = addAuthInterceptor(axios.create({
   baseURL: BUSINESS_API,
@@ -145,6 +148,16 @@ export const updateUserProfile = async (userId, profileData) => {
   }
 };
 
+export const getAllUsers = async () => {
+  try {
+    const response = await apiClient.get('/users');
+    return response.data;
+  } catch (error) {
+    console.error('getAllUsers error:', error);
+    return [];
+  }
+};
+
 // Invoice APIs
 export const createInvoice = async (invoiceData) => {
   const response = await invoiceClient.post("/create", invoiceData);
@@ -166,6 +179,16 @@ export const getInvoices = async (userId) => {
 export const deleteInvoice = async (invoiceId) => {
   try {
     const response = await invoiceClient.delete(`/delete/${invoiceId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Get single invoice by ID
+export const getInvoiceById = async (invoiceId) => {
+  try {
+    const response = await invoiceClient.get(`/${invoiceId}`);
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
@@ -351,9 +374,11 @@ export const getProductsByGodown = async (godownId) => {
 };
 
 // Get All Products (for sales invoice dropdown)
-export const getAllProducts = async () => {
+export const getAllProducts = async (userBusinessId = null) => {
   try {
-    const response = await productClient.get(""); // Empty path matches @GetMapping in backend
+    const activeBusinessId = userBusinessId || localStorage.getItem("userBusinessId") || "";
+    const params = activeBusinessId ? { userBusinessId: activeBusinessId } : {};
+    const response = await productClient.get("", { params }); // Matches @GetMapping in backend
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
@@ -391,9 +416,11 @@ export const deleteProduct = async (productId) => {
 };
 
 // Get Product Stock Summary (for Items Inventory page)
-export const getProductStockSummary = async () => {
+export const getProductStockSummary = async (userBusinessId = null) => {
   try {
-    const response = await productClient.get('/stock-summary');
+    const activeBusinessId = userBusinessId || localStorage.getItem("userBusinessId") || "";
+    const params = activeBusinessId ? { userBusinessId: activeBusinessId } : {};
+    const response = await productClient.get('/stock-summary', { params });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
@@ -582,6 +609,26 @@ export const getSaleItems = async (saleId) => {
   }
 };
 
+// Get Sale by ID
+export const getSaleById = async (saleId) => {
+  try {
+    const response = await salesClient.get(`/${saleId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Update Sale by ID
+export const updateSale = async (saleId, saleData) => {
+  try {
+    const response = await salesClient.put(`/${saleId}`, saleData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
 // Download Sales Slip PDF
 export const downloadSalesSlip = async (saleId, businessId) => {
   try {
@@ -609,6 +656,14 @@ export const downloadSalesSlip = async (saleId, businessId) => {
     }
     throw error;
   }
+};
+
+export const downloadInvoiceSalesSlip = async (invoiceId, businessId) => {
+  const response = await invoiceClient.get(`/slip/${encodeURIComponent(invoiceId)}`, {
+    params: { businessId },
+    responseType: 'blob'
+  });
+  return response.data;
 };
 
 // Purchase Return APIs
@@ -1190,6 +1245,52 @@ export const getCampaignStats = async () => {
   }
 };
 
+export const broadcastPortalNotification = async (notifData) => {
+  try {
+    const response = await notifClient.post("/portal/broadcast", notifData);
+    return response.data;
+  } catch (error) {
+    console.error("Broadcast notification error:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const getPortalNotifications = async (userId = null, businessId = null) => {
+  try {
+    const params = {};
+    if (userId) params.userId = userId;
+    if (businessId) params.businessId = businessId;
+    const response = await notifClient.get("/portal/user", { params });
+    return response.data;
+  } catch (error) {
+    console.error("Get portal notifications error:", error);
+    return [];
+  }
+};
+
+export const markNotificationRead = async (notifId) => {
+  try {
+    const response = await notifClient.put(`/portal/${notifId}/read`);
+    return response.data;
+  } catch (error) {
+    console.error("Mark notification read error:", error);
+    return null;
+  }
+};
+
+export const markAllNotificationsRead = async (userId = null, businessId = null) => {
+  try {
+    const params = {};
+    if (userId) params.userId = userId;
+    if (businessId) params.businessId = businessId;
+    const response = await notifClient.put("/portal/read-all", {}, { params });
+    return response.data;
+  } catch (error) {
+    console.error("Mark all notifications read error:", error);
+    return null;
+  }
+};
+
 // ============================================
 // E-INVOICING & E-WAY BILL APIS
 // ============================================
@@ -1270,6 +1371,15 @@ export const getBankAccounts = async () => {
 export const createBankAccount = async (accountData) => {
   try {
     const response = await bankClient.post("/accounts/create", accountData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const deleteBankAccount = async (accountId) => {
+  try {
+    const response = await bankClient.delete(`/accounts/${accountId}`);
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
@@ -1378,9 +1488,150 @@ export const deleteTicket = async (id) => {
 };
 
 // ============================================
+// PAYMENT IN (CUSTOMER RECEIPTS) API FUNCTIONS
+// ============================================
+const PAYMENT_API = `${BASE_URL}/api/payments`;
+const paymentClient = addAuthInterceptor(axios.create({
+  baseURL: PAYMENT_API,
+  headers: { "Content-Type": "application/json" },
+}));
+
+// List payments (optionally for one business)
+export const getPayments = async (businessId = null) => {
+  try {
+    const params = businessId ? { businessId } : {};
+    const response = await paymentClient.get("", { params });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Payment history for one customer
+export const getCustomerPayments = async (customerId) => {
+  try {
+    const response = await paymentClient.get(`/customer/${customerId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Record a payment in (auto-applies to unpaid sales, server-side)
+export const createPayment = async (paymentData) => {
+  try {
+    const response = await paymentClient.post("", paymentData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// Delete a payment receipt
+export const deletePayment = async (paymentId) => {
+  try {
+    const response = await paymentClient.delete(`/${paymentId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+// ============================================
 // ALIASES & COMPATIBILITY EXPORTS
 // ============================================
 // getCustomers is an alias for getAllCustomers (used in Cards.jsx and similar)
 export { getAllCustomers as getCustomers };
 
 export default apiClient;
+
+// ============================================
+// SUPER ADMIN CONTROL PLANE APIS
+// All endpoints are SUPER_ADMIN-enforced server-side.
+// ============================================
+const SUPERADMIN_API = `${BASE_URL}/api/superadmin`;
+const superAdminClient = addAuthInterceptor(axios.create({ baseURL: SUPERADMIN_API, headers: { "Content-Type": "application/json" } }));
+
+export const superAdminLogin = async (email, password) => {
+  const response = await axios.post(`${SUPERADMIN_API}/login`, { email, password });
+  return response.data;
+};
+
+export const getPlatformStats = async () => {
+  const response = await superAdminClient.get("/stats");
+  return response.data;
+};
+
+export const getAllTenants = async () => {
+  const response = await superAdminClient.get("/tenants");
+  return response.data;
+};
+
+export const setTenantFreeze = async (businessId, freeze, reason) => {
+  const response = await superAdminClient.put(`/tenants/${businessId}/freeze`, { freeze, reason });
+  return response.data;
+};
+
+export const setTenantPlan = async (businessId, planId) => {
+  const response = await superAdminClient.put(`/tenants/${businessId}/plan`, { planId });
+  return response.data;
+};
+
+export const setTicketStatus = async (id, status) => {
+  const response = await superAdminClient.put(`/tickets/${id}/status`, { status });
+  return response.data;
+};
+
+export const superAdminBroadcast = async (payload) => {
+  const response = await superAdminClient.post("/broadcast", payload);
+  return response.data;
+};
+
+export const getPlatformAudit = async (page = 0, size = 100) => {
+  const response = await superAdminClient.get(`/audit?page=${page}&size=${size}`);
+  return response.data;
+};
+
+// ============================================
+// SUPER ADMIN — ANDROID APK REMOTE CONTROL
+// ============================================
+
+/** Full remote config of the Android app (flags, release, banner, plan overrides). */
+export const getAppConfig = async () => {
+  const response = await superAdminClient.get("/app-config");
+  return response.data;
+};
+
+/** Partial patch — send only the keys you want to change. */
+export const updateAppConfig = async (patch) => {
+  const response = await superAdminClient.put("/app-config", patch);
+  return response.data;
+};
+
+/** Plan catalogue the app renders (respects super-admin overrides). */
+export const getAppPlans = async () => {
+  const response = await superAdminClient.get("/app-plans");
+  return response.data;
+};
+
+// ============================================
+// SUPER ADMIN — TICKET REPLIES + TENANT DELETION
+// ============================================
+
+/** Full reply thread for a ticket (super admin or ticket owner). */
+export const getTicketReplies = async (ticketId) => {
+  const response = await ticketClient.get(`/${ticketId}/replies`);
+  return response.data;
+};
+
+/** Post a reply to a ticket as the signed-in user (super admin or tenant). */
+export const addTicketReply = async (ticketId, message) => {
+  const response = await ticketClient.post(`/${ticketId}/replies`, { message });
+  return response.data;
+};
+
+/** Permanently delete a tenant account and all its business data (super admin only). */
+export const deleteTenantAccount = async (userId) => {
+  const response = await superAdminClient.delete(`/tenants/${userId}`);
+  return response.data;
+};

@@ -6,11 +6,11 @@
 
 /* Page Header */
 .loan-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 25px 35px;
     border-radius: 16px;
     margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -100,10 +100,10 @@
 }
 
 .progress-stepper .step.active .step-circle {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
-    border-color: #3e4e96;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    border-color: #7c1e2e;
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .progress-stepper .step.completed .step-circle {
@@ -121,7 +121,7 @@
 }
 
 .progress-stepper .step.active .step-label {
-    color: #3e4e96;
+    color: #7c1e2e;
 }
 
 .progress-stepper .step.completed .step-label {
@@ -161,7 +161,7 @@
     width: 60px;
     height: 60px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -203,7 +203,7 @@
 }
 
 .loan-form-card .form-group label i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 16px;
 }
 
@@ -220,9 +220,9 @@
 
 .loan-form-card .form-control:focus,
 .loan-form-card .form-select:focus {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
     outline: none;
 }
 
@@ -264,20 +264,20 @@
 }
 
 .loan-form-card .toggle-btn:hover {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
 }
 
 .loan-form-card .toggle-btn.active {
-    border-color: #3e4e96;
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    border-color: #7c1e2e;
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
 }
 
 /* Info Box */
 .loan-form-card .info-box {
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-left: 4px solid #3e4e96;
+    border-left: 4px solid #7c1e2e;
     padding: 15px 20px;
     border-radius: 10px;
     display: flex;
@@ -288,7 +288,7 @@
 
 .loan-form-card .info-box i {
     font-size: 24px;
-    color: #3e4e96;
+    color: #7c1e2e;
     flex-shrink: 0;
 }
 
@@ -334,7 +334,7 @@
 }
 
 .loan-form-card .features-list h4 i {
-    color: #e8961b;
+    color: #b45309;
     font-size: 18px;
 }
 
@@ -384,14 +384,14 @@
 }
 
 .loan-form-card .form-footer .btn-primary {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%) !important;
     border: none !important;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .loan-form-card .form-footer .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 .loan-form-card .form-footer .btn-success {
@@ -435,7 +435,7 @@
 }
 
 .applications-view .applications-header h3 i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 28px;
 }
 
@@ -514,7 +514,7 @@
 }
 
 .applications-table-card .table-header-row .header-cell i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 14px;
 }
 
@@ -544,7 +544,7 @@
 
 .applications-table-card .app-id {
     font-weight: 700;
-    color: #3e4e96;
+    color: #7c1e2e;
     background: #eff6ff;
     padding: 4px 10px;
     border-radius: 6px;
@@ -625,16 +625,16 @@
 }
 
 .applications-view .empty-state .btn-primary {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%) !important;
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%) !important;
     border: none !important;
     padding: 12px 28px;
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
 }
 
 .applications-view .empty-state .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Header Actions */
@@ -670,13 +670,13 @@
 .loan-header .header-actions .btn-primary {
     background: rgba(255, 255, 255, 0.95) !important;
     border: none !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .loan-header .header-actions .btn-primary:hover {
     background: #ffffff !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }

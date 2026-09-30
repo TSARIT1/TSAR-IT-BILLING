@@ -6,14 +6,14 @@
 
 /* Page Header */
 .expense-header {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     padding: 25px 35px;
     border-radius: 16px;
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -129,13 +129,13 @@
 .expense-header .btn-primary {
     background: rgba(255, 255, 255, 0.95) !important;
     border: none !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .expense-header .btn-primary:hover {
     background: #ffffff !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
@@ -177,7 +177,7 @@
 }
 
 .form-card .card-header-custom i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 18px;
 }
 
@@ -202,7 +202,7 @@
 }
 
 .form-group label i {
-    color: #3e4e96;
+    color: #7c1e2e;
     font-size: 16px;
 }
 
@@ -218,16 +218,16 @@
 
 .form-group .form-control:focus,
 .form-group .form-select:focus {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 .form-group .readonly-input {
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
-    color: #3e4e96 !important;
+    color: #7c1e2e !important;
     font-weight: 700 !important;
-    border-color: #3e4e96 !important;
+    border-color: #7c1e2e !important;
     cursor: not-allowed;
 }
 
@@ -265,13 +265,13 @@
 }
 
 .add-item-section:hover {
-    border-color: #3e4e96;
+    border-color: #7c1e2e;
     background: #f9fafb;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.1);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.1);
 }
 
 .add-item-section .add-item-btn {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     color: #ffffff;
     border: none;
     padding: 12px 30px;
@@ -283,24 +283,24 @@
     align-items: center;
     gap: 10px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 30, 46, 0.3);
     margin-bottom: 10px;
 }
 
 .add-item-section .add-item-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(62, 78, 150, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 /* Total Amount Card */
 .total-amount-card {
-    background: linear-gradient(135deg, #3e4e96 0%, #e8961b 100%);
+    background: linear-gradient(135deg, #7c1e2e 0%, #b45309 100%);
     border-radius: 16px;
     padding: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(62, 78, 150, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
     position: relative;
     overflow: hidden;
 }
