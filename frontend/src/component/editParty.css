@@ -5,7 +5,7 @@
 .edit-party-container {
   margin-left: 280px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%);
   margin-top: 70px;
   min-height: 100vh;
   font-family: "Sora", "Plus Jakarta Sans", sans-serif;
@@ -19,7 +19,7 @@
   padding: 30px;
   border-radius: 16px;
   margin-bottom: 25px;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(124, 30, 46, 0.3);
 }
 
 .page-title {
@@ -83,7 +83,7 @@
 
 .section-icon {
   font-size: 24px;
-  color: #667eea;
+  color: #7c1e2e;
 }
 
 /* =========================================
@@ -125,7 +125,7 @@
 
 .label-icon {
   font-size: 16px;
-  color: #667eea;
+  color: #7c1e2e;
 }
 
 /* =========================================
@@ -163,10 +163,10 @@
 }
 
 .form-input:focus {
-  border-color: #667eea;
+  border-color: #7c1e2e;
   outline: none;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 .form-input::placeholder {
@@ -203,10 +203,10 @@ select.form-input {
 }
 
 .form-textarea:focus {
-  border-color: #667eea;
+  border-color: #7c1e2e;
   outline: none;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 4px rgba(124, 30, 46, 0.1);
 }
 
 /* =========================================
@@ -263,7 +263,7 @@ select.form-input {
 
 .form-select-small:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #7c1e2e;
   background: #ffffff;
 }
 
@@ -305,7 +305,7 @@ select.form-input {
 
 .get-details-btn {
   height: 46px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%);
   color: #ffffff;
   border: none;
   border-radius: 0 10px 10px 0;
@@ -315,12 +315,12 @@ select.form-input {
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(124, 30, 46, 0.3);
 }
 
 .get-details-btn:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #4a1524 0%, #7c1e2e 100%);
+  box-shadow: 0 4px 12px rgba(124, 30, 46, 0.4);
   transform: translateY(-2px);
 }
 
@@ -337,7 +337,7 @@ select.form-input {
 }
 
 .bank-section:hover {
-  border-color: #667eea;
+  border-color: #7c1e2e;
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
@@ -353,12 +353,12 @@ select.form-input {
 }
 
 .add-bank-placeholder:hover {
-  color: #667eea;
+  color: #7c1e2e;
 }
 
 .bank-icon {
   font-size: 48px;
-  color: #667eea;
+  color: #7c1e2e;
   margin-bottom: 15px;
 }
 
@@ -369,7 +369,7 @@ select.form-input {
 }
 
 .add-bank-link {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%);
   color: #ffffff;
   border: none;
   padding: 10px 24px;
@@ -382,13 +382,13 @@ select.form-input {
   align-items: center;
   gap: 8px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(124, 30, 46, 0.3);
 }
 
 .add-bank-link:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, #4a1524 0%, #7c1e2e 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 16px rgba(124, 30, 46, 0.4);
 }
 
 .bank-form {
@@ -425,7 +425,7 @@ select.form-input {
 }
 
 .save-party-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%);
   color: #ffffff;
   padding: 14px 32px;
   border: none;
@@ -437,13 +437,13 @@ select.form-input {
   align-items: center;
   gap: 10px;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(124, 30, 46, 0.4);
 }
 
 .save-party-btn:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, #4a1524 0%, #7c1e2e 100%);
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 10px 30px rgba(124, 30, 46, 0.5);
 }
 
 .cancel-party-btn {

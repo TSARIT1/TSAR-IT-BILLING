@@ -380,8 +380,8 @@ public class PdfService {
 			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
 			// Define professional colors
-			final com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(44, 62,
-					80); // #2c3e50
+			final com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(74, 21,
+					36); // #4a1524 burgundy 900
 
 			// Add page event handler for header on every page
 			pdf.addEventHandler(PdfDocumentEvent.END_PAGE,
@@ -811,7 +811,7 @@ public class PdfService {
 
 			summaryTable.addHeaderCell(headerCell("Total Invoices"));
 			summaryTable.addHeaderCell(headerCell("Total Items"));
-			summaryTable.addHeaderCell(headerCell("Total Amount (₹)"));
+			summaryTable.addHeaderCell(headerCell("Total Amount (Rs.)"));
 
 			summaryTable.addCell(centerCell(totalInvoices));
 			summaryTable.addCell(centerCell(totalItems));
@@ -840,7 +840,7 @@ public class PdfService {
 					invoiceHeader.addHeaderCell(headerCell("Supplier Name"));
 					invoiceHeader.addHeaderCell(headerCell("Date"));
 					invoiceHeader.addHeaderCell(headerCell("Total Items"));
-					invoiceHeader.addHeaderCell(headerCell("Amount (₹)"));
+					invoiceHeader.addHeaderCell(headerCell("Amount (Rs.)"));
 
 					String invoiceIdShort = invoice.getInvoiceId() != null
 							? invoice.getInvoiceId().substring(0, Math.min(8, invoice.getInvoiceId().length()))
@@ -938,7 +938,7 @@ public class PdfService {
 			GstDetails gstDetails = gstDetailsRepository.findByBusiness_Id(businessId).orElse(null);
 
 			// Define professional colors
-			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(44, 62, 80); // #2c3e50
+			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(74, 21, 36); // #4a1524 burgundy 900
 
 			/* ================= BUSINESS HEADER WITH LOGO ================= */
 			Table headerTable = new Table(new float[] { 2, 5, 2 });
@@ -1029,7 +1029,7 @@ public class PdfService {
 					.setTextAlignment(TextAlignment.CENTER)
 					.setPadding(6));
 			summaryTable.addHeaderCell(new Cell()
-					.add(new Paragraph("Total Amount (₹)").setBold().setFontSize(10))
+					.add(new Paragraph("Total Amount (Rs.)").setBold().setFontSize(10))
 					.setBackgroundColor(headerColor)
 					.setFontColor(ColorConstants.WHITE)
 					.setBorder(new SolidBorder(headerColor, 2))
@@ -1284,12 +1284,13 @@ public class PdfService {
 
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-			// Fetch business data
-			Business business = businessRepository.findById(businessId).orElse(null);
-			GstDetails gstDetails = gstDetailsRepository.findByBusiness_Id(businessId).orElse(null);
+			// Fetch business & user data
+			Business business = resolveBusiness(businessId, invoice.getCustomer(), invoice);
+			User user = resolveUser(business, invoice);
+			GstDetails gstDetails = resolveGst(business);
 
 			// Define professional colors
-			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(44, 62, 80); // #2c3e50
+			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(74, 21, 36); // #4a1524 burgundy 900
 
 			/* ================= BUSINESS HEADER WITH LOGO ================= */
 			Table headerTable = new Table(new float[] { 2, 5, 2 });
@@ -1297,16 +1298,16 @@ public class PdfService {
 
 			// Logo Cell
 			Cell logoCell = new Cell().setBorder(Border.NO_BORDER);
-			if (business != null && business.getBusinessLogo() != null) {
+			if (business != null && business.getBusinessLogo() != null && business.getBusinessLogo().length > 0) {
 				try {
 					Image logo = new Image(ImageDataFactory.create(business.getBusinessLogo()));
-					logo.scaleToFit(100, 100);
+					logo.scaleToFit(90, 90);
 					logoCell.add(logo);
 				} catch (Exception e) {
 					logoCell.add(new Paragraph("LOGO").setBold().setFontSize(14));
 				}
 			} else {
-				logoCell.add(new Paragraph("LOGO").setBold().setFontSize(14));
+				logoCell.add(new Paragraph(business != null ? business.getBusinessName() : "STORE").setBold().setFontSize(14));
 			}
 			headerTable.addCell(logoCell);
 
@@ -1314,7 +1315,8 @@ public class PdfService {
 			Cell businessInfoCell = new Cell().setBorder(Border.NO_BORDER);
 			if (business != null) {
 				businessInfoCell.add(new Paragraph(business.getBusinessName())
-						.setBold().setFontSize(20).setFontColor(headerColor));
+						.setBold().setFontSize(18).setFontColor(headerColor));
+				businessInfoCell.add(new Paragraph("Billed By: " + (user != null ? nullSafe(user.getOwnerName()) : "Store Executive") + (user != null && user.getMobileNo() != null ? " (" + user.getMobileNo() + ")" : "")).setFontSize(9).setBold());
 				businessInfoCell.add(new Paragraph("Phone: " + nullSafe(business.getPhoneNo())).setFontSize(9));
 				businessInfoCell.add(new Paragraph("Email: " + nullSafe(business.getEmail())).setFontSize(9));
 				businessInfoCell.add(new Paragraph(
@@ -1333,7 +1335,7 @@ public class PdfService {
 			Cell dateCell = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
 			dateCell.add(new Paragraph("Invoice Date").setBold().setFontSize(10).setFontColor(headerColor));
 			dateCell.add(new Paragraph(
-					invoice.getInvoiceDate() != null ? invoice.getInvoiceDate().formatted(dateFormatter) : "N/A")
+					invoice.getInvoiceDate() != null ? invoice.getInvoiceDate() : "N/A")
 					.setFontSize(12).setBold());
 			headerTable.addCell(dateCell);
 
@@ -1407,7 +1409,7 @@ public class PdfService {
 					.setBorder(new SolidBorder(headerColor, 1))
 					.setPadding(5));
 			infoTable.addCell(new Cell()
-					.add(new Paragraph("₹" + totalAmount.setScale(2, java.math.RoundingMode.HALF_UP)).setFontSize(9)
+					.add(new Paragraph("Rs. " + totalAmount.setScale(2, java.math.RoundingMode.HALF_UP)).setFontSize(9)
 							.setBold())
 					.setBorder(new SolidBorder(headerColor, 1))
 					.setPadding(5));
@@ -1422,7 +1424,7 @@ public class PdfService {
 			itemsTable.setWidth(UnitValue.createPercentValue(100));
 
 			// Table Headers
-			String[] headers = { "#", "Item Name", "Quantity", "Price (₹)", "Tax (%)", "Disc (%)", "Total (₹)" };
+			String[] headers = { "#", "Item Name", "Quantity", "Price (Rs.)", "Tax (%)", "Disc (%)", "Total (Rs.)" };
 			for (String header : headers) {
 				itemsTable.addHeaderCell(new Cell()
 						.add(new Paragraph(header).setBold().setFontSize(9))
@@ -1564,8 +1566,8 @@ public class PdfService {
 			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
 			// Define professional colors
-			final com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(44, 62,
-					80); // #2c3e50
+			final com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(74, 21,
+					36); // #4a1524 burgundy 900
 
 			// Add page event handler for header on every page
 			pdf.addEventHandler(PdfDocumentEvent.END_PAGE,
@@ -1911,6 +1913,62 @@ public class PdfService {
 		return "";
 	}
 
+	private Business resolveBusiness(String businessId, Customer customer, Invoice invoice) {
+		if (businessId != null && !businessId.isBlank()) {
+			Optional<Business> b = businessRepository.findById(businessId);
+			if (b.isPresent()) return b.get();
+			try {
+				Optional<UserBusiness> ub = userBusinessRepository.findById(businessId);
+				if (ub.isPresent() && ub.get().getBusiness() != null) return ub.get().getBusiness();
+			} catch (Exception ignored) {}
+			try {
+				java.util.List<UserBusiness> ubl = userBusinessRepository.findByBusiness_Id(businessId);
+				if (!ubl.isEmpty() && ubl.get(0).getBusiness() != null) return ubl.get(0).getBusiness();
+			} catch (Exception ignored) {}
+		}
+		if (customer != null && customer.getBusinessId() != null && !customer.getBusinessId().isBlank()) {
+			Optional<Business> b = businessRepository.findById(customer.getBusinessId());
+			if (b.isPresent()) return b.get();
+			try {
+				Optional<UserBusiness> ub = userBusinessRepository.findById(customer.getBusinessId());
+				if (ub.isPresent() && ub.get().getBusiness() != null) return ub.get().getBusiness();
+			} catch (Exception ignored) {}
+			try {
+				java.util.List<UserBusiness> ubl = userBusinessRepository.findByBusiness_Id(customer.getBusinessId());
+				if (!ubl.isEmpty() && ubl.get(0).getBusiness() != null) return ubl.get(0).getBusiness();
+			} catch (Exception ignored) {}
+		}
+		if (invoice != null && invoice.getUser() != null) {
+			List<UserBusiness> ubs = userBusinessRepository.findByUserId(invoice.getUser().getId());
+			if (ubs != null && !ubs.isEmpty() && ubs.get(0).getBusiness() != null) {
+				return ubs.get(0).getBusiness();
+			}
+		}
+		List<Business> all = businessRepository.findAll();
+		return all.isEmpty() ? null : all.get(0);
+	}
+
+	private User resolveUser(Business business, Invoice invoice) {
+		if (invoice != null && invoice.getUser() != null) {
+			return invoice.getUser();
+		}
+		if (business != null && business.getId() != null) {
+			List<UserBusiness> ubs = userBusinessRepository.findByBusiness_Id(business.getId());
+			if (!ubs.isEmpty() && ubs.get(0).getUser() != null) {
+				return ubs.get(0).getUser();
+			}
+		}
+		List<User> users = userRepository.findAll();
+		return users.isEmpty() ? null : users.get(0);
+	}
+
+	private GstDetails resolveGst(Business business) {
+		if (business == null || business.getId() == null) return null;
+		return gstDetailsRepository.findByBusiness_Id(business.getId())
+				.or(() -> gstDetailsRepository.findByBusinessId(business.getId()))
+				.orElse(null);
+	}
+
 	// Generate Sales Slip PDF
 	public byte[] generateSalesSlip(Invoice invoice, List<InvoiceItems> invoiceItems, String businessId) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -1919,103 +1977,84 @@ public class PdfService {
 			Document document = new Document(pdf, PageSize.A4);
 			document.setMargins(30, 30, 30, 30);
 
-			// Fetch business data
-			Business business = businessRepository.findById(businessId).orElse(null);
-			GstDetails gstDetails = gstDetailsRepository.findByBusiness_Id(businessId).orElse(null);
+			// Fetch business & user data with fallbacks
+			Business business = resolveBusiness(businessId, invoice != null ? invoice.getCustomer() : null, invoice);
+			User user = resolveUser(business, invoice);
+			GstDetails gstDetails = resolveGst(business);
 
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
 			// Define professional colors
-			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(44, 62, 80); // #2c3e50
+			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(74, 21, 36); // #4a1524 burgundy 900
 
-			/* ================= HEADER SECTION ================= */
-			// Slip Title
-			document.add(new Paragraph("SALES SLIP")
-					.setBold()
-					.setFontSize(20)
-					.setTextAlignment(TextAlignment.CENTER)
-					.setFontColor(headerColor)
-					.setMarginBottom(5));
+			/* ================= HEADER SECTION WITH LOGO ================= */
+			Table topTable = new Table(new float[] { 2, 5, 2 });
+			topTable.setWidth(UnitValue.createPercentValue(100));
 
-			// Slip Number and Date
-			Table slipInfoTable = new Table(new float[] { 1, 1 });
-			slipInfoTable.setWidth(UnitValue.createPercentValue(100));
-			slipInfoTable.addCell(new Cell()
-					.add(new Paragraph("Slip No: " + (invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "-"))
-							.setFontSize(10).setBold())
-					.setBorder(Border.NO_BORDER)
-					.setTextAlignment(TextAlignment.LEFT));
-			slipInfoTable.addCell(new Cell()
-					.add(new Paragraph("Date: " + LocalDate.now().format(dateFormatter))
-							.setFontSize(10).setBold())
-					.setBorder(Border.NO_BORDER)
-					.setTextAlignment(TextAlignment.RIGHT));
-			document.add(slipInfoTable);
-			document.add(new LineSeparator(new SolidLine(2)).setMarginTop(5).setMarginBottom(10));
+			// Logo Cell
+			Cell logoCell = new Cell().setBorder(Border.NO_BORDER);
+			if (business != null && business.getBusinessLogo() != null && business.getBusinessLogo().length > 0) {
+				try {
+					Image logo = new Image(ImageDataFactory.create(business.getBusinessLogo()));
+					logo.scaleToFit(90, 90);
+					logoCell.add(logo);
+				} catch (Exception ignored) {
+					logoCell.add(new Paragraph("LOGO").setBold().setFontSize(14));
+				}
+			}
+			topTable.addCell(logoCell);
 
-			/* ================= BUSINESS DETAILS ================= */
-			document.add(new Paragraph("Business Details")
-					.setBold()
-					.setFontSize(12)
-					.setFontColor(headerColor)
-					.setMarginBottom(5));
-
-			Table businessTable = new Table(new float[] { 1 });
-			businessTable.setWidth(UnitValue.createPercentValue(100));
-
+			// Business Info Cell
+			Cell businessInfoCell = new Cell().setBorder(Border.NO_BORDER);
 			if (business != null) {
-				businessTable.addCell(new Cell()
-						.add(new Paragraph(business.getBusinessName())
-								.setBold().setFontSize(14).setFontColor(headerColor))
-						.setBorder(Border.NO_BORDER)
-						.setPadding(2));
-				businessTable.addCell(new Cell()
-						.add(new Paragraph("Contact: " + nullSafe(business.getPhoneNo())).setFontSize(9))
-						.setBorder(Border.NO_BORDER)
-						.setPadding(2));
-				businessTable.addCell(new Cell()
-						.add(new Paragraph("Email: " + nullSafe(business.getEmail())).setFontSize(9))
-						.setBorder(Border.NO_BORDER)
-						.setPadding(2));
-				businessTable.addCell(new Cell()
-						.add(new Paragraph(
-								"GSTIN: " + (gstDetails != null ? nullSafe(gstDetails.getGstNo()) : "Not Registered"))
-								.setFontSize(9))
-						.setBorder(Border.NO_BORDER)
-						.setPadding(2));
-
+				businessInfoCell.add(new Paragraph(business.getBusinessName())
+						.setBold().setFontSize(16).setFontColor(headerColor));
+				if (user != null && user.getOwnerName() != null && !user.getOwnerName().isBlank()) {
+					String billedBy = "Billed By: " + user.getOwnerName();
+					if (user.getMobileNo() != null && !user.getMobileNo().isBlank()) {
+						billedBy += " (" + user.getMobileNo() + ")";
+					}
+					businessInfoCell.add(new Paragraph(billedBy).setFontSize(9).setItalic().setFontColor(headerColor));
+				}
+				businessInfoCell.add(new Paragraph("Contact: " + nullSafe(business.getPhoneNo())).setFontSize(9));
+				businessInfoCell.add(new Paragraph("Email: " + nullSafe(business.getEmail())).setFontSize(9));
+				businessInfoCell.add(new Paragraph(
+						"GSTIN: " + (gstDetails != null ? nullSafe(gstDetails.getGstNo()) : "Not Registered"))
+						.setFontSize(9));
 				String address = String.format("%s, %s, %s - %s",
 						nullSafe(business.getAddress()),
 						nullSafe(business.getCity()),
 						nullSafe(business.getState()),
 						nullSafe(business.getPincode())).replaceAll(", ,", ",").replaceAll("^, |, $", "");
-				businessTable.addCell(new Cell()
-						.add(new Paragraph("Address: " + address).setFontSize(9))
-						.setBorder(Border.NO_BORDER)
-						.setPadding(2));
+				businessInfoCell.add(new Paragraph("Address: " + address).setFontSize(9));
 			}
-			document.add(businessTable);
-			document.add(new LineSeparator(new SolidLine(1)).setMarginTop(8).setMarginBottom(8));
+			topTable.addCell(businessInfoCell);
+
+			// Slip Info Cell
+			Cell slipInfoCell = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
+			slipInfoCell.add(new Paragraph("SALES SLIP").setBold().setFontSize(18).setFontColor(headerColor));
+			slipInfoCell.add(new Paragraph("Slip No: " + (invoice != null && invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "-"))
+					.setFontSize(10).setBold());
+			slipInfoCell.add(new Paragraph("Date: " + LocalDate.now().format(dateFormatter))
+					.setFontSize(10).setBold());
+			topTable.addCell(slipInfoCell);
+
+			document.add(topTable);
+			document.add(new LineSeparator(new SolidLine(2)).setMarginTop(8).setMarginBottom(10));
 
 			/* ================= SALE INFORMATION ================= */
-			document.add(new Paragraph("Sale Information")
-					.setBold()
-					.setFontSize(12)
-					.setFontColor(headerColor)
-					.setMarginBottom(5));
-
 			Table saleInfoTable = new Table(new float[] { 1, 1 });
 			saleInfoTable.setWidth(UnitValue.createPercentValue(100));
 			saleInfoTable.addCell(new Cell()
 					.add(new Paragraph(
-							"Sale Invoice ID: " + (invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "-"))
+							"Sale Invoice ID: " + (invoice != null && invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "-"))
 							.setFontSize(10).setBold())
 					.setBorder(Border.NO_BORDER)
 					.setPadding(3));
 			saleInfoTable.addCell(new Cell()
 					.add(new Paragraph("Customer Name: " +
-							(invoice.getCustomer() != null && invoice.getCustomer().getName() != null
+							(invoice != null && invoice.getCustomer() != null && invoice.getCustomer().getName() != null
 									? invoice.getCustomer().getName()
 									: "-"))
 							.setFontSize(10).setBold())
@@ -2075,12 +2114,12 @@ public class PdfService {
 							.setTextAlignment(TextAlignment.CENTER)
 							.setPadding(4));
 					itemsTable.addCell(new Cell()
-							.add(new Paragraph("?" + String.format("%.2f", unitPrice)).setFontSize(8))
+							.add(new Paragraph("Rs. " + String.format("%.2f", unitPrice)).setFontSize(8))
 							.setBorder(new SolidBorder(headerColor, 1))
 							.setTextAlignment(TextAlignment.RIGHT)
 							.setPadding(4));
 					itemsTable.addCell(new Cell()
-							.add(new Paragraph("?" + String.format("%.2f", itemTotal)).setFontSize(8))
+							.add(new Paragraph("Rs. " + String.format("%.2f", itemTotal)).setFontSize(8))
 							.setBorder(new SolidBorder(headerColor, 1))
 							.setTextAlignment(TextAlignment.RIGHT)
 							.setPadding(4));
@@ -2103,7 +2142,7 @@ public class PdfService {
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(5));
 				totalsTable.addCell(new Cell()
-						.add(new Paragraph("?" + String.format("%.2f", grandTotal)).setBold().setFontSize(12)
+						.add(new Paragraph("Rs. " + String.format("%.2f", grandTotal)).setBold().setFontSize(12)
 								.setFontColor(headerColor))
 						.setBorder(new SolidBorder(headerColor, 2))
 						.setBackgroundColor(new com.itextpdf.kernel.colors.DeviceRgb(240, 240, 240))
@@ -2160,26 +2199,15 @@ public class PdfService {
 			Document document = new Document(pdf, PageSize.A4);
 			document.setMargins(30, 30, 30, 30);
 
-			Optional<UserBusiness> userBusinessOpt = userBusinessRepository.findById(customer.getBusinessId());
-			if (userBusinessOpt.isEmpty()) {
-				System.out.println("UserBusiness NOT FOUND");
-				return new byte[0];
-			}
-
-			UserBusiness userBusiness = userBusinessOpt.get();
-			Business business = userBusiness.getBusiness();
-			if (business == null) {
-				System.out.println("Business NOT FOUND");
-				return new byte[0];
-			}
-
-			GstDetails gstDetails = gstDetailsRepository.findByBusinessId(business.getId()).orElse(null);
+			Business business = resolveBusiness(businessId, customer, null);
+			User user = resolveUser(business, null);
+			GstDetails gstDetails = resolveGst(business);
 
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
 			// Define professional colors
-			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(44, 62, 80); // #2c3e50
+			com.itextpdf.kernel.colors.DeviceRgb headerColor = new com.itextpdf.kernel.colors.DeviceRgb(74, 21, 36); // #4a1524 burgundy 900
 
 			/* ================= BUSINESS HEADER WITH LOGO ================= */
 			Table headerTable = new Table(new float[] { 2, 5, 2 });
@@ -2187,7 +2215,7 @@ public class PdfService {
 
 			// Logo Cell
 			Cell logoCell = new Cell().setBorder(Border.NO_BORDER);
-			if (business != null && business.getBusinessLogo() != null) {
+			if (business != null && business.getBusinessLogo() != null && business.getBusinessLogo().length > 0) {
 				try {
 					Image logo = new Image(ImageDataFactory.create(business.getBusinessLogo()));
 					logo.scaleToFit(100, 100);
@@ -2205,6 +2233,13 @@ public class PdfService {
 			if (business != null) {
 				businessInfoCell.add(new Paragraph(business.getBusinessName())
 						.setBold().setFontSize(20).setFontColor(headerColor));
+				if (user != null && user.getOwnerName() != null && !user.getOwnerName().isBlank()) {
+					String billedBy = "Billed By: " + user.getOwnerName();
+					if (user.getMobileNo() != null && !user.getMobileNo().isBlank()) {
+						billedBy += " (" + user.getMobileNo() + ")";
+					}
+					businessInfoCell.add(new Paragraph(billedBy).setFontSize(9).setItalic().setFontColor(headerColor));
+				}
 				businessInfoCell.add(new Paragraph("Phone: " + nullSafe(business.getPhoneNo())).setFontSize(9));
 				businessInfoCell.add(new Paragraph("Email: " + nullSafe(business.getEmail())).setFontSize(9));
 				businessInfoCell.add(new Paragraph(
@@ -2286,9 +2321,12 @@ public class PdfService {
 					double unitPrice = item.getPrice() != null ? item.getPrice() : 0;
 
 					// Fetch InvoiceItem to get tax and discount percentages
-					InvoiceItems invoiceItem = invoiceItemsRepository
-							.findByIdAndIsDeletedFalse(item.getSaleItemId())
-							.orElse(null);
+					InvoiceItems invoiceItem = null;
+					if (item.getSaleItemId() != null && !item.getSaleItemId().trim().isEmpty()) {
+						invoiceItem = invoiceItemsRepository
+								.findByIdAndIsDeletedFalse(item.getSaleItemId())
+								.orElse(null);
+					}
 
 					double taxPercent = invoiceItem != null ? invoiceItem.getTax() : 0.0;
 					double discountPercent = invoiceItem != null ? invoiceItem.getDiscount() : 0.0;
@@ -2309,10 +2347,18 @@ public class PdfService {
 							.setBorder(new SolidBorder(headerColor, 1))
 							.setTextAlignment(TextAlignment.CENTER)
 							.setPadding(4));
+
+					String prodName = "-";
+					if (item.getProduct() != null && item.getProduct().getProductName() != null) {
+						prodName = item.getProduct().getProductName();
+					} else if (item.getProductName() != null && !item.getProductName().trim().isEmpty()) {
+						prodName = item.getProductName();
+					} else if (invoiceItem != null && invoiceItem.getItemName() != null) {
+						prodName = invoiceItem.getItemName();
+					}
+
 					itemsTable.addCell(new Cell()
-							.add(new Paragraph(item.getProduct() != null && item.getProduct().getProductName() != null
-									? item.getProduct().getProductName()
-									: "-")
+							.add(new Paragraph(prodName)
 									.setFontSize(8))
 							.setBorder(new SolidBorder(headerColor, 1))
 							.setPadding(4));
@@ -2322,12 +2368,12 @@ public class PdfService {
 							.setTextAlignment(TextAlignment.CENTER)
 							.setPadding(4));
 					itemsTable.addCell(new Cell()
-							.add(new Paragraph("?" + String.format("%.2f", unitPrice)).setFontSize(8))
+							.add(new Paragraph("Rs. " + String.format("%.2f", unitPrice)).setFontSize(8))
 							.setBorder(new SolidBorder(headerColor, 1))
 							.setTextAlignment(TextAlignment.RIGHT)
 							.setPadding(4));
 					itemsTable.addCell(new Cell()
-							.add(new Paragraph("?" + String.format("%.2f", itemSubtotal)).setFontSize(8))
+							.add(new Paragraph("Rs. " + String.format("%.2f", itemSubtotal)).setFontSize(8))
 							.setBorder(new SolidBorder(headerColor, 1))
 							.setTextAlignment(TextAlignment.RIGHT)
 							.setPadding(4));
@@ -2351,7 +2397,7 @@ public class PdfService {
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(3));
 				totalsTable.addCell(new Cell()
-						.add(new Paragraph("?" + String.format("%.2f", subtotal)).setFontSize(10))
+						.add(new Paragraph("Rs. " + String.format("%.2f", subtotal)).setFontSize(10))
 						.setBorder(Border.NO_BORDER)
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(3));
@@ -2363,7 +2409,7 @@ public class PdfService {
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(3));
 				totalsTable.addCell(new Cell()
-						.add(new Paragraph("?" + String.format("%.2f", totalTaxAmount)).setFontSize(10))
+						.add(new Paragraph("Rs. " + String.format("%.2f", totalTaxAmount)).setFontSize(10))
 						.setBorder(Border.NO_BORDER)
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(3));
@@ -2375,7 +2421,7 @@ public class PdfService {
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(3));
 				totalsTable.addCell(new Cell()
-						.add(new Paragraph("- ?" + String.format("%.2f", totalDiscountAmount)).setFontSize(10))
+						.add(new Paragraph("- Rs. " + String.format("%.2f", totalDiscountAmount)).setFontSize(10))
 						.setBorder(Border.NO_BORDER)
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(3));
@@ -2395,7 +2441,7 @@ public class PdfService {
 						.setTextAlignment(TextAlignment.RIGHT)
 						.setPadding(8));
 				totalsTable.addCell(new Cell()
-						.add(new Paragraph("?" + String.format("%.2f", grandTotal)).setBold().setFontSize(12)
+						.add(new Paragraph("Rs. " + String.format("%.2f", grandTotal)).setBold().setFontSize(12)
 								.setFontColor(headerColor))
 						.setBorder(new SolidBorder(headerColor, 2))
 						.setBackgroundColor(new com.itextpdf.kernel.colors.DeviceRgb(240, 240, 240))
@@ -2444,72 +2490,54 @@ public class PdfService {
 			Document document = new Document(pdf, PageSize.A5);
 			document.setMargins(20, 20, 20, 20);
 
-			Customer customer = invoice.getCustomer();
-			if (customer == null) {
-				System.out.println("Customer not linked with invoice");
-				return new byte[0];
-			}
-
-			Optional<UserBusiness> userBusinessOpt = userBusinessRepository.findById(customer.getBusinessId());
-
-			if (userBusinessOpt.isEmpty()) {
-				System.out.println("UserBusiness NOT FOUND");
-				return new byte[0];
-			}
-
-			UserBusiness userBusiness = userBusinessOpt.get();
-			Business business = userBusiness.getBusiness();
-			if (business == null) {
-				System.out.println("Business NOT FOUND");
-				return new byte[0];
-			}
-
-			System.out.println("Business fetched: " + business.getBusinessName());
-
-			if (business != null) {
-				System.out.println("Business Name: " + business.getBusinessName());
-				System.out.println("Business Address: " + business.getAddress());
-				System.out.println("Business Phone: " + business.getPhoneNo());
-			}
-
-			GstDetails gstDetails = gstDetailsRepository.findByBusinessId(business.getId())
-					.orElse(null);
-			if (gstDetails != null) {
-				System.out.println("GSTIN: " + gstDetails.getGstNo());
-			}
+			Customer customer = invoice != null ? invoice.getCustomer() : null;
+			Business business = resolveBusiness(businessId, customer, invoice);
+			User user = resolveUser(business, invoice);
+			GstDetails gstDetails = resolveGst(business);
 
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
 
-			/* ================= BUSINESS HEADER ================= */
-			System.out.println("Business object: " + (business != null ? "Found" : "NULL"));
-			System.out.println("Business Name: " + business.getBusinessName());
-			document.add(new Paragraph(business.getBusinessName())
-					.setBold()
-					.setFontSize(14)
-					.setTextAlignment(TextAlignment.CENTER)
-					.setMarginBottom(2));
+			/* ================= BUSINESS HEADER WITH LOGO ================= */
+			Table headerTable = new Table(new float[] { 1.5f, 4 });
+			headerTable.setWidth(UnitValue.createPercentValue(100));
 
-			String fullAddress = String.format("%s, %s, %s - %s",
-					nullSafe(business.getAddress()),
-					nullSafe(business.getCity()),
-					nullSafe(business.getState()),
-					nullSafe(business.getPincode())).replaceAll(", ,", ",").replaceAll("^, |, $", "");
-			document.add(new Paragraph(fullAddress)
-					.setFontSize(8)
-					.setTextAlignment(TextAlignment.CENTER)
-					.setMarginBottom(1));
+			// Logo Cell
+			Cell logoCell = new Cell().setBorder(Border.NO_BORDER);
+			if (business != null && business.getBusinessLogo() != null && business.getBusinessLogo().length > 0) {
+				try {
+					Image logo = new Image(ImageDataFactory.create(business.getBusinessLogo()));
+					logo.scaleToFit(60, 60);
+					logoCell.add(logo);
+				} catch (Exception ignored) {
+					logoCell.add(new Paragraph("LOGO").setBold().setFontSize(12));
+				}
+			} else {
+				logoCell.add(new Paragraph("LOGO").setBold().setFontSize(12));
+			}
+			headerTable.addCell(logoCell);
 
-			document.add(new Paragraph("Phone: " + nullSafe(business.getPhoneNo()))
-					.setFontSize(8)
-					.setTextAlignment(TextAlignment.CENTER)
-					.setMarginBottom(1));
-
-			document.add(new Paragraph("GSTIN: " + (gstDetails != null ? nullSafe(gstDetails.getGstNo()) : "N/A"))
-					.setFontSize(8)
-					.setTextAlignment(TextAlignment.CENTER)
-					.setMarginBottom(5));
-
-			document.add(new LineSeparator(new SolidLine(1)).setMarginBottom(5));
+			// Business Info Cell
+			Cell businessCell = new Cell().setBorder(Border.NO_BORDER);
+			if (business != null) {
+				businessCell.add(new Paragraph(business.getBusinessName()).setBold().setFontSize(13));
+				if (user != null && user.getOwnerName() != null && !user.getOwnerName().isBlank()) {
+					String billedBy = "Billed By: " + user.getOwnerName();
+					if (user.getMobileNo() != null && !user.getMobileNo().isBlank()) {
+						billedBy += " (" + user.getMobileNo() + ")";
+					}
+					businessCell.add(new Paragraph(billedBy).setFontSize(8).setItalic());
+				}
+				String fullAddress = String.format("%s, %s, %s - %s",
+						nullSafe(business.getAddress()),
+						nullSafe(business.getCity()),
+						nullSafe(business.getState()),
+						nullSafe(business.getPincode())).replaceAll(", ,", ",").replaceAll("^, |, $", "");
+				businessCell.add(new Paragraph(fullAddress).setFontSize(7));
+				businessCell.add(new Paragraph("Phone: " + nullSafe(business.getPhoneNo()) + " | GSTIN: " + (gstDetails != null ? nullSafe(gstDetails.getGstNo()) : "N/A")).setFontSize(7));
+			}
+			headerTable.addCell(businessCell);
+			document.add(headerTable);
+			document.add(new LineSeparator(new SolidLine(1)).setMarginTop(3).setMarginBottom(5));
 
 			/* ================= INVOICE INFO ================= */
 			// Get last 6 characters of invoice ID

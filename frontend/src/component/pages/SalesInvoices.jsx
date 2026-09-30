@@ -1265,7 +1265,7 @@ function SalesInvoices() {
                       <tr
                         key={i}
                         style={{
-                          backgroundColor: isSelected ? '#f0f8ff' : 'transparent',
+                          backgroundColor: isSelected ? '#faf1ee' : 'transparent',
                           cursor: isSelectionMode && isUnpaid ? 'pointer' : 'default'
                         }}
                         onClick={() => {

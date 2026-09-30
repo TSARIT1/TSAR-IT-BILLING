@@ -32,6 +32,20 @@ COLOR_MAP = {
     # indigo tint surfaces -> burgundy tint surfaces
     "#eef2ff": "#faf1ee",
     "#e0e7ff": "#f6e8e4",
+    # slate-blue family used by legacy PDF/print templates (#2c3e50 family)
+    "#2c3e50": "#4a1524",
+    "#34495e": "#5b2a3a",
+    # flat-ui indigo gradients (667eea -> 764ba2) from purchase-return template
+    "#667eea": "#7c1e2e",
+    "#764ba2": "#4a1524",
+    "#5568d3": "#8a2438",
+    "#4c51bf": "#8a2438",
+    # pale blue tint badges/chips -> burgundy tint
+    "#e7f3ff": "#faf1ee",
+    "#f0f8ff": "#faf1ee",
+    "#f0f7ff": "#faf1ee",
+    "#f0f9ff": "#faf1ee",
+    "#f8f9ff": "#faf1ee",
 }
 
 # ---------- 2. rgba() replacements (whitespace-tolerant) ----------
@@ -42,6 +56,8 @@ RGBA_MAP = [
     (re.compile(r"rgba\(\s*232\s*,\s*150\s*,\s*27\s*,", re.I), "rgba(180, 83, 9,"),
     (re.compile(r"rgba\(\s*255\s*,\s*107\s*,\s*53\s*,", re.I), "rgba(201, 151, 63,"),
     (re.compile(r"rgba\(\s*79\s*,\s*70\s*,\s*229\s*,", re.I), "rgba(124, 30, 46,"),
+    (re.compile(r"rgba\(\s*102\s*,\s*126\s*,\s*234\s*,", re.I), "rgba(124, 30, 46,"),
+    (re.compile(r"rgba\(\s*99\s*,\s*102\s*,\s*241\s*,", re.I), "rgba(156, 61, 82,"),
 ]
 
 # ---------- 3. Font family consolidation ----------

@@ -1260,7 +1260,7 @@ function PurchaseReturn() {
                             <BsPeopleFill className="party-icon" /> {inv.customerName || 'N/A'}
                           </td>
                           <td style={{ textAlign: 'center' }}>{inv.totalItems || 0}</td>
-                          <td style={{ textAlign: 'center', fontWeight: '600', color: '#667eea' }}>
+                          <td style={{ textAlign: 'center', fontWeight: '600', color: '#7c1e2e' }}>
                             {inv.totalQuantity || 0}
                           </td>
                           <td style={{ textAlign: 'center' }}>
@@ -1275,7 +1275,7 @@ function PurchaseReturn() {
                               title="View items in this invoice"
                               style={{
                                 padding: '6px 12px',
-                                backgroundColor: '#667eea',
+                                backgroundColor: '#7c1e2e',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '6px',
@@ -1287,8 +1287,8 @@ function PurchaseReturn() {
                                 gap: '6px',
                                 transition: 'all 0.2s ease'
                               }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#5568d3'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#8a2438'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = '#7c1e2e'}
                             >
                               <BsEyeFill /> View Items
                             </button>
@@ -1505,8 +1505,8 @@ function PurchaseReturn() {
 
                           <td style={{ textAlign: 'center' }}>
                             <span style={{
-                              backgroundColor: '#e7f3ff',
-                              color: '#667eea',
+                              backgroundColor: '#faf1ee',
+                              color: '#7c1e2e',
                               padding: '4px 12px',
                               borderRadius: '12px',
                               fontSize: '13px',
@@ -1519,7 +1519,7 @@ function PurchaseReturn() {
                               {r.totalItems || 0} item{r.totalItems !== 1 ? 's' : ''}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', fontWeight: '600', color: '#667eea' }}>
+                          <td style={{ textAlign: 'center', fontWeight: '600', color: '#7c1e2e' }}>
                             {totalQuantity}
                           </td>
                           <td style={{ textAlign: 'center' }}>
@@ -1536,7 +1536,7 @@ function PurchaseReturn() {
                               }}
                               style={{
                                 padding: '6px 12px',
-                                backgroundColor: '#667eea',
+                                backgroundColor: '#7c1e2e',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '6px',
@@ -1548,8 +1548,8 @@ function PurchaseReturn() {
                                 gap: '6px',
                                 transition: 'all 0.2s ease'
                               }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#5568d3'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#8a2438'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = '#7c1e2e'}
                             >
                               <BsEyeFill /> View Items
                             </button>
@@ -1610,7 +1610,7 @@ function PurchaseReturn() {
                             border: '1px solid #ddd',
                             borderRadius: '8px',
                             marginBottom: '10px',
-                            backgroundColor: isSelected ? '#f0f8ff' : '#fff'
+                            backgroundColor: isSelected ? '#faf1ee' : '#fff'
                           }}
                         >
                           <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
@@ -1744,7 +1744,7 @@ function PurchaseReturn() {
             <div
               className="modal-header"
               style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%)',
                 color: 'white',
                 padding: '24px 30px',
                 borderBottom: 'none',
@@ -1822,7 +1822,7 @@ function PurchaseReturn() {
                     width: '50px',
                     height: '50px',
                     border: '4px solid #f3f3f3',
-                    borderTop: '4px solid #667eea',
+                    borderTop: '4px solid #7c1e2e',
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}></div>
@@ -1863,7 +1863,7 @@ function PurchaseReturn() {
                         backgroundColor: '#f8f9fa',
                         borderRadius: '8px'
                       }}>
-                        <BsPeopleFill style={{ color: '#667eea', fontSize: '20px' }} />
+                        <BsPeopleFill style={{ color: '#7c1e2e', fontSize: '20px' }} />
                         <div>
                           <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '4px' }}>Supplier</div>
                           <div style={{ fontWeight: '600', color: '#333' }}>{viewingInvoice?.customerName || 'N/A'}</div>
@@ -1877,7 +1877,7 @@ function PurchaseReturn() {
                         backgroundColor: '#f8f9fa',
                         borderRadius: '8px'
                       }}>
-                        <BsCalendar3 style={{ color: '#667eea', fontSize: '20px' }} />
+                        <BsCalendar3 style={{ color: '#7c1e2e', fontSize: '20px' }} />
                         <div>
                           <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '4px' }}>Invoice Date</div>
                           <div style={{ fontWeight: '600', color: '#333' }}>{formatDate(viewingInvoice?.invoiceDate)}</div>
@@ -1891,7 +1891,7 @@ function PurchaseReturn() {
                         backgroundColor: '#f8f9fa',
                         borderRadius: '8px'
                       }}>
-                        <BsBox style={{ color: '#667eea', fontSize: '20px' }} />
+                        <BsBox style={{ color: '#7c1e2e', fontSize: '20px' }} />
                         <div>
                           <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '4px' }}>Total Items</div>
                           <div style={{ fontWeight: '600', color: '#333' }}>{viewingInvoice?.totalItems || 0}</div>
@@ -1905,10 +1905,10 @@ function PurchaseReturn() {
                         backgroundColor: '#f8f9fa',
                         borderRadius: '8px'
                       }}>
-                        <BsCashStack style={{ color: '#667eea', fontSize: '20px' }} />
+                        <BsCashStack style={{ color: '#7c1e2e', fontSize: '20px' }} />
                         <div>
                           <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '4px' }}>Total Amount</div>
-                          <div style={{ fontWeight: '600', color: '#667eea', fontSize: '18px' }}>₹{viewingInvoice?.totalAmount || 0}</div>
+                          <div style={{ fontWeight: '600', color: '#7c1e2e', fontSize: '18px' }}>₹{viewingInvoice?.totalAmount || 0}</div>
                         </div>
                       </div>
                     </div>
@@ -1957,7 +1957,7 @@ function PurchaseReturn() {
                       }}>
                         <thead>
                           <tr style={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%)',
                             color: 'white'
                           }}>
                             {isViewReturnMode && (
@@ -1983,7 +1983,7 @@ function PurchaseReturn() {
                                   style={{
                                     borderBottom: isSelected ? 'none' : '1px solid #e9ecef',
                                     transition: 'background-color 0.2s ease',
-                                    backgroundColor: isSelected ? '#f0f7ff' : 'transparent'
+                                    backgroundColor: isSelected ? '#faf1ee' : 'transparent'
                                   }}
                                   onMouseEnter={(e) => !isSelected && (e.currentTarget.style.backgroundColor = '#f8f9fa')}
                                   onMouseLeave={(e) => !isSelected && (e.currentTarget.style.backgroundColor = 'transparent')}
@@ -1998,7 +1998,7 @@ function PurchaseReturn() {
                                           width: '18px',
                                           height: '18px',
                                           cursor: 'pointer',
-                                          accentColor: '#667eea'
+                                          accentColor: '#7c1e2e'
                                         }}
                                       />
                                     </td>
@@ -2031,12 +2031,12 @@ function PurchaseReturn() {
                                   }}>
                                     {Number(item.discount || 0).toFixed(2)}%
                                   </td>
-                                  <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: '600', color: '#667eea', whiteSpace: 'nowrap' }}>₹{Number(item.totalLineAmount || 0).toFixed(2)}</td>
+                                  <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: '600', color: '#7c1e2e', whiteSpace: 'nowrap' }}>₹{Number(item.totalLineAmount || 0).toFixed(2)}</td>
                                 </tr>
 
                                 {/* Expandable Return Details Row */}
                                 {isSelected && (
-                                  <tr style={{ backgroundColor: '#f8f9ff', borderBottom: '2px solid #667eea' }}>
+                                  <tr style={{ backgroundColor: '#faf1ee', borderBottom: '2px solid #7c1e2e' }}>
                                     <td colSpan={isViewReturnMode ? 8 : 7} style={{ padding: '20px 30px' }}>
                                       <div style={{
                                         display: 'grid',
@@ -2045,12 +2045,12 @@ function PurchaseReturn() {
                                         backgroundColor: 'white',
                                         padding: '24px',
                                         borderRadius: '12px',
-                                        border: '2px solid #667eea',
-                                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)'
+                                        border: '2px solid #7c1e2e',
+                                        boxShadow: '0 4px 12px rgba(124, 30, 46, 0.15)'
                                       }}>
                                         {/* Return Quantity Field */}
                                         <div style={{
-                                          background: 'linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%)',
+                                          background: 'linear-gradient(135deg, #faf1ee 0%, #ffffff 100%)',
                                           padding: '16px',
                                           borderRadius: '10px',
                                           border: '1px solid #f6e8e4',
@@ -2062,7 +2062,7 @@ function PurchaseReturn() {
                                             gap: '8px',
                                             marginBottom: '10px',
                                             fontWeight: '700',
-                                            color: '#4c51bf',
+                                            color: '#8a2438',
                                             fontSize: '14px',
                                             textTransform: 'uppercase',
                                             letterSpacing: '0.5px'
@@ -2093,8 +2093,8 @@ function PurchaseReturn() {
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                               }}
                                               onFocus={(e) => {
-                                                e.target.style.borderColor = '#667eea';
-                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                                e.target.style.borderColor = '#7c1e2e';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(124, 30, 46, 0.1)';
                                               }}
                                               onBlur={(e) => {
                                                 e.target.style.borderColor = '#cbd5e0';
@@ -2293,9 +2293,9 @@ function PurchaseReturn() {
 
                                 {/* Grand Total Row */}
                                 <tr style={{
-                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  background: 'linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%)',
                                   color: 'white',
-                                  borderTop: '2px solid #667eea'
+                                  borderTop: '2px solid #7c1e2e'
                                 }}>
                                   <td colSpan="6" style={{ padding: '18px 12px', textAlign: 'right', fontWeight: '700', fontSize: '16px', letterSpacing: '0.5px' }}>
                                     GRAND TOTAL:
@@ -2439,7 +2439,7 @@ function PurchaseReturn() {
                         fontWeight: '600',
                         cursor: loadingInvoicePrintData ? 'not-allowed' : 'pointer',
                         transition: 'all 0.3s ease',
-                        boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)',
+                        boxShadow: '0 2px 8px rgba(156, 61, 82, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
@@ -2449,14 +2449,14 @@ function PurchaseReturn() {
                         if (!loadingInvoicePrintData) {
                           e.target.style.backgroundColor = '#7c1e2e';
                           e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+                          e.target.style.boxShadow = '0 4px 12px rgba(156, 61, 82, 0.3)';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!loadingInvoicePrintData) {
                           e.target.style.backgroundColor = '#9c3d52';
                           e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.2)';
+                          e.target.style.boxShadow = '0 2px 8px rgba(156, 61, 82, 0.2)';
                         }
                       }}
                     >
@@ -2469,7 +2469,7 @@ function PurchaseReturn() {
                         onClick={handleAddToReturnClick}
                         style={{
                           padding: '12px 28px',
-                          backgroundColor: '#667eea',
+                          backgroundColor: '#7c1e2e',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
@@ -2477,17 +2477,17 @@ function PurchaseReturn() {
                           fontWeight: '600',
                           cursor: 'pointer',
                           transition: 'all 0.3s ease',
-                          boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)'
+                          boxShadow: '0 2px 8px rgba(124, 30, 46, 0.2)'
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#5568d3';
+                          e.target.style.backgroundColor = '#8a2438';
                           e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                          e.target.style.boxShadow = '0 4px 12px rgba(124, 30, 46, 0.3)';
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#667eea';
+                          e.target.style.backgroundColor = '#7c1e2e';
                           e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.2)';
+                          e.target.style.boxShadow = '0 2px 8px rgba(124, 30, 46, 0.2)';
                         }}
                       >
                         Add to Return
@@ -2551,7 +2551,7 @@ function PurchaseReturn() {
           }}>
             {/* Modal Header */}
             <div style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #7c1e2e 0%, #4a1524 100%)',
               padding: '24px 30px',
               borderRadius: '16px 16px 0 0',
               display: 'flex',
@@ -2763,7 +2763,7 @@ function PurchaseReturn() {
                                       width: '18px',
                                       height: '18px',
                                       cursor: 'pointer',
-                                      accentColor: '#667eea'
+                                      accentColor: '#7c1e2e'
                                     }}
                                   />
                                 </td>
@@ -2782,7 +2782,7 @@ function PurchaseReturn() {
                                 fontSize: '14px'
                               }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <BsBox style={{ color: '#667eea', fontSize: '16px' }} />
+                                  <BsBox style={{ color: '#7c1e2e', fontSize: '16px' }} />
                                   {item.itemName || 'N/A'}
                                 </div>
                               </td>
@@ -2793,7 +2793,7 @@ function PurchaseReturn() {
                                 fontSize: '15px'
                               }}>
                                 <span style={{
-                                  backgroundColor: '#e7f3ff',
+                                  backgroundColor: '#faf1ee',
                                   color: '#0066cc',
                                   padding: '6px 14px',
                                   borderRadius: '8px',
@@ -2846,7 +2846,7 @@ function PurchaseReturn() {
                                 fontSize: '15px'
                               }}>
                                 <span style={{
-                                  backgroundColor: '#f0f9ff',
+                                  backgroundColor: '#faf1ee',
                                   color: '#0369a1',
                                   padding: '6px 14px',
                                   borderRadius: '8px',
@@ -2912,7 +2912,7 @@ function PurchaseReturn() {
                                   alignItems: 'flex-start',
                                   gap: '8px'
                                 }}>
-                                  <BsFileEarmarkText style={{ color: '#667eea', fontSize: '14px', marginTop: '2px', flexShrink: 0 }} />
+                                  <BsFileEarmarkText style={{ color: '#7c1e2e', fontSize: '14px', marginTop: '2px', flexShrink: 0 }} />
                                   <span>{item.returnReason || '-'}</span>
                                 </div>
                               </td>
@@ -3004,7 +3004,7 @@ function PurchaseReturn() {
                         fontSize: '15px',
                         fontWeight: '600',
                         transition: 'all 0.3s ease',
-                        boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                        boxShadow: '0 4px 12px rgba(156, 61, 82, 0.3)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
@@ -3014,14 +3014,14 @@ function PurchaseReturn() {
                         if (!loadingPrintData) {
                           e.target.style.backgroundColor = '#7c1e2e';
                           e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.4)';
+                          e.target.style.boxShadow = '0 6px 16px rgba(156, 61, 82, 0.4)';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!loadingPrintData) {
                           e.target.style.backgroundColor = '#9c3d52';
                           e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+                          e.target.style.boxShadow = '0 4px 12px rgba(156, 61, 82, 0.3)';
                         }
                       }}
                     >
@@ -3146,7 +3146,7 @@ function PurchaseReturn() {
                 }}
                 style={{
                   padding: '12px 32px',
-                  backgroundColor: '#667eea',
+                  backgroundColor: '#7c1e2e',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -3154,20 +3154,20 @@ function PurchaseReturn() {
                   fontSize: '15px',
                   fontWeight: '600',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                  boxShadow: '0 4px 12px rgba(124, 30, 46, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#5568d3';
+                  e.target.style.backgroundColor = '#8a2438';
                   e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(124, 30, 46, 0.4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#667eea';
+                  e.target.style.backgroundColor = '#7c1e2e';
                   e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(124, 30, 46, 0.3)';
                 }}
               >
                 <BsX style={{ fontSize: '20px' }} />
@@ -3245,88 +3245,88 @@ function PurchaseReturn() {
 
           {/* Print-only content */}
           <div id="print-return-items">
-            <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '210mm', margin: '0 auto', padding: '20px', border: '2px solid #2c3e50', borderRadius: '8px', backgroundColor: '#ffffff' }}>
+            <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '210mm', margin: '0 auto', padding: '20px', border: '2px solid #4a1524', borderRadius: '8px', backgroundColor: '#ffffff' }}>
               {/* Header with Logo, Business Info, and Date */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', paddingBottom: '12px', borderBottom: '3px solid #2c3e50' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', paddingBottom: '12px', borderBottom: '3px solid #4a1524' }}>
                 {/* Left side - Business Logo and Info */}
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flex: 1 }}>
                   {/* Business Logo */}
-                  <div style={{ width: '120px', height: '120px', border: '3px solid #2c3e50', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                  <div style={{ width: '120px', height: '120px', border: '3px solid #4a1524', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                     {businessData?.logo ? (
                       <img src={`data:image/png;base64,${businessData.logo}`} alt="Logo" style={{ maxWidth: '110px', maxHeight: '110px', objectFit: 'contain' }} />
                     ) : (
-                      <span style={{ fontSize: '14px', color: '#2c3e50', fontWeight: 'bold', textAlign: 'center' }}>LOGO</span>
+                      <span style={{ fontSize: '14px', color: '#4a1524', fontWeight: 'bold', textAlign: 'center' }}>LOGO</span>
                     )}
                   </div>
 
                   {/* Business Details */}
                   <div style={{ flex: 1 }}>
-                    <h1 style={{ margin: '0 0 10px 0', color: '#2c3e50', fontSize: '26px', fontWeight: '700', letterSpacing: '0.3px' }}>
+                    <h1 style={{ margin: '0 0 10px 0', color: '#4a1524', fontSize: '26px', fontWeight: '700', letterSpacing: '0.3px' }}>
                       {businessData?.businessName || 'Business Name'}
                     </h1>
-                    <div style={{ fontSize: '11px', color: '#34495e', lineHeight: '1.7' }}>
-                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#2c3e50', fontWeight: '600' }}>Phone:</strong> <span style={{ color: '#555' }}>{businessData?.phoneNo || 'N/A'}</span></p>
-                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#2c3e50', fontWeight: '600' }}>Email:</strong> <span style={{ color: '#555' }}>{businessData?.email || 'N/A'}</span></p>
-                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#2c3e50', fontWeight: '600' }}>GSTIN:</strong> <span style={{ color: '#555' }}>{businessData?.gstNo || 'Not Registered'}</span></p>
-                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#2c3e50', fontWeight: '600' }}>Address:</strong> <span style={{ color: '#555' }}>{businessData ? `${businessData.address || ''}, ${businessData.city || ''}, ${businessData.state || ''} - ${businessData.pincode || ''}`.replace(/^[,\s]+|[,\s]+$/g, '').replace(/,\s*,/g, ',') : 'N/A'}</span></p>
+                    <div style={{ fontSize: '11px', color: '#5b2a3a', lineHeight: '1.7' }}>
+                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#4a1524', fontWeight: '600' }}>Phone:</strong> <span style={{ color: '#555' }}>{businessData?.phoneNo || 'N/A'}</span></p>
+                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#4a1524', fontWeight: '600' }}>Email:</strong> <span style={{ color: '#555' }}>{businessData?.email || 'N/A'}</span></p>
+                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#4a1524', fontWeight: '600' }}>GSTIN:</strong> <span style={{ color: '#555' }}>{businessData?.gstNo || 'Not Registered'}</span></p>
+                      <p style={{ margin: '3px 0' }}><strong style={{ color: '#4a1524', fontWeight: '600' }}>Address:</strong> <span style={{ color: '#555' }}>{businessData ? `${businessData.address || ''}, ${businessData.city || ''}, ${businessData.state || ''} - ${businessData.pincode || ''}`.replace(/^[,\s]+|[,\s]+$/g, '').replace(/,\s*,/g, ',') : 'N/A'}</span></p>
                     </div>
                   </div>
                 </div>
 
                 {/* Right side - Current Date */}
                 <div style={{ textAlign: 'right', minWidth: '150px' }}>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#2c3e50', fontWeight: '600' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#4a1524', fontWeight: '600' }}>
                     <strong>Date:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </p>
                 </div>
               </div>
 
               {/* Document Title */}
-              <h2 style={{ textAlign: 'center', color: '#2c3e50', margin: '10px 0 15px 0', fontSize: '18px', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '1px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px', display: 'inline-block', width: '100%' }}>
+              <h2 style={{ textAlign: 'center', color: '#4a1524', margin: '10px 0 15px 0', fontSize: '18px', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '1px', borderBottom: '2px solid #4a1524', paddingBottom: '8px', display: 'inline-block', width: '100%' }}>
                 PURCHASE RETURN DOCUMENT
               </h2>
 
               {/* Return and Supplier Information */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                 {/* Return Information */}
-                <div style={{ border: '2px solid #2c3e50', padding: '12px', borderRadius: '8px', backgroundColor: '#f8f9fa', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
-                  <h3 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: '14px', borderBottom: '2px solid #2c3e50', paddingBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ border: '2px solid #4a1524', padding: '12px', borderRadius: '8px', backgroundColor: '#f8f9fa', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: '#4a1524', fontSize: '14px', borderBottom: '2px solid #4a1524', paddingBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     Return Information
                   </h3>
                   <div style={{ fontSize: '11px', lineHeight: '1.5' }}>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Return ID:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.id ? `#${selectedReturnItems.id.substring(0, 12)}` : 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Return ID:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.id ? `#${selectedReturnItems.id.substring(0, 12)}` : 'N/A'}</span>
                     </p>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Return Date:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.returnDate ? new Date(selectedReturnItems.returnDate).toLocaleDateString('en-GB') : 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Return Date:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.returnDate ? new Date(selectedReturnItems.returnDate).toLocaleDateString('en-GB') : 'N/A'}</span>
                     </p>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Purchase Invoice:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.purchaseNo || 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Purchase Invoice:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.purchaseNo || 'N/A'}</span>
                     </p>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Status:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.status || 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Status:</strong> <span style={{ color: '#555' }}>{selectedReturnItems?.status || 'N/A'}</span>
                     </p>
                   </div>
                 </div>
 
                 {/* Supplier Information */}
-                <div style={{ border: '2px solid #2c3e50', padding: '12px', borderRadius: '8px', backgroundColor: '#f8f9fa', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
-                  <h3 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: '14px', borderBottom: '2px solid #2c3e50', paddingBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ border: '2px solid #4a1524', padding: '12px', borderRadius: '8px', backgroundColor: '#f8f9fa', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: '#4a1524', fontSize: '14px', borderBottom: '2px solid #4a1524', paddingBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     Supplier Information
                   </h3>
                   <div style={{ fontSize: '11px', lineHeight: '1.5' }}>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Name:</strong> <span style={{ color: '#555' }}>{supplierData?.name || selectedReturnItems?.supplierName || 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Name:</strong> <span style={{ color: '#555' }}>{supplierData?.name || selectedReturnItems?.supplierName || 'N/A'}</span>
                     </p>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Supplier ID:</strong> <span style={{ color: '#555' }}>{supplierData?.customerId ? `#${String(supplierData.customerId).substring(0, 12)}` : 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Supplier ID:</strong> <span style={{ color: '#555' }}>{supplierData?.customerId ? `#${String(supplierData.customerId).substring(0, 12)}` : 'N/A'}</span>
                     </p>
                     <p style={{ margin: '4px 0' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Contact:</strong> <span style={{ color: '#555' }}>{supplierData?.mobileNo || 'N/A'}</span>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', display: 'inline-block' }}>Contact:</strong> <span style={{ color: '#555' }}>{supplierData?.mobileNo || 'N/A'}</span>
                     </p>
 
                     <p style={{ margin: '4px 0', display: 'flex', alignItems: 'flex-start' }}>
-                      <strong style={{ color: '#2c3e50', fontWeight: '600', minWidth: '120px', flexShrink: 0 }}>Address:</strong>
+                      <strong style={{ color: '#4a1524', fontWeight: '600', minWidth: '120px', flexShrink: 0 }}>Address:</strong>
                       <span style={{ color: '#555', flex: 1 }}>{supplierData?.address || 'N/A'}</span>
                     </p>
                   </div>
@@ -3335,21 +3335,21 @@ function PurchaseReturn() {
 
               {/* Items Table */}
               <div style={{ marginTop: '15px' }}>
-                <h3 style={{ margin: '0 0 10px 0', color: '#2c3e50', fontSize: '15px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Return Items</h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', border: '2px solid #2c3e50' }}>
+                <h3 style={{ margin: '0 0 10px 0', color: '#4a1524', fontSize: '15px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Return Items</h3>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', border: '2px solid #4a1524' }}>
                   <thead>
-                    <tr style={{ backgroundColor: '#2c3e50', color: 'white' }}>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>SR No</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'left', fontWeight: '700' }}>Item Name</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Total Qty</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Returned Qty</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Unit Price</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Tax %</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Discount %</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Total Amount</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Due Date</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'left', fontWeight: '700' }}>Reason</th>
-                      <th style={{ border: '2px solid #2c3e50', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Received Date</th>
+                    <tr style={{ backgroundColor: '#4a1524', color: 'white' }}>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>SR No</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'left', fontWeight: '700' }}>Item Name</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Total Qty</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Returned Qty</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Unit Price</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Tax %</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Discount %</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Total Amount</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Due Date</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'left', fontWeight: '700' }}>Reason</th>
+                      <th style={{ border: '2px solid #4a1524', padding: '8px 6px', textAlign: 'center', fontWeight: '700' }}>Received Date</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3381,17 +3381,17 @@ function PurchaseReturn() {
 
                       return (
                         <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white' }}>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{index + 1}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', fontSize: '10px' }}>{item.itemName || 'N/A'}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.originalQuantity || 0}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.quantityReturned || 0}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>₹{(Number(item.price) || 0).toFixed(2)}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.tax || 0}%</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.discount || 0}%</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontWeight: '600', fontSize: '10px' }}>₹{totalAmount.toFixed(2)}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{formatDate(item.dueDate)}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', fontSize: '10px' }}>{item.returnReason || '-'}</td>
-                          <td style={{ border: '2px solid #2c3e50', padding: '6px', textAlign: 'center', fontSize: '10px' }}>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{index + 1}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', fontSize: '10px' }}>{item.itemName || 'N/A'}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.originalQuantity || 0}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.quantityReturned || 0}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>₹{(Number(item.price) || 0).toFixed(2)}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.tax || 0}%</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{item.discount || 0}%</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontWeight: '600', fontSize: '10px' }}>₹{totalAmount.toFixed(2)}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>{formatDate(item.dueDate)}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', fontSize: '10px' }}>{item.returnReason || '-'}</td>
+                          <td style={{ border: '2px solid #4a1524', padding: '6px', textAlign: 'center', fontSize: '10px' }}>
                             {selectedReturnItems.status === 'RECEIVED' ? formatDateTime(selectedReturnItems.receivedAt) : 'Not Received'}
                           </td>
                         </tr>
@@ -3415,15 +3415,15 @@ function PurchaseReturn() {
                         />
                       </div>
                     ) : null}
-                    <div style={{ borderTop: '2px solid #2c3e50', paddingTop: '8px', marginTop: businessData?.signature ? '0' : '40px', maxWidth: '200px' }}>
-                      <p style={{ margin: '0', fontSize: '11px', fontWeight: '700', color: '#2c3e50' }}>Authorized Signature</p>
+                    <div style={{ borderTop: '2px solid #4a1524', paddingTop: '8px', marginTop: businessData?.signature ? '0' : '40px', maxWidth: '200px' }}>
+                      <p style={{ margin: '0', fontSize: '11px', fontWeight: '700', color: '#4a1524' }}>Authorized Signature</p>
                       <p style={{ margin: '5px 0 0 0', fontSize: '10px', color: '#666' }}>{businessData?.businessName || 'Business Name'}</p>
                     </div>
                   </div>
 
                   {/* Right side - Notes Section */}
-                  <div style={{ flex: 1, border: '2px solid #2c3e50', borderRadius: '8px', padding: '12px', backgroundColor: '#f8f9fa' }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50', fontSize: '14px', fontWeight: '600', borderBottom: '2px solid #2c3e50', paddingBottom: '6px' }}>Notes</h4>
+                  <div style={{ flex: 1, border: '2px solid #4a1524', borderRadius: '8px', padding: '12px', backgroundColor: '#f8f9fa' }}>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#4a1524', fontSize: '14px', fontWeight: '600', borderBottom: '2px solid #4a1524', paddingBottom: '6px' }}>Notes</h4>
                     <div style={{ minHeight: '80px', fontSize: '10px', color: '#666', lineHeight: '1.6' }}>
                       <p style={{ margin: '0', fontStyle: 'italic' }}>Additional notes or remarks can be added here...</p>
                     </div>
