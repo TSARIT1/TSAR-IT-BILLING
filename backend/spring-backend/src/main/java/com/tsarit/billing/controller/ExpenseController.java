@@ -22,6 +22,10 @@ import java.util.Map;
 @CrossOrigin(originPatterns = "*")
 public class ExpenseController {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.tsarit.billing.service.NotificationService notificationService;
+
+
     private static final DateTimeFormatter DATE_PARSE =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     private static final DateTimeFormatter DATE_PARSE_DAY =

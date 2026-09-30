@@ -2,14 +2,22 @@ package com.tsarit.billing.service;
 
 import com.tsarit.billing.model.Customer;
 import com.tsarit.billing.model.Invoice;
+import com.tsarit.billing.model.Notification;
+import com.tsarit.billing.model.NotificationSetting;
 import com.tsarit.billing.repository.CustomerRepository;
 import com.tsarit.billing.repository.InvoiceRepository;
+import com.tsarit.billing.repository.NotificationRepository;
+import com.tsarit.billing.repository.NotificationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -21,25 +29,264 @@ public class NotificationService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    // In-memory campaign log for analytics
-    private static final List<Map<String, Object>> campaignHistory = Collections.synchronizedList(new ArrayList<>());
-@Value("${business.name:}")
-    private String businessName;
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationSettingRepository notificationSettingRepository;
+
+    @Autowired
+    private KafkaNotificationService kafkaNotificationService;
 
     @Autowired
     private WhatsAppCloudService whatsappCloudService;
 
     @Autowired(required = false)
     private SmsGatewayService smsGatewayService;
+
+    @Value("${business.name:}")
+    private String businessName;
+
+    // In-memory campaign log for analytics
+    private static final List<Map<String, Object>> campaignHistory = Collections.synchronizedList(new ArrayList<>());
+
+    // =========================================================================
+    // Core Enterprise Notification Dispatch & Persistence
+    // =========================================================================
+
+    @Transactional
+    public Notification saveAndDispatch(Notification notif) {
+        if (notif.getId() == null || notif.getId().isBlank()) {
+            notif.setId("NOTIF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+        if (notif.getCreatedAt() == null) {
+            notif.setCreatedAt(LocalDateTime.now());
+        }
+
+        Notification saved = notificationRepository.save(notif);
+
+        // Publish to Kafka & SSE for real-time delivery
+        try {
+            kafkaNotificationService.publishNotification(saved);
+        } catch (Exception e) {
+            System.err.println("[NOTIFICATION DISPATCH ERROR] " + e.getMessage());
+        }
+
+        return saved;
+    }
+
     /**
-     * Send Email with HTML content and optional attachments
+     * Dispatch transaction notification (e.g. Sale, Invoice, Payment In/Out, Expense)
      */
+    public Notification notifyTransaction(String businessId, String title, String message,
+                                          String category, String referenceId, String actionUrl, Double amount) {
+        // Check settings if alert is allowed
+        NotificationSetting setting = getOrCreateSettings(businessId, null);
+        if (setting != null) {
+            if ("SALE".equalsIgnoreCase(category) && !setting.isSalesAlerts()) return null;
+            if ("PAYMENT".equalsIgnoreCase(category) && !setting.isPaymentAlerts()) return null;
+            if ("INVOICE".equalsIgnoreCase(category) && !setting.isInvoiceAlerts()) return null;
+            if ("EXPENSE".equalsIgnoreCase(category) && !setting.isExpenseAlerts()) return null;
+            if (setting.getMinAmountThreshold() != null && setting.getMinAmountThreshold() > 0 && amount != null) {
+                if (amount < setting.getMinAmountThreshold()) return null;
+            }
+        }
+
+        Notification notif = new Notification(
+                null, businessId, null, title, message,
+                "TRANSACTION", category, referenceId, actionUrl, amount
+        );
+        return saveAndDispatch(notif);
+    }
+
+    /**
+     * Dispatch inventory / low stock alert
+     */
+    public Notification notifyStockAlert(String businessId, String title, String message, String referenceId, String actionUrl) {
+        NotificationSetting setting = getOrCreateSettings(businessId, null);
+        if (setting != null && !setting.isLowStockAlerts()) {
+            return null;
+        }
+
+        Notification notif = new Notification(
+                null, businessId, null, title, message,
+                "WARNING", "INVENTORY", referenceId, actionUrl, null
+        );
+        return saveAndDispatch(notif);
+    }
+
+    /**
+     * Dispatch support ticket update
+     */
+    public Notification notifyTicket(String businessId, String userId, String title, String message, String referenceId) {
+        Notification notif = new Notification(
+                null, businessId, userId, title, message,
+                "INFO", "TICKET", referenceId, "/tickets", null
+        );
+        return saveAndDispatch(notif);
+    }
+
+    /**
+     * Dispatch Super Admin platform broadcast (ALL tenants or target business)
+     */
+    public Notification broadcastPlatform(String title, String message, String type, String targetBusinessOrUser, String actionUrl) {
+        String target = (targetBusinessOrUser != null && !targetBusinessOrUser.isBlank()) ? targetBusinessOrUser : "ALL";
+        Notification notif = new Notification(
+                null, target, null,
+                title != null ? title : "Platform Announcement",
+                message,
+                type != null ? type : "ANNOUNCEMENT",
+                "ANNOUNCEMENT",
+                null, actionUrl, null
+        );
+        return saveAndDispatch(notif);
+    }
+
+    // =========================================================================
+    // Querying & Status
+    // =========================================================================
+
+    public List<Notification> getNotifications(String userId, String businessId, int limit) {
+        int safeLimit = (limit > 0 && limit <= 200) ? limit : 50;
+        return notificationRepository.findForUserAndBusiness(userId, businessId, PageRequest.of(0, safeLimit));
+    }
+
+    public long getUnreadCount(String userId, String businessId) {
+        return notificationRepository.countUnreadForUserAndBusiness(userId, businessId);
+    }
+
+    @Transactional
+    public boolean markNotificationRead(String notifId) {
+        Optional<Notification> opt = notificationRepository.findById(notifId);
+        if (opt.isPresent()) {
+            Notification n = opt.get();
+            n.setRead(true);
+            notificationRepository.save(n);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public int markAllNotificationsRead(String userId, String businessId) {
+        return notificationRepository.markAllAsRead(userId, businessId);
+    }
+
+    @Transactional
+    public boolean deleteNotification(String notifId) {
+        if (notificationRepository.existsById(notifId)) {
+            notificationRepository.deleteById(notifId);
+            return true;
+        }
+        return false;
+    }
+
+    // =========================================================================
+    // Super Admin Control Panel Methods
+    // =========================================================================
+
+    public Page<Notification> getAllNotificationsForAdmin(int page, int size) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size > 0 && size <= 100) ? size : 20;
+        return notificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(safePage, safeSize));
+    }
+
+    public Map<String, Object> getNotificationAnalytics() {
+        long total = notificationRepository.count();
+        List<Notification> recent = notificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 10)).getContent();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalNotifications", total);
+        stats.put("recentNotifications", recent);
+        stats.put("kafkaConnected", kafkaNotificationService.isKafkaConnected());
+        return stats;
+    }
+
+    // Legacy method signature maintained for backwards compatibility
+    public Map<String, Object> broadcastPortalNotification(String title, String message, String type, String targetUserOrTenant) {
+        Notification notif = broadcastPlatform(title, message, type, targetUserOrTenant, null);
+        return Map.of("success", true, "notification", notif);
+    }
+
+    public List<Map<String, Object>> getPortalNotifications(String userId, String businessId) {
+        List<Notification> list = getNotifications(userId, businessId, 50);
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (Notification n : list) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", n.getId());
+            m.put("title", n.getTitle());
+            m.put("message", n.getMessage());
+            m.put("type", n.getType());
+            m.put("category", n.getCategory());
+            m.put("referenceId", n.getReferenceId());
+            m.put("actionUrl", n.getActionUrl());
+            m.put("amount", n.getAmount());
+            m.put("unread", !n.isRead());
+            m.put("timestamp", n.getCreatedAt());
+            res.add(m);
+        }
+        return res;
+    }
+
+    // =========================================================================
+    // Notification Settings
+    // =========================================================================
+
+    public NotificationSetting getOrCreateSettings(String businessId, String userId) {
+        if (businessId != null && !businessId.isBlank()) {
+            Optional<NotificationSetting> opt = notificationSettingRepository.findByBusinessId(businessId);
+            if (opt.isPresent()) return opt.get();
+        }
+        if (userId != null && !userId.isBlank()) {
+            Optional<NotificationSetting> opt = notificationSettingRepository.findByUserId(userId);
+            if (opt.isPresent()) return opt.get();
+        }
+
+        NotificationSetting setting = new NotificationSetting();
+        setting.setId(UUID.randomUUID().toString());
+        setting.setBusinessId(businessId);
+        setting.setUserId(userId);
+        setting.setSoundEnabled(true);
+        setting.setPopupEnabled(true);
+        setting.setSalesAlerts(true);
+        setting.setPaymentAlerts(true);
+        setting.setInvoiceAlerts(true);
+        setting.setExpenseAlerts(true);
+        setting.setLowStockAlerts(true);
+        setting.setTicketAlerts(true);
+        setting.setSystemAnnouncements(true);
+        setting.setEmailAlerts(false);
+        setting.setMinAmountThreshold(0.0);
+        setting.setUpdatedAt(LocalDateTime.now());
+        return notificationSettingRepository.save(setting);
+    }
+
+    @Transactional
+    public NotificationSetting updateSettings(NotificationSetting newSetting) {
+        NotificationSetting current = getOrCreateSettings(newSetting.getBusinessId(), newSetting.getUserId());
+        current.setSoundEnabled(newSetting.isSoundEnabled());
+        current.setPopupEnabled(newSetting.isPopupEnabled());
+        current.setSalesAlerts(newSetting.isSalesAlerts());
+        current.setPaymentAlerts(newSetting.isPaymentAlerts());
+        current.setInvoiceAlerts(newSetting.isInvoiceAlerts());
+        current.setExpenseAlerts(newSetting.isExpenseAlerts());
+        current.setLowStockAlerts(newSetting.isLowStockAlerts());
+        current.setTicketAlerts(newSetting.isTicketAlerts());
+        current.setSystemAnnouncements(newSetting.isSystemAnnouncements());
+        current.setEmailAlerts(newSetting.isEmailAlerts());
+        current.setMinAmountThreshold(newSetting.getMinAmountThreshold());
+        current.setUpdatedAt(LocalDateTime.now());
+        return notificationSettingRepository.save(current);
+    }
+
+    // =========================================================================
+    // Existing Email / WhatsApp / SMS Campaign Logic
+    // =========================================================================
+
     public Map<String, Object> sendEmail(String toEmail, String subject, String bodyHtml) {
         Map<String, Object> result = new HashMap<>();
         try {
             System.out.println("[EMAIL DISPATCH] To: " + toEmail + " | Subject: " + subject);
-            System.out.println("[EMAIL BODY] " + bodyHtml);
-
             result.put("success", true);
             result.put("to", toEmail);
             result.put("subject", subject);
@@ -53,9 +300,6 @@ public class NotificationService {
         return result;
     }
 
-    /**
-     * Generate instant WhatsApp message and web link for invoice sharing
-     */
     public Map<String, Object> generateInvoiceWhatsApp(String invoiceId, String customPhone) {
         Map<String, Object> response = new HashMap<>();
         Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
@@ -70,14 +314,11 @@ public class NotificationService {
                 ? customPhone
                 : (invoice.getMobileNo() != null ? invoice.getMobileNo() : (invoice.getCustomer() != null ? invoice.getCustomer().getPhone() : ""));
 
-        // Sanitize phone number (remove +, spaces, hyphens)
         String cleanPhone = phone.replaceAll("[^0-9]", "");
         if (cleanPhone.length() == 10) {
-            cleanPhone = "91" + cleanPhone; // Default India country code
+            cleanPhone = "91" + cleanPhone;
         }
 
-        // Use dynamic business name from configuration
-        // If not set, default to empty string
         String businessName = this.businessName != null ? this.businessName : "";
         String invoiceNo = invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "INV-N/A";
         double amount = invoice.getTotalAmount();
@@ -96,15 +337,10 @@ public class NotificationService {
         String encodedMessage = URLEncoder.encode(messageText, StandardCharsets.UTF_8);
         String whatsappUrl = "https://api.whatsapp.com/send?phone=" + cleanPhone + "&text=" + encodedMessage;
 
-        // Real dispatch via WhatsApp Cloud API (text inside 24h session window)
         Map<String, Object> waResult = whatsappCloudService.sendText(cleanPhone, messageText);
         response.put("cloudApiSent", waResult.get("success"));
-        if (waResult.get("error") != null) {
-            response.put("cloudApiError", waResult.get("error"));
-        }
-        if (waResult.get("messageId") != null) {
-            response.put("cloudApiMessageId", waResult.get("messageId"));
-        }
+        if (waResult.get("error") != null) response.put("cloudApiError", waResult.get("error"));
+        if (waResult.get("messageId") != null) response.put("cloudApiMessageId", waResult.get("messageId"));
 
         response.put("success", true);
         response.put("invoiceId", invoiceId);
@@ -113,15 +349,9 @@ public class NotificationService {
         response.put("whatsappUrl", whatsappUrl);
         response.put("timestamp", new Date());
 
-        System.out.println("[WHATSAPP LINK GENERATED] URL: " + whatsappUrl);
         return response;
     }
 
-    /**
-     * Send or schedule bulk SMS / WhatsApp campaign.
-     * Free route: queues every message on the own-SIM gateway (cost 0),
-     * plus keeps the in-memory campaign log for /campaign/stats.
-     */
     public Map<String, Object> sendCampaign(String title, String category, String message, String audience, String businessId) {
         Map<String, Object> result = new HashMap<>();
 
@@ -130,11 +360,8 @@ public class NotificationService {
                 : customerRepository.findAll();
 
         int recipientCount = targetCustomers.size();
-        if (recipientCount == 0) {
-            recipientCount = 1; // Fallback demo target
-        }
+        if (recipientCount == 0) recipientCount = 1;
 
-        // Queue on free own-SIM gateway (real dispatch happens from gateway phone)
         int queued = 0;
         if (smsGatewayService != null && message != null && !message.isBlank()) {
             try {
@@ -146,7 +373,7 @@ public class NotificationService {
                         && !"reminder".equalsIgnoreCase(category) && !"otp".equalsIgnoreCase(category);
                 var batch = smsGatewayService.enqueueBulk(phones, message,
                         promo ? com.tsarit.billing.model.SmsMessage.Kind.PROMOTIONAL
-                              : com.tsarit.billing.model.SmsMessage.Kind.TRANSACTIONAL,
+                                : com.tsarit.billing.model.SmsMessage.Kind.TRANSACTIONAL,
                         businessId);
                 queued = batch.size();
             } catch (Exception e) {
@@ -170,18 +397,13 @@ public class NotificationService {
 
         campaignHistory.add(0, campaignRecord);
 
-        System.out.println("[CAMPAIGN DISPATCHED] ID: " + campaignId + " | Title: " + title + " | Recipients: " + recipientCount + " | GatewayQueued: " + queued);
-
         result.put("success", true);
         result.put("campaign", campaignRecord);
         result.put("gatewayQueued", queued);
-        result.put("message", "Campaign queued on free SMS gateway for " + Math.max(queued, recipientCount) + " recipients. Phone gateway will dispatch.");
+        result.put("message", "Campaign queued on free SMS gateway for " + Math.max(queued, recipientCount) + " recipients.");
         return result;
     }
 
-    /**
-     * Get campaign analytics and history
-     */
     public Map<String, Object> getCampaignStats() {
         int totalSent = campaignHistory.stream().mapToInt(c -> (int) c.get("deliveredCount")).sum();
         Map<String, Object> stats = new HashMap<>();
@@ -190,64 +412,5 @@ public class NotificationService {
         stats.put("deliveryRate", "99.8%");
         stats.put("recentCampaigns", campaignHistory.stream().limit(10).toList());
         return stats;
-    }
-
-    // Portal-wide notifications storage (broadcasts from Super Admin and system events)
-    private static final List<Map<String, Object>> portalNotifications = Collections.synchronizedList(new ArrayList<>());
-
-    public Map<String, Object> broadcastPortalNotification(String title, String message, String type, String targetUserOrTenant) {
-        Map<String, Object> notif = new HashMap<>();
-        String notifId = "NOTIF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        notif.put("id", notifId);
-        notif.put("title", title != null ? title : "System Announcement");
-        notif.put("message", message);
-        notif.put("type", type != null ? type : "INFO");
-        notif.put("target", targetUserOrTenant != null ? targetUserOrTenant : "ALL");
-        notif.put("unread", true);
-        notif.put("timestamp", new Date());
-        portalNotifications.add(0, notif);
-
-        return Map.of("success", true, "notification", notif);
-    }
-
-    public List<Map<String, Object>> getPortalNotifications(String userId, String businessId) {
-        List<Map<String, Object>> userNotifs = new ArrayList<>();
-        synchronized (portalNotifications) {
-            for (Map<String, Object> n : portalNotifications) {
-                String target = (String) n.getOrDefault("target", "ALL");
-                if ("ALL".equalsIgnoreCase(target) || 
-                    (userId != null && target.equalsIgnoreCase(userId)) || 
-                    (businessId != null && target.equalsIgnoreCase(businessId))) {
-                    userNotifs.add(new HashMap<>(n));
-                }
-            }
-        }
-        return userNotifs;
-    }
-
-    public Map<String, Object> markNotificationRead(String notifId) {
-        synchronized (portalNotifications) {
-            for (Map<String, Object> n : portalNotifications) {
-                if (notifId.equalsIgnoreCase((String) n.get("id"))) {
-                    n.put("unread", false);
-                    return Map.of("success", true, "markedId", notifId);
-                }
-            }
-        }
-        return Map.of("success", false, "message", "Notification not found");
-    }
-
-    public Map<String, Object> markAllNotificationsRead(String userId, String businessId) {
-        synchronized (portalNotifications) {
-            for (Map<String, Object> n : portalNotifications) {
-                String target = (String) n.getOrDefault("target", "ALL");
-                if ("ALL".equalsIgnoreCase(target) || 
-                    (userId != null && target.equalsIgnoreCase(userId)) || 
-                    (businessId != null && target.equalsIgnoreCase(businessId))) {
-                    n.put("unread", false);
-                }
-            }
-        }
-        return Map.of("success", true);
     }
 }

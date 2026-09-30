@@ -22,6 +22,9 @@ public class SaleService {
     private final InvoiceItemsRepository invoiceItemsRepository;
     private final StockTransactionRepository stockTransactionRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private NotificationService notificationService;
+
     public SaleService(
             SaleRepository saleRepository,
             SaleItemRepository saleItemRepository,
@@ -117,8 +120,55 @@ public class SaleService {
         }
 
         sale.setTotalAmount(totalAmount);
+        Sale saved = saleRepository.save(sale);
 
-        return saleRepository.save(sale);
+        try {
+            if (notificationService != null) {
+                String bizId = null;
+                String custName = "Customer";
+                if (saved.getCustomerId() != null) {
+                    var cOpt = customerRepository.findById(saved.getCustomerId());
+                    if (cOpt.isPresent()) {
+                        bizId = cOpt.get().getBusinessId();
+                        if (cOpt.get().getName() != null && !cOpt.get().getName().isBlank()) {
+                            custName = cOpt.get().getName();
+                        }
+                    }
+                }
+                notificationService.notifyTransaction(
+                        bizId,
+                        "New Sale Recorded",
+                        String.format("Sale completed: ₹%.2f for %s (%d items)",
+                                saved.getTotalAmount() != null ? saved.getTotalAmount() : 0.0,
+                                custName,
+                                saved.getItems() != null ? saved.getItems().size() : 0),
+                        "SALE",
+                        saved.getInvoiceId() != null ? saved.getInvoiceId() : String.valueOf(saved.getId()),
+                        "/sales",
+                        saved.getTotalAmount()
+                );
+
+                if (saved.getItems() != null) {
+                    for (SaleItem it : saved.getItems()) {
+                        if (it.getProduct() != null && it.getProduct().getRemainingStock() != null && it.getProduct().getRemainingStock() <= 5) {
+                            notificationService.notifyStockAlert(
+                                    bizId,
+                                    "Low Stock Warning",
+                                    String.format("Item '%s' has only %d units remaining in stock.",
+                                            it.getProductName() != null ? it.getProductName() : "Product",
+                                            it.getProduct().getRemainingStock()),
+                                    String.valueOf(it.getProduct().getId()),
+                                    "/inventory"
+                            );
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[SALE NOTIF ERROR] " + e.getMessage());
+        }
+
+        return saved;
     }
 
     @Transactional

@@ -452,8 +452,33 @@ public class SuperAdminController {
         String title = body.getOrDefault("title", "Platform Announcement");
         String type = body.getOrDefault("type", "INFO");
         String target = body.getOrDefault("target", "ALL");
+        String actionUrl = body.get("actionUrl");
 
-        return ResponseEntity.ok(notificationService.broadcastPortalNotification(title, message, type, target));
+        var notif = notificationService.broadcastPlatform(title, message, type, target, actionUrl);
+        audit("BROADCAST", "NOTIFICATION", notif.getId(), "Broadcasted: " + title + " to " + target);
+        return ResponseEntity.ok(Map.of("success", true, "notification", notif));
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<?> getPlatformNotifications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        requireSuperAdmin();
+        return ResponseEntity.ok(notificationService.getAllNotificationsForAdmin(page, size));
+    }
+
+    @DeleteMapping("/notifications/{id}")
+    public ResponseEntity<?> deletePlatformNotification(@PathVariable String id) {
+        requireSuperAdmin();
+        boolean deleted = notificationService.deleteNotification(id);
+        audit("NOTIFICATION_DELETE", "NOTIFICATION", id, "Super admin deleted notification " + id);
+        return ResponseEntity.ok(Map.of("success", deleted, "id", id));
+    }
+
+    @GetMapping("/notifications/analytics")
+    public ResponseEntity<?> getPlatformNotificationAnalytics() {
+        requireSuperAdmin();
+        return ResponseEntity.ok(notificationService.getNotificationAnalytics());
     }
 
     @Autowired

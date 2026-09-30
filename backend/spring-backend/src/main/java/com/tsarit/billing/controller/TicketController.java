@@ -22,6 +22,10 @@ import java.util.Optional;
 @RequestMapping("/api/tickets")
 public class TicketController {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.tsarit.billing.service.NotificationService notificationService;
+
+
     @Autowired
     private TicketRepository ticketRepository;
 

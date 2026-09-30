@@ -1291,6 +1291,70 @@ export const markAllNotificationsRead = async (userId = null, businessId = null)
   }
 };
 
+export const deleteNotification = async (notifId) => {
+  try {
+    const response = await notifClient.delete(`/${notifId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete notification error:", error);
+    return null;
+  }
+};
+
+export const getNotificationSettings = async (businessId = null, userId = null) => {
+  try {
+    const params = {};
+    if (businessId) params.businessId = businessId;
+    if (userId) params.userId = userId;
+    const response = await notifClient.get("/settings", { params });
+    return response.data;
+  } catch (error) {
+    console.error("Get notification settings error:", error);
+    return null;
+  }
+};
+
+export const updateNotificationSettings = async (settings) => {
+  try {
+    const response = await notifClient.put("/settings", settings);
+    return response.data;
+  } catch (error) {
+    console.error("Update notification settings error:", error);
+    throw error;
+  }
+};
+
+export const getSuperAdminNotifications = async (page = 0, size = 50) => {
+  try {
+    const response = await superAdminClient.get(`/notifications?page=${page}&size=${size}`);
+    return response.data;
+  } catch (error) {
+    console.error("Get admin notifications error:", error);
+    return { content: [], totalElements: 0 };
+  }
+};
+
+export const deleteSuperAdminNotification = async (id) => {
+  try {
+    const response = await superAdminClient.delete(`/notifications/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete admin notification error:", error);
+    return { success: false };
+  }
+};
+
+export const getSuperAdminNotificationAnalytics = async () => {
+  try {
+    const response = await superAdminClient.get("/notifications/analytics");
+    return response.data;
+  } catch (error) {
+    console.error("Get admin notification analytics error:", error);
+    return { totalNotifications: 0, kafkaConnected: false, recentNotifications: [] };
+  }
+};
+
+
 // ============================================
 // E-INVOICING & E-WAY BILL APIS
 // ============================================

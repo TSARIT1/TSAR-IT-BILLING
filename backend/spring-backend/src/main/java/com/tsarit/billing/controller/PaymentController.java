@@ -34,6 +34,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/payments")
 public class PaymentController {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.tsarit.billing.service.NotificationService notificationService;
+
+
     private final PaymentRepository paymentRepository;
     private final CustomerRepository customerRepository;
     private final SaleRepository saleRepository;
@@ -172,6 +176,23 @@ public class PaymentController {
         // ---- Auto-settlement: apply to oldest unpaid sales of this customer ----
         if (customer != null) {
             applyToUnpaidSales(businessId, customer.getId(), amount);
+        }
+
+        try {
+            if (notificationService != null) {
+                notificationService.notifyTransaction(
+                        businessId,
+                        "Payment Received",
+                        String.format("Received ₹%.2f from %s via %s (Receipt: %s)",
+                                amount, payment.getCustomerName(), payment.getPaymentMode(), payment.getPaymentNo()),
+                        "PAYMENT",
+                        payment.getPaymentNo(),
+                        "/payment-in",
+                        amount
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("[PAYMENT NOTIF ERROR] " + e.getMessage());
         }
 
         return payment;

@@ -1,0 +1,194 @@
+/* Floating Enterprise Real-time Toast Notifications */
+.notif-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 380px;
+  width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.notif-toast-card {
+  pointer-events: auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+}
+
+.notif-toast-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.2);
+}
+
+.notif-toast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px 6px 14px;
+}
+
+.notif-toast-icon {
+  font-size: 1.1rem;
+}
+
+.notif-toast-icon.success {
+  color: #10b981;
+}
+
+.notif-toast-icon.warning {
+  color: #f59e0b;
+}
+
+.notif-toast-icon.announcement {
+  color: #6366f1;
+}
+
+.notif-toast-icon.info {
+  color: #3b82f6;
+}
+
+.notif-toast-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.notif-toast-transaction .notif-toast-badge {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.notif-toast-warning .notif-toast-badge {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.notif-toast-announcement .notif-toast-badge {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.notif-toast-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.notif-toast-close:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.notif-toast-body {
+  padding: 4px 14px 12px 14px;
+}
+
+.notif-toast-title {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.notif-toast-msg {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.notif-toast-amount {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.notif-toast-footer {
+  padding: 0 14px 10px 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notif-toast-action {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.notif-toast-action:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.notif-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  animation: notifProgress 6s linear forwards;
+}
+
+.notif-toast-transaction .notif-toast-progress {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.notif-toast-warning .notif-toast-progress {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+@keyframes notifProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

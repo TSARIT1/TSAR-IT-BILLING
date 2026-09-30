@@ -26,7 +26,6 @@ public class SecurityConfig {
     private JwtFilter jwtFilter;
 
     public SecurityConfig() {
-        
         System.out.println("SECURITY CONFIGURATION LOADED SUCCESSFULLY");
     }
 
@@ -41,16 +40,14 @@ public class SecurityConfig {
                          "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                  .requestMatchers(HttpMethod.POST, "/api/superadmin/login").permitAll()
                  .requestMatchers(HttpMethod.GET, "/api/subscriptions/plans").permitAll()
-                 // The APK reads its remote config during the splash screen, before login,
-                 // so the super-admin controlled release gate / feature flags must be public.
                  .requestMatchers(HttpMethod.GET, "/api/app/config", "/api/app/plans", "/api/app/version").permitAll()
-                 .requestMatchers(HttpMethod.GET, "/api/app/version").permitAll()
-        		 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        		 .requestMatchers("/api/invoices/public/**").permitAll()
-        		 .requestMatchers("/api/business/public/**").permitAll()
-        		 .requestMatchers("/api/whatsapp/webhook").permitAll()
-        		 .requestMatchers("/api/whatsapp/status").permitAll()
-        		 .requestMatchers("/error").permitAll()
+                 .requestMatchers(HttpMethod.GET, "/api/notifications/stream").permitAll()
+                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                 .requestMatchers("/api/invoices/public/**").permitAll()
+                 .requestMatchers("/api/business/public/**").permitAll()
+                 .requestMatchers("/api/whatsapp/webhook").permitAll()
+                 .requestMatchers("/api/whatsapp/status").permitAll()
+                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
         .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, error) -> {
@@ -62,13 +59,11 @@ public class SecurityConfig {
 
         return http.build();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow all origins (Use specific URL like "http://localhost:5173" for production)
         configuration.setAllowedOriginPatterns(List.of("*")); 
-        
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -77,6 +72,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

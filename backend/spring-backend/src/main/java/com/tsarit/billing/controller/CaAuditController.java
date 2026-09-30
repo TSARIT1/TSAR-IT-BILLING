@@ -4,17 +4,27 @@ import com.tsarit.billing.model.Invoice;
 import com.tsarit.billing.model.InvoiceItems;
 import com.tsarit.billing.model.Expense;
 import com.tsarit.billing.model.Staff;
+import com.tsarit.billing.model.User;
+import com.tsarit.billing.model.UserBusiness;
+import com.tsarit.billing.model.UserRole;
 import com.tsarit.billing.repository.InvoiceRepository;
 import com.tsarit.billing.repository.InvoiceItemsRepository;
 import com.tsarit.billing.repository.ExpenseRepository;
 import com.tsarit.billing.repository.StaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -49,10 +59,22 @@ public class CaAuditController {
     private com.tsarit.billing.repository.UserBusinessRepository userBusinessRepository;
 
     @Autowired
+    private com.tsarit.billing.repository.UserRepository userRepository;
+
+    @Autowired
     private com.tsarit.billing.repository.BusinessRepository businessRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired(required = false)
     private com.tsarit.billing.service.SmsGatewayService smsGatewayService;
+
+    @Autowired(required = false)
+    private com.tsarit.billing.service.WhatsAppCloudService whatsAppCloudService;
+
+    private static final SecureRandom PASSWORD_RANDOM = new SecureRandom();
+    private static final String PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$";
 
     /**
      * The mobile app historically sent the *user* id where the CA endpoints scope by
@@ -80,7 +102,8 @@ public class CaAuditController {
         if (userId == null || userId.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "userId is required"));
         }
-        List<Invoice> invoices = salesInvoices(userId, month);
+        String businessId = requireBusinessAccess(userId);
+        List<Invoice> invoices = salesInvoicesForBusiness(businessId, userId, month);
 
         List<Map<String, Object>> rows = new ArrayList<>();
         double totalTaxable = 0, totalCgst = 0, totalSgst = 0, totalIgst = 0, totalAmount = 0;
@@ -140,7 +163,8 @@ public class CaAuditController {
         if (userId == null || userId.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "userId is required"));
         }
-        List<Invoice> invoices = salesInvoices(userId, month);
+        String businessId = requireBusinessAccess(userId);
+        List<Invoice> invoices = salesInvoicesForBusiness(businessId, userId, month);
 
         double outputTax = 0, outputTaxable = 0;
         for (Invoice inv : invoices) {
@@ -153,7 +177,6 @@ public class CaAuditController {
         }
 
         // Input credit: GST paid on business expenses (purchases-side)
-        String businessId = resolveBusinessId(userId);
         double inputTax = 0, inputTaxable = 0;
         List<Expense> expenses = expenseRepository.findByBusinessIdOrderByExpenseDateDesc(businessId).stream()
                 .filter(e -> inMonth(e.getExpenseDate(), month))
@@ -212,8 +235,8 @@ public class CaAuditController {
     @Transactional(readOnly = true)
     public ResponseEntity<String> exportDayBook(@RequestParam("userId") String userId,
                                                 @RequestParam(value = "month", required = false) String month) {
-        String businessId = resolveBusinessId(userId);
-        List<Invoice> invoices = salesInvoices(userId, month);
+        String businessId = requireBusinessAccess(userId);
+        List<Invoice> invoices = salesInvoicesForBusiness(businessId, userId, month);
         StringBuilder sb = new StringBuilder("Date,Type,Reference,Party,Amount\n");
         for (Invoice inv : invoices) {
             sb.append(inv.getInvoiceDate()).append(",SALE INVOICE,").append(inv.getInvoiceId())
@@ -239,7 +262,7 @@ public class CaAuditController {
         if (userId == null || userId.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "userId is required"));
         }
-        String businessId = resolveBusinessId(userId);
+        String businessId = requireBusinessAccess(userId);
         List<Staff> rows = staffRepository.findByBusinessId(businessId).stream()
                 .filter(s -> "ACCOUNTANT".equalsIgnoreCase(s.getRole()))
                 .toList();
@@ -256,43 +279,63 @@ public class CaAuditController {
         if (userId == null || userId.isBlank() || name == null || name.isBlank() || mobile == null || mobile.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "userId, name and mobile are required"));
         }
-        String businessId = resolveBusinessId(userId);
+        String businessId = requireManageCaAccess(userId);
+        String businessName = businessRepository.findById(businessId)
+                .map(b -> b.getBusinessName() != null && !b.getBusinessName().isBlank()
+                        ? b.getBusinessName() : "your business")
+                .orElse("your business");
         String email = body.get("email");
         // Compare on last 10 digits so 91XXXXXXXXXX / XXXXXXXXXX match the same person
         final String mobileKey = last10(mobile);
+        if (mobileKey.length() != 10) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Enter a valid 10-digit CA mobile number"));
+        }
 
         // Re-invite updates the existing record instead of duplicating
         Staff existing = staffRepository.findByBusinessId(businessId).stream()
                 .filter(s -> "ACCOUNTANT".equalsIgnoreCase(s.getRole()))
                 .filter(s -> last10(s.getMobileNumber()).equals(mobileKey))
                 .findFirst().orElse(null);
+        Staff ca;
         if (existing != null) {
             existing.setName(name);
             existing.setStatus(Staff.Status.ACTIVE);
-            staffRepository.save(existing);
-            return ResponseEntity.ok(Map.of("status", "updated", "accountant", existing, "businessId", businessId));
+            ca = staffRepository.save(existing);
+        } else {
+            ca = new Staff();
+            ca.setBusinessId(businessId);
+            ca.setName(name);
+            ca.setMobileNumber(mobileKey);
+            ca.setRole("ACCOUNTANT");
+            ca.setSalaryPayoutType(Staff.SalaryPayoutType.MONTHLY);
+            ca.setSalary(BigDecimal.ZERO);
+            ca = staffRepository.save(ca);
         }
 
-        Staff ca = new Staff();
-        ca.setBusinessId(businessId);
-        ca.setName(name);
-        ca.setMobileNumber(mobile);
-        ca.setRole("ACCOUNTANT");
-        ca.setSalaryPayoutType(Staff.SalaryPayoutType.MONTHLY);
-        ca.setSalary(java.math.BigDecimal.ZERO);
-        staffRepository.save(ca);
-
-        // Tell the CA they now have read-only access, on the free SMS gateway (cost 0)
-        String inviteSms = "Hi " + name + ", " + "you have been given read-only audit access"
-                + " (GSTR-1, GSTR-3B, CSV exports) by the business owner."
-                + " You cannot edit the books. - All In One Bill";
-        try {
-            if (smsGatewayService != null) {
-                smsGatewayService.enqueue(mobile, inviteSms, com.tsarit.billing.model.SmsMessage.Kind.TRANSACTIONAL, businessId);
+        CredentialResult credentials = upsertAccountantLogin(name, mobileKey, email, businessName, businessId);
+        String inviteText = buildAccountantInviteMessage(name, businessName, mobileKey, credentials);
+        Map<String, Object> whatsAppResult = sendInviteOnWhatsApp(mobileKey, inviteText);
+        boolean whatsappSent = Boolean.TRUE.equals(whatsAppResult.get("success"));
+        boolean smsFallbackQueued = false;
+        if (!whatsappSent && smsGatewayService != null) {
+            try {
+                smsGatewayService.enqueue(mobileKey, inviteText, com.tsarit.billing.model.SmsMessage.Kind.TRANSACTIONAL, businessId);
+                smsFallbackQueued = true;
+            } catch (Exception ignored) {
+                smsFallbackQueued = false;
             }
-        } catch (Exception ignored) { }
+        }
 
-        return ResponseEntity.ok(Map.of("status", "invited", "accountant", ca, "businessId", businessId,
+        return ResponseEntity.ok(Map.of(
+                "status", existing != null ? "updated" : "invited",
+                "accountant", ca,
+                "businessId", businessId,
+                "loginMobile", mobileKey,
+                "credentialDelivery", Map.of(
+                        "channel", whatsappSent ? "WHATSAPP" : (smsFallbackQueued ? "SMS_FALLBACK" : "FAILED"),
+                        "whatsapp", whatsAppResult,
+                        "smsFallbackQueued", smsFallbackQueued,
+                        "passwordGenerated", credentials.passwordGenerated()),
                 "access", "read-only audit reports & exports"));
     }
 
@@ -305,7 +348,7 @@ public class CaAuditController {
         if (userId == null || userId.isBlank() || mobile == null || mobile.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "userId and mobile are required"));
         }
-        String businessId = resolveBusinessId(userId);
+        String businessId = requireManageCaAccess(userId);
         final String mobileKey = last10(mobile);
 
         List<Staff> matches = staffRepository.findByBusinessId(businessId).stream()
@@ -314,7 +357,17 @@ public class CaAuditController {
                 .toList();
         matches.forEach(s -> s.setStatus(Staff.Status.INACTIVE));
         staffRepository.saveAll(matches);
-        return ResponseEntity.ok(Map.of("status", "revoked", "count", matches.size()));
+        int membershipRevoked = userRepository.findByMobileNo(mobileKey)
+                .map(u -> {
+                    List<UserBusiness> links = userBusinessRepository.findByUser_IdAndBusiness_Id(u.getId(), businessId).stream()
+                            .filter(ub -> ub.getRole() == UserRole.ACCOUNTANT)
+                            .toList();
+                    userBusinessRepository.deleteAll(links);
+                    return links.size();
+                })
+                .orElse(0);
+        return ResponseEntity.ok(Map.of("status", "revoked", "count", matches.size(),
+                "loginAccessRevoked", membershipRevoked));
     }
 
     /* ================= helpers ================= */
@@ -324,8 +377,137 @@ public class CaAuditController {
         return d.length() > 10 ? d.substring(d.length() - 10) : d;
     }
 
+    private String requireBusinessAccess(String idOrUserId) {
+        String businessId = resolveBusinessId(idOrUserId);
+        User caller = authenticatedUser();
+        boolean allowed = userBusinessRepository.findByUserId(caller.getId()).stream()
+                .anyMatch(ub -> ub.getBusiness() != null
+                        && businessId.equals(ub.getBusiness().getId())
+                        && ub.getRole() != null);
+        if (!allowed) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this business");
+        }
+        return businessId;
+    }
+
+    private String requireManageCaAccess(String idOrUserId) {
+        String businessId = resolveBusinessId(idOrUserId);
+        User caller = authenticatedUser();
+        boolean allowed = userBusinessRepository.findByUserId(caller.getId()).stream()
+                .anyMatch(ub -> ub.getBusiness() != null
+                        && businessId.equals(ub.getBusiness().getId())
+                        && (ub.getRole() == UserRole.TENANT_OWNER
+                            || ub.getRole() == UserRole.ADMIN
+                            || ub.getRole() == UserRole.SUPER_ADMIN));
+        if (!allowed) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the owner/admin can manage CA access");
+        }
+        return businessId;
+    }
+
+    private User authenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth != null ? auth.getPrincipal() : null;
+        if (principal instanceof User u) return u;
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+    }
+
+    private CredentialResult upsertAccountantLogin(String name, String mobileKey, String email,
+                                                   String businessName, String businessId) {
+        Optional<User> existing = userRepository.findByMobileNo(mobileKey);
+        User caUser = existing.orElseGet(User::new);
+        boolean passwordGenerated = false;
+        String plainPassword = null;
+
+        if (caUser.getId() == null || caUser.getId().isBlank()) {
+            caUser.setId("USR-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12));
+            caUser.setMobileNo(mobileKey);
+            caUser.setOwnerName(name);
+            caUser.setBusinessName(businessName);
+            if (email != null && !email.isBlank()
+                    && userRepository.findByEmailIgnoreCase(email.trim().toLowerCase(Locale.ROOT)).isEmpty()) {
+                caUser.setEmail(email.trim().toLowerCase(Locale.ROOT));
+            }
+            plainPassword = generatePassword();
+            caUser.setPassword(passwordEncoder.encode(plainPassword));
+            passwordGenerated = true;
+        } else {
+            if (caUser.getOwnerName() == null || caUser.getOwnerName().isBlank()) caUser.setOwnerName(name);
+            if (caUser.getBusinessName() == null || caUser.getBusinessName().isBlank()) caUser.setBusinessName(businessName);
+            boolean onlyAccountant = userBusinessRepository.findByUserId(caUser.getId()).stream()
+                    .allMatch(ub -> ub.getRole() == UserRole.ACCOUNTANT);
+            boolean hasThisAccountantLink = userBusinessRepository.findByUser_IdAndBusiness_Id(caUser.getId(), businessId).stream()
+                    .anyMatch(ub -> ub.getRole() == UserRole.ACCOUNTANT);
+            if (onlyAccountant || hasThisAccountantLink) {
+                plainPassword = generatePassword();
+                caUser.setPassword(passwordEncoder.encode(plainPassword));
+                passwordGenerated = true;
+            }
+        }
+        caUser = userRepository.save(caUser);
+
+        List<UserBusiness> links = userBusinessRepository.findByUser_IdAndBusiness_Id(caUser.getId(), businessId);
+        if (links.isEmpty()) {
+            UserBusiness link = new UserBusiness();
+            link.setUser(caUser);
+            link.setBusiness(businessRepository.findById(businessId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Business not found")));
+            link.setRole(UserRole.ACCOUNTANT);
+            userBusinessRepository.save(link);
+        } else {
+            for (UserBusiness link : links) {
+                if (link.getRole() == null || link.getRole() == UserRole.ACCOUNTANT) {
+                    link.setRole(UserRole.ACCOUNTANT);
+                    userBusinessRepository.save(link);
+                }
+            }
+        }
+        return new CredentialResult(mobileKey, plainPassword, passwordGenerated);
+    }
+
+    private String generatePassword() {
+        StringBuilder out = new StringBuilder("Ca@");
+        for (int i = 0; i < 9; i++) {
+            out.append(PASSWORD_CHARS.charAt(PASSWORD_RANDOM.nextInt(PASSWORD_CHARS.length())));
+        }
+        return out.toString();
+    }
+
+    private String buildAccountantInviteMessage(String name, String businessName, String mobileKey, CredentialResult credentials) {
+        StringBuilder msg = new StringBuilder();
+        msg.append("Hi ").append(name).append(",\n\n")
+                .append("You have been given read-only CA access to ").append(businessName).append(" in TSAR IT Billing.\n")
+                .append("You can view CA Audit Trail, GSTR-1, GSTR-3B, Day Book CSV exports and reports. You cannot edit books.\n\n")
+                .append("Login: https://billing.tsaritservices.com/login\n")
+                .append("Mobile: ").append(mobileKey).append("\n");
+        if (credentials.plainPassword() != null && !credentials.plainPassword().isBlank()) {
+            msg.append("Password: ").append(credentials.plainPassword()).append("\n");
+        } else {
+            msg.append("Password: use your existing TSAR IT Billing password.\n");
+        }
+        msg.append("\nPlease change the password after login.");
+        return msg.toString();
+    }
+
+    private Map<String, Object> sendInviteOnWhatsApp(String mobile, String text) {
+        try {
+            if (whatsAppCloudService == null) {
+                return new HashMap<>(Map.of("success", false, "configured", false, "error", "WhatsApp service unavailable"));
+            }
+            return whatsAppCloudService.sendText(mobile, text);
+        } catch (Exception e) {
+            return new HashMap<>(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    private record CredentialResult(String mobile, String plainPassword, boolean passwordGenerated) {}
+
     private List<Invoice> salesInvoices(String userId, String month) {
-        String businessId = resolveBusinessId(userId);
+        String businessId = requireBusinessAccess(userId);
+        return salesInvoicesForBusiness(businessId, userId, month);
+    }
+
+    private List<Invoice> salesInvoicesForBusiness(String businessId, String userId, String month) {
         List<Invoice> all = invoiceRepository.findByCustomer_BusinessIdAndIsSaledTrueAndIsDeletedFalse(businessId);
         if (all.isEmpty() && businessId.equals(userId)) {
             all = invoiceRepository.findByUser_IdAndIsSaledTrueAndIsDeletedFalse(userId);

@@ -1071,7 +1071,6 @@ a.text-primary {
 .stat-label-text,
 .staff-summary-cards .summary-card .card-content h4,
 th,
-[class*="subtitle"],
 [class*="label"] {
   color: #64748b !important;
 }
@@ -1250,7 +1249,10 @@ button {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
-.portal-page-body [class*="-page-header"] .btn-secondary:hover,
+/* 2. Small text inside colored surfaces — keep light-on-dark pairs together.
+   (Was a blanket [class*="subtitle"] grey rule that left dark-on-dark text
+   inside burgundy header strips and the welcome banner. Subtitles now own
+   their color: banner-subtitle in dashboard.css, header strips below.) */
 .portal-page-body [class*="-header"] .btn-secondary:hover,
 .header-action-btn:hover,
 .sales-invoices-report-btn:hover,

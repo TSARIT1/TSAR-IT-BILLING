@@ -28,50 +28,44 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-    	 try {
-             String jwt = parseJwt(request);
-             // 1. Check if Token exists and is valid
-             if (jwt != null && jwtUtil.validateToken(jwt)) {
-                 
-                 // 2. Extract Identifier (email, mobile, or userId)
-                 String identifier = jwtUtil.getEmailFromToken(jwt);
+        try {
+            String jwt = parseJwt(request);
+            if (jwt != null && jwtUtil.validateToken(jwt)) {
+                String identifier = jwtUtil.getEmailFromToken(jwt);
+                User user = null;
+                if (identifier != null) {
+                    if (identifier.contains("@")) {
+                        user = userRepository.findByEmailIgnoreCase(identifier).orElse(null);
+                    } else {
+                        user = userRepository.findByMobileNo(identifier).orElse(null);
+                    }
+                    if (user == null) {
+                        user = userRepository.findById(identifier).orElse(null);
+                    }
+                }
 
-                 // 3. Load User from DB (check email, mobile, and id)
-                 User user = null;
-                 if (identifier != null) {
-                     if (identifier.contains("@")) {
-                         user = userRepository.findByEmailIgnoreCase(identifier).orElse(null);
-                     } else {
-                         user = userRepository.findByMobileNo(identifier).orElse(null);
-                     }
-                     if (user == null) {
-                         user = userRepository.findById(identifier).orElse(null);
-                     }
-                 }
+                if (user != null) {
+                    UsernamePasswordAuthenticationToken authentication = 
+                        new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Cannot set user authentication: " + e.getMessage());
+        }
 
-                 // 4. THIS IS THE MISSING PART: Tell Spring Security the user is authenticated
-                 if (user != null) {
-                     // Create an Authentication Token (User, Password(null), Authorities)
-                     UsernamePasswordAuthenticationToken authentication = 
-                         new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>()); // Add Roles here if needed
-                     
-                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                     // Set the Authentication in the Context
-                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                 }
-             }
-         } catch (Exception e) {
-             System.out.println("Cannot set user authentication: " + e.getMessage());
-         }
-
-    	 filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
-    // Helper method to extract "Bearer "
+
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
             return headerAuth.substring(7);
+        }
+        String tokenParam = request.getParameter("token");
+        if (StringUtils.hasText(tokenParam)) {
+            return tokenParam;
         }
         return null;
     }

@@ -9,7 +9,7 @@ import {
   BsDownload,
 } from "react-icons/bs";
 
-const APK = "/downloads/TSAR-IT-Billing-v4.14.14.apk";
+const APK = "/downloads/TSAR-IT-Billing-v4.14.15.apk";
 
 /* ================= HOW IT WORKS ================= */
 export function HowItWorks() {
