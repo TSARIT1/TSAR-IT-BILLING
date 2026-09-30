@@ -33,6 +33,13 @@ public class Business {
     private String pincode;
 
     private String panCardNo;
+
+    /** UPI payment collection: merchant VPA (e.g. name@oksbi) + display name for the QR. */
+    @Column(name = "upi_id", length = 120)
+    private String upiId;
+
+    @Column(name = "upi_name", length = 120)
+    private String upiName;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "business_type")
@@ -46,6 +53,18 @@ public class Business {
 
     @Column(nullable = false)
     private Boolean isEnableEinvoicing = false;
+
+    /** Super-admin killswitch: when true the tenant cannot log in or use any API. */
+    @Column(name = "is_frozen", nullable = false)
+    private Boolean isFrozen = false;
+
+    @Column(name = "freeze_reason", length = 500)
+    private String freezeReason;
+
+    public Boolean getIsFrozen() { return isFrozen; }
+    public void setIsFrozen(Boolean isFrozen) { this.isFrozen = isFrozen; }
+    public String getFreezeReason() { return freezeReason; }
+    public void setFreezeReason(String freezeReason) { this.freezeReason = freezeReason; }
     
     @OneToMany(mappedBy = "business", cascade = CascadeType.ALL)
     private List<BusinessExtras> businessExtras;
@@ -133,11 +152,14 @@ public class Business {
 
 	public void setPincode(String pincode) {
 		this.pincode = pincode;
-	}
-
-	public String getPanCardNo() {
+	}    public String getPanCardNo() {
 		return panCardNo;
 	}
+
+	public String getUpiId() { return upiId; }
+	public void setUpiId(String upiId) { this.upiId = upiId; }
+	public String getUpiName() { return upiName; }
+	public void setUpiName(String upiName) { this.upiName = upiName; }
 
 	public void setPanCardNo(String panCardNo) {
 		this.panCardNo = panCardNo;

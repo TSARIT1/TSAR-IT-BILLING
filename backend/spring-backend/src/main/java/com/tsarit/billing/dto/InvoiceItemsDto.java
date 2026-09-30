@@ -21,7 +21,6 @@ public class InvoiceItemsDto {
 	
 	public InvoiceItemsDto() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 

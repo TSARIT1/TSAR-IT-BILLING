@@ -2,28 +2,28 @@ package com.tsarit.billing.dto;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
+/**
+ * All fields are optional — the controller applies sensible defaults for anything
+ * the caller leaves out, so app users are never blocked by required-field errors.
+ */
 public class ProductRequestDto {
 
-    @NotBlank
     private String productCode;
 
-    @NotBlank
     private String productName;
 
     private String category;
     private String unit;
 
-    @NotNull
+    @PositiveOrZero
     private Double purchasePrice;
 
-    @NotNull
+    @PositiveOrZero
     private Double sellingPrice;
 
-    @NotNull
+    @PositiveOrZero
     private Integer totalStock;
 
     private Integer minStockLevel;
@@ -31,14 +31,14 @@ public class ProductRequestDto {
     private Double discount;
     private LocalDate expiryDate;
     private String barcode;
+    private String hsnCode;
+    private String sacCode;
     private String manufacturerName;
     private String supplierName;
     private String description;
 
-    @NotBlank
     private String godownId;
 
-    @NotBlank
     private String userBusinessId;
 
 	public String getProductCode() {
@@ -136,6 +136,22 @@ public class ProductRequestDto {
 
 	public void setBarcode(String barcode) {
 		this.barcode = barcode;
+	}
+
+	public String getHsnCode() {
+		return hsnCode;
+	}
+
+	public void setHsnCode(String hsnCode) {
+		this.hsnCode = hsnCode;
+	}
+
+	public String getSacCode() {
+		return sacCode;
+	}
+
+	public void setSacCode(String sacCode) {
+		this.sacCode = sacCode;
 	}
 
 	public String getManufacturerName() {

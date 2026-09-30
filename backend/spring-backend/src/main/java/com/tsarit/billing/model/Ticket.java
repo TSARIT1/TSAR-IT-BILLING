@@ -49,11 +49,18 @@ public class Ticket {
 
     private String priority;      // e.g., Low, Medium, High
 
-    // Attachments: store file paths or URLs
-    @ElementCollection
+    /** User id of the creator — used to scope tenant ticket visibility. */
+    @Column(name = "created_by", length = 50)
+    private String createdBy;
+
+    public String getCreatedBy() { return createdBy; }
+    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+
+    // Attachments: store file paths or URLs (EAGER — serialized outside the session)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ticket_attachments", joinColumns = @JoinColumn(name = "ticket_id"))
     @Column(name = "file_path")
-    private List<String> attachments;
+    private List<String> attachments = new java.util.ArrayList<>();
 
     // ===== Getters & Setters =====
     public Long getId() { return id; }

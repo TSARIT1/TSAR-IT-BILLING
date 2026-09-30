@@ -22,7 +22,9 @@ import com.tsarit.billing.dto.BusinessRequestDto;
 import com.tsarit.billing.dto.BusinessResponseDto;
 import com.tsarit.billing.model.Business;
 import com.tsarit.billing.model.GstDetails;
+import com.tsarit.billing.model.UserBusiness;
 import com.tsarit.billing.repository.BusinessRepository;
+import com.tsarit.billing.repository.UserBusinessRepository;
 import com.tsarit.billing.service.BusinessService;
 
 @RestController
@@ -84,6 +86,8 @@ public class BusinessController {
                 response.put("state", business.getState());
                 response.put("pincode", business.getPincode());
                 response.put("panCardNo", business.getPanCardNo());
+                response.put("upiId", business.getUpiId());
+                response.put("upiName", business.getUpiName());
                 response.put("isEnableTds", business.getIsEnableTds());
                 response.put("isEnableTcs", business.getIsEnableTcs());
                 response.put("isEnableEinvoicing", business.getIsEnableEinvoicing());
@@ -120,8 +124,8 @@ public class BusinessController {
                         return ResponseEntity.notFound().build();
                 }
 
-                // Take the most recent business (last in list) or first — either is valid
-                Business business = ubList.get(ubList.size() - 1).getBusiness();
+                UserBusiness ub = ubList.get(ubList.size() - 1);
+                Business business = ub.getBusiness();
 
                 // Fetch GST number
                 String gstNo = "";
@@ -136,6 +140,7 @@ public class BusinessController {
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("businessId", business.getId());
+                response.put("userBusinessId", ub.getId());
                 response.put("businessName", business.getBusinessName());
                 response.put("industryType", business.getIndustryType());
                 response.put("phoneNo", business.getPhoneNo());
@@ -146,6 +151,9 @@ public class BusinessController {
                 response.put("pincode", business.getPincode());
                 response.put("panCardNo", business.getPanCardNo());
                 response.put("gstNo", gstNo);
+
+                response.put("upiId", business.getUpiId());
+                response.put("upiName", business.getUpiName());
 
                 if (business.getBusinessLogo() != null) {
                         response.put("logo",
@@ -158,6 +166,59 @@ public class BusinessController {
                 }
 
                 return ResponseEntity.ok(response);
+        }
+
+        /* ================= UPDATE BUSINESS PROFILE (JSON, mobile-friendly) =================
+         * Lightweight JSON update used by the Android app's Bill Profile screen.
+         * Resolves the caller's business from userId, updates GSTIN / address / phone.
+         */
+        @org.springframework.web.bind.annotation.PostMapping("/update-json")
+        @org.springframework.transaction.annotation.Transactional
+        public ResponseEntity<?> updateBusinessProfileJson(@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, Object> payload) {
+                Object uidObj = payload.get("userId");
+                if (uidObj == null || uidObj.toString().isBlank()) {
+                        return ResponseEntity.badRequest().body(java.util.Map.of("error", "userId is required"));
+                }
+                java.util.List<UserBusiness> ubList = userBusinessRepo.findByUserId(uidObj.toString());
+                if (ubList == null || ubList.isEmpty()) {
+                        return ResponseEntity.status(404).body(java.util.Map.of("error", "No business found for this user"));
+                }
+                Business business = ubList.get(ubList.size() - 1).getBusiness();
+
+                if (payload.get("address") != null) {
+                        business.setAddress(payload.get("address").toString());
+                }
+                if (payload.get("phoneNo") != null && !payload.get("phoneNo").toString().isBlank()) {
+                        business.setPhoneNo(payload.get("phoneNo").toString());
+                }
+                if (payload.get("upiId") != null) {
+                        String upi = payload.get("upiId").toString().trim().toLowerCase();
+                        business.setUpiId(upi.isEmpty() ? null : upi);
+                }
+                if (payload.get("upiName") != null) {
+                        String un = payload.get("upiName").toString().trim();
+                        business.setUpiName(un.isEmpty() ? null : un);
+                }
+                businessRepo.save(business);
+
+                String gstNo = payload.get("gstNo") != null ? payload.get("gstNo").toString().trim() : null;
+                if (gstNo != null && !gstNo.isEmpty()) {
+                        com.tsarit.billing.model.GstDetails gst = gstRepo.findByBusiness_Id(business.getId())
+                                        .orElseGet(() -> {
+                                                com.tsarit.billing.model.GstDetails g = new com.tsarit.billing.model.GstDetails();
+                                                g.setBusiness(business);
+                                                g.setIsGstRegistered(true);
+                                                return g;
+                                        });
+                        gst.setGstNo(gstNo);
+                        gst.setIsGstRegistered(true);
+                        gstRepo.save(gst);
+                }
+
+                return ResponseEntity.ok(java.util.Map.of(
+                                "success", true,
+                                "message", "Business profile updated",
+                                "businessId", business.getId()));
         }
 
         /* ================= UPDATE BUSINESS ================= */

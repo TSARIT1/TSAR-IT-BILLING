@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import com.tsarit.billing.model.Invoice;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, String> {
+    long countByCustomer_BusinessId(String businessId);
 	List<Invoice> findByUser_Id(String userId);
 
 	List<Invoice> findByUser_IdOrderByInvoiceDateDesc(String userId);
@@ -18,10 +19,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
 
 	Optional<Invoice> findByInvoiceIdAndIsDeletedFalse(String invoiceId);
 	
+	List<Invoice> findByIsDeletedFalse();
 	List<Invoice> findByIsSaledTrueAndIsDeletedFalse();
+	List<Invoice> findByCustomer_IdAndIsDeletedFalse(Long customerId);
+	List<Invoice> findByCustomer_BusinessIdAndIsSaledTrueAndIsDeletedFalse(String businessId);
 	
-	 // Fetch only purchase invoices (is_saled = false)
-    List<Invoice> findByUser_IdAndIsSaledFalseAndIsDeletedFalseOrderByInvoiceDateDesc(String userId);
+		List<Invoice> findByUser_IdAndIsSaledFalseAndIsDeletedFalseOrderByInvoiceDateDesc(String userId);
+	List<Invoice> findByUser_IdAndIsSaledTrueAndIsDeletedFalse(String userId);
 
  // NEW: Fetch only purchase invoices with supplier customers
     @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.user.id = :userId " +

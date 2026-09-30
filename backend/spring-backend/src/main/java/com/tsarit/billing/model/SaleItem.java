@@ -15,9 +15,12 @@ public class SaleItem {
     @JoinColumn(name = "sale_id", nullable = false)
     private Sale sale;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = true)
     private Product product;
+
+    @Column(name = "product_name")
+    private String productName;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -25,7 +28,7 @@ public class SaleItem {
     @Column(name = "price", nullable = false)
     private Double price;
     
-    @Column(name = "sale_item_id", nullable = false, length = 50)
+    @Column(name = "sale_item_id", nullable = true, length = 50)
     private String saleItemId;
 
     // getters & setters
@@ -77,6 +80,12 @@ public class SaleItem {
 	public void setId(Long id) {
 		this.id = id;
 	}
-    
-    
+
+	public String getProductName() {
+		return productName;
+	}
+
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
 }

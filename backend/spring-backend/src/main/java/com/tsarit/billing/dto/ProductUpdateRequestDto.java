@@ -5,10 +5,10 @@ import java.time.LocalDate;
 
 public class ProductUpdateRequestDto {
 
-    @NotBlank
+    /** All fields optional; service applies defaults. */
     private String productCode;
 
-    @NotBlank
+    /** All fields optional; service applies defaults. */
     private String productName;
 
     private String category;
@@ -34,6 +34,8 @@ public class ProductUpdateRequestDto {
 
     private LocalDate expiryDate;
     private String barcode;
+    private String hsnCode;
+    private String sacCode;
     private String manufacturerNameOrCode;
     private String supplierNameOrCode;
     private String description;
@@ -109,6 +111,18 @@ public class ProductUpdateRequestDto {
 	}
 	public void setBarcode(String barcode) {
 		this.barcode = barcode;
+	}
+	public String getHsnCode() {
+		return hsnCode;
+	}
+	public void setHsnCode(String hsnCode) {
+		this.hsnCode = hsnCode;
+	}
+	public String getSacCode() {
+		return sacCode;
+	}
+	public void setSacCode(String sacCode) {
+		this.sacCode = sacCode;
 	}
 	public String getManufacturerNameOrCode() {
 		return manufacturerNameOrCode;

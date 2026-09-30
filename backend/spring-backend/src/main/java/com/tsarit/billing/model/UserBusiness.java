@@ -20,7 +20,7 @@ public class UserBusiness {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "userBusiness_id", length = 50, nullable=false,updatable=false)
+    @Column(name = "user_business_id", length = 50, nullable=false,updatable=false)
     private String id;
 
  // FK → users.id
@@ -57,5 +57,15 @@ public class UserBusiness {
 		this.business = business;
 	}
 
-	
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 30)
+    private UserRole role = UserRole.TENANT_OWNER;
+
+    public UserRole getRole() {
+        return role != null ? role : UserRole.TENANT_OWNER;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
 }

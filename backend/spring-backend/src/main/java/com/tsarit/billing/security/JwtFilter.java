@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
                  User user = null;
                  if (identifier != null) {
                      if (identifier.contains("@")) {
-                         user = userRepository.findByEmail(identifier).orElse(null);
+                         user = userRepository.findByEmailIgnoreCase(identifier).orElse(null);
                      } else {
                          user = userRepository.findByMobileNo(identifier).orElse(null);
                      }

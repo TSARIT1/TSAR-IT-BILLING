@@ -15,6 +15,9 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private com.tsarit.billing.repository.UserBusinessRepository userBusinessRepository;
+
     // Send single email notification
     @PostMapping("/email/send")
     public ResponseEntity<?> sendEmail(@RequestBody Map<String, String> request) {
@@ -58,5 +61,53 @@ public class NotificationController {
     @GetMapping("/campaign/stats")
     public ResponseEntity<?> getCampaignStats() {
         return ResponseEntity.ok(notificationService.getCampaignStats());
+    }
+
+    // Broadcast portal notification (Super Admin only — enforced)
+    @PostMapping("/portal/broadcast")
+    public ResponseEntity<?> broadcastPortalNotification(@RequestBody Map<String, String> request) {
+        // Authorization: caller must hold a SUPER_ADMIN membership
+        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof com.tsarit.billing.model.User caller)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+        }
+        boolean isSuper = userBusinessRepository.findByUserId(caller.getId()).stream()
+                .anyMatch(ub -> ub.getRole() == com.tsarit.billing.model.UserRole.SUPER_ADMIN);
+        if (!isSuper) {
+            return ResponseEntity.status(403).body(Map.of("error", "SUPER_ADMIN role required"));
+        }
+
+        String title = request.get("title");
+        String message = request.get("message");
+        String type = request.get("type");
+        String target = request.get("target");
+
+        if (message == null || message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Notification message cannot be empty"));
+        }
+
+        return ResponseEntity.ok(notificationService.broadcastPortalNotification(title, message, type, target));
+    }
+
+    // Get notifications for portal header / tenant
+    @GetMapping("/portal/user")
+    public ResponseEntity<?> getPortalNotifications(
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String businessId) {
+        return ResponseEntity.ok(notificationService.getPortalNotifications(userId, businessId));
+    }
+
+    // Mark single notification read
+    @PutMapping("/portal/{notifId}/read")
+    public ResponseEntity<?> markNotificationRead(@PathVariable String notifId) {
+        return ResponseEntity.ok(notificationService.markNotificationRead(notifId));
+    }
+
+    // Mark all notifications read
+    @PutMapping("/portal/read-all")
+    public ResponseEntity<?> markAllNotificationsRead(
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String businessId) {
+        return ResponseEntity.ok(notificationService.markAllNotificationsRead(userId, businessId));
     }
 }

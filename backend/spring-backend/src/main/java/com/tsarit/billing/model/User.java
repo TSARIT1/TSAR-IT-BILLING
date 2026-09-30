@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name="users")
 public class User {
@@ -14,22 +17,36 @@ public class User {
     @Column(name = "user_id", length = 50,nullable=false,updatable=false)
     private String id;
 	
-	@Column(name="businessName")
+	@Column(name="business_name")
+    @JsonAlias({"business_name", "companyName", "company"})
 	private String businessName;
 	
-	@Column(name="userName")
+	@Column(name="user_name")
+    @JsonAlias({"name", "userName", "username", "owner_name", "ownerName"})
     private String ownerName;
 
     @Column(unique = true, nullable = true)
     private String email;
 
-    @Column(unique = true, nullable = false)
+    // nullable at DB level — registration accepts email-only accounts; the login
+    // flow falls back to email when mobile is absent.
+    @Column(unique = true, nullable = true)
+    @JsonAlias({"phone", "phoneNo", "mobile", "mobileNumber", "mobile_no"})
     private String mobileNo;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @Column(nullable = true)
+    @Column(name = "referred_by", nullable = true)
+    @JsonAlias({"referred_by", "referralCode", "referral", "referredByCode"})
     private String referredBy;
+
+    /** Transient — copied onto the provisioned Business at registration, not stored on users. */
+    @Transient
+    private String industryType;
+
+    public String getIndustryType() { return industryType; }
+    public void setIndustryType(String industryType) { this.industryType = industryType; }
 
 	
 	public String getId() {

@@ -20,6 +20,8 @@ public class ProductResponseDto {
     private Integer minStockLevel;
 
     private String barcode;
+    private String hsnCode;
+    private String sacCode;
     private Double taxRate;
     private Double discount;
 
@@ -118,6 +120,22 @@ public class ProductResponseDto {
 
     public void setBarcode(String barcode) {
         this.barcode = barcode;
+    }
+
+    public String getHsnCode() {
+        return hsnCode;
+    }
+
+    public void setHsnCode(String hsnCode) {
+        this.hsnCode = hsnCode;
+    }
+
+    public String getSacCode() {
+        return sacCode;
+    }
+
+    public void setSacCode(String sacCode) {
+        this.sacCode = sacCode;
     }
 
     public Double getTaxRate() {

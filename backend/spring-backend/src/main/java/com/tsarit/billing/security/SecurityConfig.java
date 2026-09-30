@@ -37,12 +37,27 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-        		 .requestMatchers("/api/auth/**").permitAll()
+                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                         "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                 .requestMatchers(HttpMethod.POST, "/api/superadmin/login").permitAll()
+                 .requestMatchers(HttpMethod.GET, "/api/subscriptions/plans").permitAll()
+                 // The APK reads its remote config during the splash screen, before login,
+                 // so the super-admin controlled release gate / feature flags must be public.
+                 .requestMatchers(HttpMethod.GET, "/api/app/config", "/api/app/plans", "/api/app/version").permitAll()
+                 .requestMatchers(HttpMethod.GET, "/api/app/version").permitAll()
         		 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
         		 .requestMatchers("/api/invoices/public/**").permitAll()
         		 .requestMatchers("/api/business/public/**").permitAll()
-                .anyRequest().permitAll()
+        		 .requestMatchers("/api/whatsapp/webhook").permitAll()
+        		 .requestMatchers("/api/whatsapp/status").permitAll()
+        		 .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
             )
+        .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, error) -> {
+            response.setStatus(401);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Authentication required\"}");
+        }))
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

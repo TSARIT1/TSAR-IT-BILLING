@@ -25,9 +25,12 @@ public class Sale {
 	 
 	@Column(name = "is_paid")
 	private Boolean isPaid = false;
-	 
-	 @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
-	 private List<SaleItem> items = new ArrayList<>();
+
+	@Column(name = "invoice_id", length = 50)
+	private String invoiceId;
+
+	@OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private List<SaleItem> items = new ArrayList<>();
 
 	 @PrePersist
 		protected void onCreate() {
@@ -69,5 +72,12 @@ public class Sale {
 
 	public java.util.List<SaleItem> getItems(){return items;}
     public void setItems(java.util.List<SaleItem> it){this.items=it;}
-    
+
+	public String getInvoiceId() {
+		return invoiceId;
+	}
+
+	public void setInvoiceId(String invoiceId) {
+		this.invoiceId = invoiceId;
+	}
 }

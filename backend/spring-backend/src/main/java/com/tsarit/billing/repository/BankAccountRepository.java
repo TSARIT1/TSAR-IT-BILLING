@@ -10,5 +10,7 @@ import java.util.Optional;
 @Repository
 public interface BankAccountRepository extends JpaRepository<BankAccount, String> {
     List<BankAccount> findAllByOrderByCreatedAtDesc();
+    List<BankAccount> findByBusinessIdOrderByCreatedAtDesc(String businessId);
     Optional<BankAccount> findByIsPrimaryTrue();
+    Optional<BankAccount> findByIdAndBusinessId(String id, String businessId);
 }

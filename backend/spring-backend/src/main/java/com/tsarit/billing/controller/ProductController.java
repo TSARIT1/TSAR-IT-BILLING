@@ -17,10 +17,13 @@ import com.tsarit.billing.service.PdfService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import com.tsarit.billing.service.AuditService;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -28,6 +31,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/products")
 @CrossOrigin(originPatterns = "*")
+@Transactional(readOnly = true)
 public class ProductController {
 
     @Autowired
@@ -40,22 +44,47 @@ public class ProductController {
     private UserBusinessRepository userBusinessRepository;
 
     @Autowired
+    private AuditService auditService;
+
+    @Autowired
     private InvoiceItemsRepository invoiceItemsRepository;
 
     @Autowired
     private PdfService pdfService;
 
-    // ✅ CREATE PRODUCT
+    // ✅ CREATE PRODUCT (all fields optional — sensible defaults applied)
     @PostMapping("/createProduct")
+    @Transactional(readOnly = false)
     public ResponseEntity<?> createProduct(@RequestBody Map<String, Object> request) {
 
         Product product = new Product();
 
-        product.setProductCode((String) request.get("productCode"));
-        product.setProductName((String) request.get("productName"));
+        // Barcode uniqueness (409) — prevents duplicate scan matches at POS.
+        String barcodeReq = request.get("barcode") != null ? request.get("barcode").toString().trim() : "";
+        if (!barcodeReq.isEmpty() && productRepository.existsByBarcode(barcodeReq)) {
+            return ResponseEntity.status(409).body(Map.of("message", "Barcode already exists for another product"));
+        }
+        // HSN format (422) — 4/6/8 digits, blank allowed.
+        String hsnReq = request.get("hsnCode") != null ? request.get("hsnCode").toString().trim() : "";
+        if (!hsnReq.isEmpty() && !hsnReq.matches("^[0-9]{4}([0-9]{2})?([0-9]{2})?$")) {
+            return ResponseEntity.status(422).body(Map.of("message", "Invalid HSN: must be 4, 6 or 8 digits"));
+        }
+
+        String productCode = (String) request.get("productCode");
+        if (productCode == null || productCode.isBlank()) {
+            productCode = "SKU-" + System.currentTimeMillis();
+        }
+        String productName = (String) request.get("productName");
+        if (productName == null || productName.isBlank()) {
+            productName = "Unnamed Item";
+        }
+        product.setProductCode(productCode);
+        product.setProductName(productName);
         product.setCategory((String) request.get("category"));
         product.setUnit((String) request.get("unit"));
         product.setBarcode((String) request.get("barcode"));
+        product.setHsnCode((String) request.get("hsnCode"));
+        product.setSacCode((String) request.get("sacCode"));
         product.setDescription((String) request.get("description"));
 
         Number purchasePrice = (Number) request.get("purchasePrice");
@@ -99,11 +128,35 @@ public class ProductController {
         if (userBusinessId != null && !userBusinessId.isBlank()) {
             userBusinessRepository.findById(userBusinessId).ifPresent(product::setUserBusiness);
         }
+        if (product.getUserBusiness() == null) {
+            String businessId = (String) request.get("businessId");
+            if (businessId != null && !businessId.isBlank()) {
+                List<UserBusiness> ubList = userBusinessRepository.findByBusiness_Id(businessId);
+                if (!ubList.isEmpty()) {
+                    product.setUserBusiness(ubList.get(0));
+                }
+            }
+        }
+        if (product.getUserBusiness() == null) {
+            String userId = (String) request.get("userId");
+            if (userId != null && !userId.isBlank()) {
+                List<UserBusiness> ubList = userBusinessRepository.findByUserId(userId);
+                if (!ubList.isEmpty()) {
+                    product.setUserBusiness(ubList.get(0));
+                }
+            }
+        }
 
         product.setActive(true);
         product.setDeleted(false);
 
         Product saved = productRepository.save(product);
+
+        String bid = product.getUserBusiness() != null ? product.getUserBusiness().getId()
+                : (request.get("userBusinessId") instanceof String s && !s.isBlank() ? s : "UNKNOWN");
+        auditService.log(bid, "owner", "OWNER", "CREATE", "PRODUCT",
+                String.valueOf(saved.getId()), saved.getSellingPrice(),
+                "Item added: " + saved.getProductName() + " (" + saved.getProductCode() + ")");
 
         return ResponseEntity.ok(toDto(saved));
     }
@@ -124,9 +177,17 @@ public class ProductController {
     }
 
     @GetMapping("/stock-summary")
-    public ResponseEntity<List<ProductStockSummaryDto>> getProductStockSummary() {
+    public ResponseEntity<List<ProductStockSummaryDto>> getProductStockSummary(
+            @RequestParam(required = false) String userBusinessId) {
 
-        List<ProductStockSummaryDto> response = productRepository.findByActiveTrueAndDeletedFalse()
+        List<Product> products;
+        if (userBusinessId != null && !userBusinessId.trim().isEmpty()) {
+            products = productRepository.findByUserBusiness_IdAndActiveTrueAndDeletedFalse(userBusinessId.trim());
+        } else {
+            products = productRepository.findByActiveTrueAndDeletedFalse();
+        }
+
+        List<ProductStockSummaryDto> response = products
                 .stream()
                 .map(p -> new ProductStockSummaryDto(
                         p.getId(),
@@ -154,17 +215,54 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> getAll() {
+    public ResponseEntity<List<ProductResponseDto>> getAll(
+            @RequestParam(required = false) String userBusinessId,
+            @RequestParam(required = false) String businessId) {
+
+        List<Product> products;
+        if (userBusinessId != null && !userBusinessId.trim().isEmpty()) {
+            products = productRepository.findByUserBusiness_IdAndActiveTrueAndDeletedFalse(userBusinessId.trim());
+        } else if (businessId != null && !businessId.trim().isEmpty()) {
+            products = productRepository.findForSyncByBusinessId(businessId.trim()).stream()
+                    .filter(p -> Boolean.TRUE.equals(p.getActive()) && !Boolean.TRUE.equals(p.getDeleted()))
+                    .toList();
+        } else {
+            // Tenant-scoped fallback: never leak other businesses' catalogs.
+            var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            com.tsarit.billing.model.User caller = authentication != null && authentication.isAuthenticated()
+                    && authentication.getPrincipal() instanceof com.tsarit.billing.model.User u ? u : null;
+            if (caller == null) {
+                return ResponseEntity.status(401).build();
+            }
+            java.util.Set<String> businessIds = userBusinessRepository.findByUserId(caller.getId()).stream()
+                    .map(ub -> ub.getBusiness().getId())
+                    .collect(java.util.stream.Collectors.toSet());
+            products = productRepository.findByActiveTrueAndDeletedFalse().stream()
+                    .filter(p -> {
+                        try {
+                            String bid = null;
+                            if (p.getUserBusiness() != null && p.getUserBusiness().getBusiness() != null) {
+                                bid = p.getUserBusiness().getBusiness().getId();
+                            } else if (p.getGodown() != null && p.getGodown().getUserBusiness() != null
+                                    && p.getGodown().getUserBusiness().getBusiness() != null) {
+                                bid = p.getGodown().getUserBusiness().getBusiness().getId();
+                            }
+                            return bid != null && businessIds.contains(bid);
+                        } catch (jakarta.persistence.EntityNotFoundException orphaned) {
+                            return false;
+                        }
+                    })
+                    .toList();
+        }
 
         return ResponseEntity.ok(
-                productRepository
-                        .findByActiveTrueAndDeletedFalseAndRemainingStockGreaterThan(0)
-                        .stream()
+                products.stream()
                         .map(this::toDto)
                         .toList());
     }
 
     @PutMapping("/update/{productId}")
+    @Transactional(readOnly = false)
     public ResponseEntity<?> updateProduct(
             @PathVariable Long productId,
             @Valid @RequestBody ProductUpdateRequestDto data,
@@ -194,7 +292,21 @@ public class ProductController {
             }
 
             product.setMinStockLevel(data.getMinStockLevel());
-            product.setBarcode(data.getBarcode());
+            if (data.getBarcode() != null && !data.getBarcode().isBlank()) {
+                var other = productRepository.findByBarcode(data.getBarcode().trim());
+                if (other.isPresent() && !other.get().getId().equals(product.getId())) {
+                    return ResponseEntity.status(409).body(Map.of("message", "Barcode already exists for another product"));
+                }
+                product.setBarcode(data.getBarcode().trim());
+            }
+            if (data.getHsnCode() != null) {
+                String h = data.getHsnCode().trim();
+                if (!h.isEmpty() && !h.matches("^[0-9]{4}([0-9]{2})?([0-9]{2})?$")) {
+                    return ResponseEntity.status(422).body(Map.of("message", "Invalid HSN: must be 4, 6 or 8 digits"));
+                }
+                product.setHsnCode(data.getHsnCode());
+            }
+            if (data.getSacCode() != null) product.setSacCode(data.getSacCode());
             product.setTaxRate(data.getTaxRate());
             product.setDiscount(data.getDiscount());
             product.setExpiryDate(data.getExpiryDate());
@@ -213,6 +325,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete/{productId}")
+    @Transactional(readOnly = false)
     public ResponseEntity<?> deleteProduct(@PathVariable Long productId) {
 
         if (invoiceItemsRepository.existsByProduct_Id(productId)) {
@@ -307,6 +420,8 @@ public class ProductController {
         dto.setMinStockLevel(product.getMinStockLevel());
 
         dto.setBarcode(product.getBarcode());
+        dto.setHsnCode(product.getHsnCode());
+        dto.setSacCode(product.getSacCode());
         dto.setTaxRate(product.getTaxRate());
         dto.setDiscount(product.getDiscount());
 
@@ -316,18 +431,28 @@ public class ProductController {
         dto.setManufacturerName(product.getManufacturerNameOrCode());
         dto.setSupplierName(product.getSupplierNameOrCode());
 
-        if (product.getGodown() != null) {
-            dto.setGodownId(product.getGodown().getGodownId());
-            dto.setGodownName(product.getGodown().getGodownName());
+        // Orphan-safe: a stale FK (deleted business/godown) must never 500 the
+        // whole product list — degrade to a product without that mapping.
+        try {
+            if (product.getGodown() != null) {
+                dto.setGodownId(product.getGodown().getGodownId());
+                dto.setGodownName(product.getGodown().getGodownName());
+            }
+        } catch (jakarta.persistence.EntityNotFoundException orphaned) {
+            // godown row no longer exists — leave godown fields empty
         }
 
         // Business mapping
-        if (product.getUserBusiness() != null &&
-                product.getUserBusiness().getBusiness() != null) {
+        try {
+            if (product.getUserBusiness() != null &&
+                    product.getUserBusiness().getBusiness() != null) {
 
-            dto.setUserBusinessId(product.getUserBusiness().getId());
-            dto.setBusinessName(
-                    product.getUserBusiness().getBusiness().getBusinessName());
+                dto.setUserBusinessId(product.getUserBusiness().getId());
+                dto.setBusinessName(
+                        product.getUserBusiness().getBusiness().getBusinessName());
+            }
+        } catch (jakarta.persistence.EntityNotFoundException orphaned) {
+            // membership row no longer exists — leave business fields empty
         }
 
         return dto;

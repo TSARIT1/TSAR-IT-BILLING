@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "products")
@@ -19,11 +19,9 @@ public class Product {
     /* ================= PRODUCT BASIC INFO ================= */
 
     @Column(name = "product_code", nullable = false, unique = true)
-    @NotBlank(message = "Product code is required")
     private String productCode;
 
     @Column(name = "product_name", nullable = false)
-    @NotBlank(message = "Product name is required")
     private String productName;
 
     @Column(name = "category")
@@ -72,6 +70,12 @@ public class Product {
 
     @Column(name = "barcode")
     private String barcode;
+
+    @Column(name = "hsn_code", length = 10)
+    private String hsnCode;
+
+    @Column(name = "sac_code", length = 10)
+    private String sacCode;
 
     @Column(name = "manufacturer_name_or_code")
     private String manufacturerNameOrCode;
@@ -223,6 +227,22 @@ public class Product {
 
     public void setBarcode(String barcode) {
         this.barcode = barcode;
+    }
+
+    public String getHsnCode() {
+        return hsnCode;
+    }
+
+    public void setHsnCode(String hsnCode) {
+        this.hsnCode = (hsnCode == null || hsnCode.isBlank()) ? null : hsnCode.trim();
+    }
+
+    public String getSacCode() {
+        return sacCode;
+    }
+
+    public void setSacCode(String sacCode) {
+        this.sacCode = (sacCode == null || sacCode.isBlank()) ? null : sacCode.trim();
     }
 
     public String getManufacturerNameOrCode() {

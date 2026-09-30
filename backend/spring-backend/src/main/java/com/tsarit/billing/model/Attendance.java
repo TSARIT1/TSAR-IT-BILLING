@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "attendance", uniqueConstraints = @UniqueConstraint(columnNames = { "staff_id", "month", "year" }))
+@Table(name = "attendance", uniqueConstraints = @UniqueConstraint(columnNames = { "staff_id", "`month`", "`year`" }))
 public class Attendance {
 
     @Id
@@ -30,11 +30,11 @@ public class Attendance {
     @NotNull
     @Min(1)
     @Max(12)
-    @Column(nullable = false)
+    @Column(name = "`month`", nullable = false)
     private Integer month;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(name = "`year`", nullable = false)
     private Integer year;
 
     @JdbcTypeCode(SqlTypes.JSON)

@@ -1,11 +1,14 @@
 package com.tsarit.billing.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Staff member record. All business fields are optional at the API layer —
+ * the service layer applies defaults (role, payout type, salary 0) so users
+ * are never blocked by required-field errors.
+ */
 @Entity
 @Table(name = "staff_members")
 public class Staff {
@@ -14,28 +17,22 @@ public class Staff {
     @Column(length = 20)
     private String id;
 
-    @NotNull
     @Column(name = "business_id", nullable = false, length = 50)
     private String businessId;
 
-    @NotBlank
     @Column(nullable = false, length = 255)
     private String name;
 
-    @NotBlank
     @Column(name = "mobile_number", nullable = false, length = 15)
     private String mobileNumber;
 
-    @NotBlank
     @Column(nullable = false, length = 100)
     private String role;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "salary_payout_type", nullable = false, length = 20)
     private SalaryPayoutType salaryPayoutType;
 
-    @NotNull
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal salary;
 
@@ -89,108 +86,30 @@ public class Staff {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getBusinessId() {
-        return businessId;
-    }
-
-    public void setBusinessId(String businessId) {
-        this.businessId = businessId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMobileNumber() {
-        return mobileNumber;
-    }
-
-    public void setMobileNumber(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public SalaryPayoutType getSalaryPayoutType() {
-        return salaryPayoutType;
-    }
-
-    public void setSalaryPayoutType(SalaryPayoutType salaryPayoutType) {
-        this.salaryPayoutType = salaryPayoutType;
-    }
-
-    public BigDecimal getSalary() {
-        return salary;
-    }
-
-    public void setSalary(BigDecimal salary) {
-        this.salary = salary;
-    }
-
-    public String getSalaryCycle() {
-        return salaryCycle;
-    }
-
-    public void setSalaryCycle(String salaryCycle) {
-        this.salaryCycle = salaryCycle;
-    }
-
-    public BigDecimal getOpeningBalance() {
-        return openingBalance;
-    }
-
-    public void setOpeningBalance(BigDecimal openingBalance) {
-        this.openingBalance = openingBalance;
-    }
-
-    public BalanceType getBalanceType() {
-        return balanceType;
-    }
-
-    public void setBalanceType(BalanceType balanceType) {
-        this.balanceType = balanceType;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getBusinessId() { return businessId; }
+    public void setBusinessId(String businessId) { this.businessId = businessId; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getMobileNumber() { return mobileNumber; }
+    public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+    public SalaryPayoutType getSalaryPayoutType() { return salaryPayoutType; }
+    public void setSalaryPayoutType(SalaryPayoutType salaryPayoutType) { this.salaryPayoutType = salaryPayoutType; }
+    public BigDecimal getSalary() { return salary; }
+    public void setSalary(BigDecimal salary) { this.salary = salary; }
+    public String getSalaryCycle() { return salaryCycle; }
+    public void setSalaryCycle(String salaryCycle) { this.salaryCycle = salaryCycle; }
+    public BigDecimal getOpeningBalance() { return openingBalance; }
+    public void setOpeningBalance(BigDecimal openingBalance) { this.openingBalance = openingBalance; }
+    public BalanceType getBalanceType() { return balanceType; }
+    public void setBalanceType(BalanceType balanceType) { this.balanceType = balanceType; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

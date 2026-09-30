@@ -1,5 +1,8 @@
 package com.tsarit.billing.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InvoiceResponseDto {
 
 	private String invoiceId;
@@ -16,6 +19,10 @@ public class InvoiceResponseDto {
 	private Boolean isPurchased;
 	private boolean isPartiallyReturned;
 	private boolean isFullyReturned;
+	private Boolean isPaid;
+	private String status;
+	private String paymentMode;
+	private List<InvoiceItemsDto> items = new ArrayList<>();
 
 	// constructor
 	public InvoiceResponseDto(
@@ -159,6 +166,42 @@ public class InvoiceResponseDto {
 
 	public void setFullyReturned(boolean isFullyReturned) {
 		this.isFullyReturned = isFullyReturned;
+	}
+
+	public Boolean getIsPaid() {
+		return isPaid;
+	}
+
+	public void setIsPaid(Boolean isPaid) {
+		this.isPaid = isPaid;
+		this.status = Boolean.TRUE.equals(isPaid) ? "PAID" : "UNPAID";
+	}
+
+	public String getStatus() {
+		return status != null ? status : (Boolean.TRUE.equals(isPaid) ? "PAID" : "UNPAID");
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+		if (status != null) {
+			this.isPaid = "PAID".equalsIgnoreCase(status) || "SETTLED".equalsIgnoreCase(status);
+		}
+	}
+
+	public String getPaymentMode() {
+		return paymentMode;
+	}
+
+	public void setPaymentMode(String paymentMode) {
+		this.paymentMode = paymentMode;
+	}
+
+	public List<InvoiceItemsDto> getItems() {
+		return items;
+	}
+
+	public void setItems(List<InvoiceItemsDto> items) {
+		this.items = items != null ? items : new ArrayList<>();
 	}
 
 }

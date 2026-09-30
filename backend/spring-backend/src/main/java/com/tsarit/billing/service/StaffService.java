@@ -17,28 +17,50 @@ public class StaffService {
     @Autowired
     private StaffRepository staffRepository;
 
+    @Autowired
+    private com.tsarit.billing.service.AuditService auditService;
+
+    private static String orDefault(String v, String dflt) {
+        return (v == null || v.isBlank()) ? dflt : v.trim();
+    }
+
     @Transactional
     public StaffDto createStaff(StaffDto dto, String businessId) {
+        // All fields optional — sensible defaults keep users unblocked
+        String name = orDefault(dto.getName(), "Unnamed Staff");
+        String mobile = orDefault(dto.getMobileNumber(), "0000000000");
+        String role = orDefault(dto.getRole(), "Staff");
+        String payout = orDefault(dto.getSalaryPayoutType(), "MONTHLY");
+
         // Check if mobile number already exists for this business
-        if (staffRepository.existsByBusinessIdAndMobileNumber(businessId, dto.getMobileNumber())) {
+        if (staffRepository.existsByBusinessIdAndMobileNumber(businessId, mobile)) {
             throw new RuntimeException("Mobile number already exists for another staff member");
         }
 
         Staff staff = new Staff();
         staff.setBusinessId(businessId);
-        staff.setName(dto.getName());
-        staff.setMobileNumber(dto.getMobileNumber());
-        staff.setRole(dto.getRole());
-        staff.setSalaryPayoutType(Staff.SalaryPayoutType.valueOf(dto.getSalaryPayoutType()));
-        staff.setSalary(dto.getSalary());
+        staff.setName(name);
+        staff.setMobileNumber(mobile);
+        staff.setRole(role);
+        try {
+            staff.setSalaryPayoutType(Staff.SalaryPayoutType.valueOf(payout.toUpperCase()));
+        } catch (Exception e) {
+            staff.setSalaryPayoutType(Staff.SalaryPayoutType.MONTHLY);
+        }
+        staff.setSalary(dto.getSalary() != null ? dto.getSalary() : BigDecimal.ZERO);
         staff.setSalaryCycle(dto.getSalaryCycle());
         staff.setOpeningBalance(dto.getOpeningBalance() != null ? dto.getOpeningBalance() : BigDecimal.ZERO);
 
         if (dto.getBalanceType() != null) {
-            staff.setBalanceType(Staff.BalanceType.valueOf(dto.getBalanceType()));
+            try {
+                staff.setBalanceType(Staff.BalanceType.valueOf(dto.getBalanceType().toUpperCase()));
+            } catch (Exception ignored) {}
         }
 
         Staff savedStaff = staffRepository.save(staff);
+        auditService.log(businessId, "owner", "OWNER", "CREATE", "STAFF",
+                savedStaff.getId(), savedStaff.getSalary() != null ? savedStaff.getSalary().doubleValue() : 0.0,
+                "Staff added: " + savedStaff.getName() + " (" + savedStaff.getRole() + ")");
         return convertToDto(savedStaff);
     }
 
@@ -47,26 +69,45 @@ public class StaffService {
         Staff staff = staffRepository.findByIdAndBusinessId(id, businessId)
                 .orElseThrow(() -> new RuntimeException("Staff not found"));
 
+        String name = orDefault(dto.getName(), staff.getName());
+        String mobile = orDefault(dto.getMobileNumber(), staff.getMobileNumber());
+        String role = orDefault(dto.getRole(), staff.getRole());
+        String payout = orDefault(dto.getSalaryPayoutType(),
+                staff.getSalaryPayoutType() != null ? staff.getSalaryPayoutType().name() : "MONTHLY");
+
         // Check if mobile number is being changed and if it already exists
-        if (!staff.getMobileNumber().equals(dto.getMobileNumber())) {
-            if (staffRepository.existsByBusinessIdAndMobileNumberAndIdNot(businessId, dto.getMobileNumber(), id)) {
+        if (!staff.getMobileNumber().equals(mobile)) {
+            if (staffRepository.existsByBusinessIdAndMobileNumberAndIdNot(businessId, mobile, id)) {
                 throw new RuntimeException("Mobile number already exists for another staff member");
             }
         }
 
-        staff.setName(dto.getName());
-        staff.setMobileNumber(dto.getMobileNumber());
-        staff.setRole(dto.getRole());
-        staff.setSalaryPayoutType(Staff.SalaryPayoutType.valueOf(dto.getSalaryPayoutType()));
-        staff.setSalary(dto.getSalary());
+        staff.setName(name);
+        staff.setMobileNumber(mobile);
+        staff.setRole(role);
+        try {
+            staff.setSalaryPayoutType(Staff.SalaryPayoutType.valueOf(payout.toUpperCase()));
+        } catch (Exception e) {
+            staff.setSalaryPayoutType(Staff.SalaryPayoutType.MONTHLY);
+        }
+        if (dto.getSalary() != null) {
+            staff.setSalary(dto.getSalary());
+        }
         staff.setSalaryCycle(dto.getSalaryCycle());
-        staff.setOpeningBalance(dto.getOpeningBalance());
+        if (dto.getOpeningBalance() != null) {
+            staff.setOpeningBalance(dto.getOpeningBalance());
+        }
 
         if (dto.getBalanceType() != null) {
-            staff.setBalanceType(Staff.BalanceType.valueOf(dto.getBalanceType()));
+            try {
+                staff.setBalanceType(Staff.BalanceType.valueOf(dto.getBalanceType().toUpperCase()));
+            } catch (Exception ignored) {}
         }
 
         Staff updatedStaff = staffRepository.save(staff);
+        auditService.log(businessId, "owner", "OWNER", "UPDATE", "STAFF",
+                updatedStaff.getId(), updatedStaff.getSalary() != null ? updatedStaff.getSalary().doubleValue() : 0.0,
+                "Staff updated: " + updatedStaff.getName());
         return convertToDto(updatedStaff);
     }
 
@@ -78,6 +119,8 @@ public class StaffService {
         // Soft delete - set status to INACTIVE
         staff.setStatus(Staff.Status.INACTIVE);
         staffRepository.save(staff);
+        auditService.log(businessId, "owner", "OWNER", "DELETE", "STAFF",
+                id, null, "Staff deleted: " + staff.getName());
     }
 
     public StaffDto getStaffById(String id, String businessId) {

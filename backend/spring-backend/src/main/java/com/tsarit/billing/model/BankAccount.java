@@ -13,6 +13,10 @@ public class BankAccount {
     @Column(name = "bank_account_id", length = 50, nullable = false, updatable = false)
     private String id;
 
+    /** Owning tenant (business.id). Legacy rows may be null — they are never shown cross-tenant. */
+    @Column(name = "business_id", length = 50)
+    private String businessId;
+
     @Column(name = "bank_name", nullable = false)
     private String bankName;
 
@@ -61,6 +65,9 @@ public class BankAccount {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getBusinessId() { return businessId; }
+    public void setBusinessId(String businessId) { this.businessId = businessId; }
 
     public String getBankName() { return bankName; }
     public void setBankName(String bankName) { this.bankName = bankName; }

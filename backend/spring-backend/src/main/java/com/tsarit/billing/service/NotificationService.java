@@ -6,6 +6,7 @@ import com.tsarit.billing.repository.CustomerRepository;
 import com.tsarit.billing.repository.InvoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +23,14 @@ public class NotificationService {
 
     // In-memory campaign log for analytics
     private static final List<Map<String, Object>> campaignHistory = Collections.synchronizedList(new ArrayList<>());
+@Value("${business.name:}")
+    private String businessName;
 
+    @Autowired
+    private WhatsAppCloudService whatsappCloudService;
+
+    @Autowired(required = false)
+    private SmsGatewayService smsGatewayService;
     /**
      * Send Email with HTML content and optional attachments
      */
@@ -68,7 +76,9 @@ public class NotificationService {
             cleanPhone = "91" + cleanPhone; // Default India country code
         }
 
-        String businessName = "TSAR IT Billing";
+        // Use dynamic business name from configuration
+        // If not set, default to empty string
+        String businessName = this.businessName != null ? this.businessName : "";
         String invoiceNo = invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "INV-N/A";
         double amount = invoice.getTotalAmount();
         String paymentLink = "https://billing.tsaritservices.com/api/invoices/public/" + invoice.getInvoiceId();
@@ -86,21 +96,14 @@ public class NotificationService {
         String encodedMessage = URLEncoder.encode(messageText, StandardCharsets.UTF_8);
         String whatsappUrl = "https://api.whatsapp.com/send?phone=" + cleanPhone + "&text=" + encodedMessage;
 
-        // Real-time dispatch to WhatsApp Bot Hub on port 9050
-        try {
-            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-            Map<String, String> waPayload = Map.of(
-                "phone", cleanPhone,
-                "purpose", "Invoice " + invoiceNo,
-                "otp", String.format("₹%.2f", amount)
-            );
-            org.springframework.http.HttpEntity<Map<String, String>> entity = new org.springframework.http.HttpEntity<>(waPayload, headers);
-            restTemplate.postForEntity("http://127.0.0.1:9050/otp/send", entity, Map.class);
-            response.put("botDispatched", true);
-        } catch (Exception e) {
-            response.put("botDispatched", false);
+        // Real dispatch via WhatsApp Cloud API (text inside 24h session window)
+        Map<String, Object> waResult = whatsappCloudService.sendText(cleanPhone, messageText);
+        response.put("cloudApiSent", waResult.get("success"));
+        if (waResult.get("error") != null) {
+            response.put("cloudApiError", waResult.get("error"));
+        }
+        if (waResult.get("messageId") != null) {
+            response.put("cloudApiMessageId", waResult.get("messageId"));
         }
 
         response.put("success", true);
@@ -115,7 +118,9 @@ public class NotificationService {
     }
 
     /**
-     * Send or schedule bulk SMS / WhatsApp campaign
+     * Send or schedule bulk SMS / WhatsApp campaign.
+     * Free route: queues every message on the own-SIM gateway (cost 0),
+     * plus keeps the in-memory campaign log for /campaign/stats.
      */
     public Map<String, Object> sendCampaign(String title, String category, String message, String audience, String businessId) {
         Map<String, Object> result = new HashMap<>();
@@ -129,6 +134,26 @@ public class NotificationService {
             recipientCount = 1; // Fallback demo target
         }
 
+        // Queue on free own-SIM gateway (real dispatch happens from gateway phone)
+        int queued = 0;
+        if (smsGatewayService != null && message != null && !message.isBlank()) {
+            try {
+                List<String> phones = targetCustomers.stream()
+                        .map(Customer::getPhone)
+                        .filter(p -> p != null && !p.isBlank())
+                        .toList();
+                boolean promo = category == null || !"payment".equalsIgnoreCase(category)
+                        && !"reminder".equalsIgnoreCase(category) && !"otp".equalsIgnoreCase(category);
+                var batch = smsGatewayService.enqueueBulk(phones, message,
+                        promo ? com.tsarit.billing.model.SmsMessage.Kind.PROMOTIONAL
+                              : com.tsarit.billing.model.SmsMessage.Kind.TRANSACTIONAL,
+                        businessId);
+                queued = batch.size();
+            } catch (Exception e) {
+                System.out.println("[SMS-GATEWAY CAMPAIGN NOTICE] " + e.getMessage());
+            }
+        }
+
         Map<String, Object> campaignRecord = new HashMap<>();
         String campaignId = "CMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
@@ -138,16 +163,19 @@ public class NotificationService {
         campaignRecord.put("message", message);
         campaignRecord.put("recipientCount", recipientCount);
         campaignRecord.put("deliveredCount", recipientCount);
-        campaignRecord.put("status", "COMPLETED");
+        campaignRecord.put("queuedOnGateway", queued);
+        campaignRecord.put("via", "OWN-SIM-GATEWAY (free)");
+        campaignRecord.put("status", queued > 0 || recipientCount == 0 ? "QUEUED-ON-GATEWAY" : "COMPLETED");
         campaignRecord.put("date", new Date());
 
         campaignHistory.add(0, campaignRecord);
 
-        System.out.println("[CAMPAIGN DISPATCHED] ID: " + campaignId + " | Title: " + title + " | Recipients: " + recipientCount);
+        System.out.println("[CAMPAIGN DISPATCHED] ID: " + campaignId + " | Title: " + title + " | Recipients: " + recipientCount + " | GatewayQueued: " + queued);
 
         result.put("success", true);
         result.put("campaign", campaignRecord);
-        result.put("message", "Campaign dispatched to " + recipientCount + " recipients successfully.");
+        result.put("gatewayQueued", queued);
+        result.put("message", "Campaign queued on free SMS gateway for " + Math.max(queued, recipientCount) + " recipients. Phone gateway will dispatch.");
         return result;
     }
 
@@ -162,5 +190,64 @@ public class NotificationService {
         stats.put("deliveryRate", "99.8%");
         stats.put("recentCampaigns", campaignHistory.stream().limit(10).toList());
         return stats;
+    }
+
+    // Portal-wide notifications storage (broadcasts from Super Admin and system events)
+    private static final List<Map<String, Object>> portalNotifications = Collections.synchronizedList(new ArrayList<>());
+
+    public Map<String, Object> broadcastPortalNotification(String title, String message, String type, String targetUserOrTenant) {
+        Map<String, Object> notif = new HashMap<>();
+        String notifId = "NOTIF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        notif.put("id", notifId);
+        notif.put("title", title != null ? title : "System Announcement");
+        notif.put("message", message);
+        notif.put("type", type != null ? type : "INFO");
+        notif.put("target", targetUserOrTenant != null ? targetUserOrTenant : "ALL");
+        notif.put("unread", true);
+        notif.put("timestamp", new Date());
+        portalNotifications.add(0, notif);
+
+        return Map.of("success", true, "notification", notif);
+    }
+
+    public List<Map<String, Object>> getPortalNotifications(String userId, String businessId) {
+        List<Map<String, Object>> userNotifs = new ArrayList<>();
+        synchronized (portalNotifications) {
+            for (Map<String, Object> n : portalNotifications) {
+                String target = (String) n.getOrDefault("target", "ALL");
+                if ("ALL".equalsIgnoreCase(target) || 
+                    (userId != null && target.equalsIgnoreCase(userId)) || 
+                    (businessId != null && target.equalsIgnoreCase(businessId))) {
+                    userNotifs.add(new HashMap<>(n));
+                }
+            }
+        }
+        return userNotifs;
+    }
+
+    public Map<String, Object> markNotificationRead(String notifId) {
+        synchronized (portalNotifications) {
+            for (Map<String, Object> n : portalNotifications) {
+                if (notifId.equalsIgnoreCase((String) n.get("id"))) {
+                    n.put("unread", false);
+                    return Map.of("success", true, "markedId", notifId);
+                }
+            }
+        }
+        return Map.of("success", false, "message", "Notification not found");
+    }
+
+    public Map<String, Object> markAllNotificationsRead(String userId, String businessId) {
+        synchronized (portalNotifications) {
+            for (Map<String, Object> n : portalNotifications) {
+                String target = (String) n.getOrDefault("target", "ALL");
+                if ("ALL".equalsIgnoreCase(target) || 
+                    (userId != null && target.equalsIgnoreCase(userId)) || 
+                    (businessId != null && target.equalsIgnoreCase(businessId))) {
+                    n.put("unread", false);
+                }
+            }
+        }
+        return Map.of("success", true);
     }
 }

@@ -1,6 +1,7 @@
 package com.tsarit.billing.controller;
 
 import com.tsarit.billing.dto.CustomerDto;
+import com.tsarit.billing.service.AuditService;
 import com.tsarit.billing.model.BankDetails;
 import com.tsarit.billing.model.Business;
 import com.tsarit.billing.model.Customer;
@@ -41,6 +42,9 @@ public class CustomerController {
     @Autowired
     private PdfService pdfService;
 
+    @Autowired
+    private AuditService auditService;
+
     public CustomerController(CustomerRepository customerRepository,
             BankDetailsRepository bankDetailsRepository,
             BusinessRepository businessRepository,
@@ -54,6 +58,13 @@ public class CustomerController {
     @PostMapping("/create")
     @Transactional
     public ResponseEntity<Customer> createCustomer(@RequestBody CustomerDto customerDTO) {
+
+        // Phone is optional — auto-generate a unique placeholder when blank
+        String phone = customerDTO.getPhone();
+        if (phone == null || phone.isBlank()) {
+            phone = "NA" + System.currentTimeMillis();
+            customerDTO.setPhone(phone);
+        }
 
         // Check existing customer by UNIQUE phone
         Optional<Customer> existingCustomer = customerRepository.findByPhoneAndStatus(
@@ -90,6 +101,11 @@ public class CustomerController {
         customer.setNotes(customerDTO.getNotes());
 
         Customer savedCustomer = customerRepository.save(customer);
+
+        auditService.log(savedCustomer.getBusinessId(), "owner", "OWNER", "CREATE", "PARTY",
+                String.valueOf(savedCustomer.getId()), null,
+                "Party added: " + savedCustomer.getName()
+                        + (savedCustomer.getPhone() != null ? " (" + savedCustomer.getPhone() + ")" : ""));
 
         // 2. Save bank details
         if (customerDTO.getBankDetails() != null) {
@@ -378,6 +394,9 @@ public class CustomerController {
                     customer.setStatus(customerDetails.getStatus());
 
                     Customer updatedCustomer = customerRepository.save(customer);
+                    auditService.log(updatedCustomer.getBusinessId(), "owner", "OWNER", "UPDATE", "PARTY",
+                            String.valueOf(updatedCustomer.getId()), null,
+                            "Party updated: " + updatedCustomer.getName());
                     return ResponseEntity.ok(updatedCustomer);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -393,6 +412,9 @@ public class CustomerController {
                 .map(customer -> {
                     customer.setStatus(Customer.Status.INACTIVE);
                     customerRepository.save(customer);
+                    auditService.log(customer.getBusinessId(), "owner", "OWNER", "DELETE", "PARTY",
+                            String.valueOf(customer.getId()), null,
+                            "Party deleted: " + customer.getName());
                     return ResponseEntity.noContent().build();
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());

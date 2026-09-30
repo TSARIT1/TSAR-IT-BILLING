@@ -17,8 +17,14 @@ public class JwtUtil {
     private long jwtExpirationMs;
 
     private Key getSigningKey() {
-        // Ensures correct key length for HS256
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        // Ensures correct key length for HS256 (min 32 bytes) and fails fast on bad config
+        byte[] secretBytes = jwtSecret == null ? new byte[0] : jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException(
+                "app.jwtSecret must be at least 32 characters for HS256 (got " + secretBytes.length + "). "
+                + "Set the APP_JWT_SECRET environment variable.");
+        }
+        return Keys.hmacShaKeyFor(secretBytes);
     }
 
     // Generate JWT token

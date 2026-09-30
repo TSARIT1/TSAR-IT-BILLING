@@ -10,4 +10,6 @@ import java.util.List;
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, String> {
     List<BankTransaction> findByBankAccountIdOrderByTransactionDateDesc(String bankAccountId);
     List<BankTransaction> findAllByOrderByTransactionDateDesc();
+    List<BankTransaction> findTop100ByBusinessIdOrderByTransactionDateDesc(String businessId);
+    List<BankTransaction> findByBusinessIdAndBankAccountIdOrderByTransactionDateDesc(String businessId, String bankAccountId);
 }

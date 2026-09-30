@@ -23,6 +23,9 @@ public class InvoiceItems {
     
     private String itemName;
 
+    @Column(name = "hsn_code", length = 10)
+    private String hsnCode;
+
     private int qty;
     private double price;
     private double discount;
@@ -30,7 +33,7 @@ public class InvoiceItems {
     private double totalLineAmount;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = true)
     private Product product;
     
     @Column(name = "is_deleted", nullable = false)
@@ -69,6 +72,14 @@ public class InvoiceItems {
 
 	public void setItemName(String itemName) {
 		this.itemName = itemName;
+	}
+
+	public String getHsnCode() {
+		return hsnCode;
+	}
+
+	public void setHsnCode(String hsnCode) {
+		this.hsnCode = (hsnCode == null || hsnCode.isBlank()) ? null : hsnCode.trim();
 	}
 
 	public int getQty() {

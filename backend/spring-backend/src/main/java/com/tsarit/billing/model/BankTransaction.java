@@ -17,6 +17,10 @@ public class BankTransaction {
     @Column(name = "bank_account_id", nullable = false)
     private String bankAccountId;
 
+    /** Owning tenant (business.id), denormalised from the account for scoped listing. */
+    @Column(name = "business_id", length = 50)
+    private String businessId;
+
     @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
 
@@ -57,6 +61,9 @@ public class BankTransaction {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getBusinessId() { return businessId; }
+    public void setBusinessId(String businessId) { this.businessId = businessId; }
 
     public String getBankAccountId() { return bankAccountId; }
     public void setBankAccountId(String bankAccountId) { this.bankAccountId = bankAccountId; }

@@ -8,6 +8,7 @@ import com.tsarit.billing.repository.InvoiceRepository;
 import com.tsarit.billing.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +33,8 @@ public class AIAssistantService {
 
     @Autowired
     private AccountingService accountingService;
+    @Value("${business.name:}")
+    private String businessName;
 
     public Map<String, Object> askAssistant(String question, String userId) {
         if (question == null) question = "";
@@ -121,7 +124,7 @@ public class AIAssistantService {
             response.put("actionLink", "/sales-invoices");
         } else if (q.contains("whatsapp") || q.contains("sms") || q.contains("bot") || q.contains("campaign")) {
             response.put("intent", "WHATSAPP_AUTOMATION");
-            response.put("answer", "TSAR IT Billing supports automated WhatsApp Invoice Dispatch and bulk Promotional SMS campaigns. Invoices can be shared instantly with payment links directly to customer WhatsApp numbers.");
+            response.put("answer", String.format("%s supports automated WhatsApp Invoice Dispatch and bulk Promotional SMS campaigns. Invoices can be shared instantly with payment links directly to customer WhatsApp numbers.", businessName != null && !businessName.isEmpty() ? businessName : ""));
             response.put("actionLink", "/sms-promotion");
         } else {
             response.put("intent", "RAKI_AI_LLM");
@@ -130,7 +133,7 @@ public class AIAssistantService {
                 Map<String, Object> payload = new HashMap<>();
                 payload.put("model", "raki-master:latest");
                 payload.put("messages", List.of(
-                    Map.of("role", "system", "content", "You are RAKI AI, an intelligent business and GST billing copilot for TSAR IT Billing. Provide concise, expert, practical advice."),
+                    Map.of("role", "system", "content", String.format("You are RAKI AI, an intelligent business and GST billing copilot for %s. Provide concise, expert, practical advice.", businessName != null && !businessName.isEmpty() ? businessName : "")),
                     Map.of("role", "user", "content", question)
                 ));
                 HttpHeaders headers = new HttpHeaders();

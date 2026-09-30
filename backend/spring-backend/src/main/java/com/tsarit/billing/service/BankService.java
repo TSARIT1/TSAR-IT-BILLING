@@ -34,14 +34,7 @@ public class BankService {
     }
 
     public List<BankAccount> getAllAccounts() {
-        List<BankAccount> list = bankAccountRepository.findAllByOrderByCreatedAtDesc();
-        if (list.isEmpty()) {
-            // Seed default primary account
-            createAccount("HDFC Bank", "50100234567890", "HDFC0001234", "Madhapur Branch, Hyderabad", "CURRENT", "tsaritbilling@hdfcbank", BigDecimal.valueOf(85850), true);
-            createAccount("State Bank of India", "309876543210", "SBIN0004567", "Main Branch, Hyderabad", "CURRENT", "tsarit@sbi", BigDecimal.valueOf(42500), false);
-            return bankAccountRepository.findAllByOrderByCreatedAtDesc();
-        }
-        return list;
+        return bankAccountRepository.findAllByOrderByCreatedAtDesc();
     }
 
     @Transactional
@@ -80,5 +73,16 @@ public class BankService {
             return bankTransactionRepository.save(tx);
         }
         return null;
+    }
+
+    @Transactional
+    public boolean deleteAccount(String accountId) {
+        if (bankAccountRepository.existsById(accountId)) {
+            bankTransactionRepository.deleteAll(bankTransactionRepository.findByBankAccountIdOrderByTransactionDateDesc(accountId));
+            bankAccountRepository.deleteById(accountId);
+            auditService.logEvent("BANKING", "DELETE_ACCOUNT", accountId, null, "Deleted Bank Account", accountId);
+            return true;
+        }
+        return false;
     }
 }

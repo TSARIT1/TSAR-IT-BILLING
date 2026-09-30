@@ -1,28 +1,23 @@
 package com.tsarit.billing.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
+/**
+ * All fields optional — the service fills defaults (role, payout type, salary 0)
+ * for anything the caller leaves out, so app users are never blocked.
+ */
 public class StaffDto {
 
     private String id;
 
-    @NotBlank(message = "Name is required")
     private String name;
 
-    @NotBlank(message = "Mobile number is required")
-    @Pattern(regexp = "^[0-9]{10,15}$", message = "Mobile number must be 10-15 digits")
     private String mobileNumber;
 
-    @NotBlank(message = "Role is required")
     private String role;
 
-    @NotNull(message = "Salary payout type is required")
     private String salaryPayoutType; // MONTHLY, WEEKLY, DAILY
 
-    @NotNull(message = "Salary is required")
     private BigDecimal salary;
 
     private String salaryCycle;

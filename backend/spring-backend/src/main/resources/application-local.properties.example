@@ -1,0 +1,4 @@
+# Copy to application-local.properties (git-ignored) and fill in your local values.
+spring.datasource.username=root
+spring.datasource.password=change-me
+app.jwtSecret=local-dev-jwt-secret-key-min-32-characters-long!!
