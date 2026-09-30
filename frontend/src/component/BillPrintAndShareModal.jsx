@@ -28,9 +28,19 @@ export default function BillPrintAndShareModal({
   const [showNetworkSettings, setShowNetworkSettings] = useState(false);
   const [printingStatus, setPrintingStatus] = useState("");
 
+  const formatDisplayId = (id) => {
+    if (!id) return "Not saved";
+    const str = String(id).trim();
+    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str)) {
+      return `INV-${str.substring(0, 8).toUpperCase()}`;
+    }
+    return str;
+  };
+
   const saleId = billData.saleId || billData.id;
   const invoiceId = saleId ? null : billData.invoiceId;
-  const billNo = billData.invoiceId || saleId || "Not saved";
+  const rawBillNo = billData.invoiceId || saleId || "Not saved";
+  const billNo = formatDisplayId(rawBillNo);
   const businessId = merchantProfile.userBusinessId || merchantProfile.businessId ||
     localStorage.getItem("userBusinessId") || localStorage.getItem("businessId") || undefined;
   const totalAmt = billData.totalAmount || billData.total || 0;

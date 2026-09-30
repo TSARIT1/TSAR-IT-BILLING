@@ -40,7 +40,8 @@ import {
   getAllProducts,
   confirmSaleFromInvoice,
   searchCustomers,
-  getCustomerByPhone
+  getCustomerByPhone,
+  createCustomer
 } from "../../services/api";
 import BillPrintAndShareModal from "../BillPrintAndShareModal";
 
@@ -286,22 +287,45 @@ function CreateSalesInvoice() {
       alert("Please enter Customer Name");
       return;
     }
-    if (!selectedCustomerId) {
-      alert("Please select a customer from the list");
+    const invalidItems = items.filter(i => !i.productId && !i.itemName);
+    if (items.length === 0 || invalidItems.length > 0) {
+      alert("Please add at least one valid item before saving.");
       return;
     }
-    const invalidItems = items.filter(i => !i.productId);
-    if (invalidItems.length > 0) {
-      alert("Please select a product for all items before saving.");
-      return;
+
+    const activeBizId = localStorage.getItem("userBusinessId") || localStorage.getItem("businessId") || undefined;
+    let effectiveCustomerId = selectedCustomerId;
+
+    // If typing a fresh/new customer name without existing ID, auto-create customer record
+    if (!effectiveCustomerId && party.trim()) {
+      try {
+        const userStr = localStorage.getItem("user");
+        const userObj = userStr ? JSON.parse(userStr) : {};
+        const bizId = activeBizId || userObj.businessId || "BIZ-DEFAULT";
+        const newCust = await createCustomer({
+          name: party.trim(),
+          phone: mobile.trim() || "",
+          city: city.trim() || "",
+          customerType: "Customer",
+          businessId: bizId,
+          status: "ACTIVE"
+        });
+        if (newCust && (newCust.id || newCust.customerId)) {
+          effectiveCustomerId = newCust.id || newCust.customerId;
+          setSelectedCustomerId(effectiveCustomerId);
+        }
+      } catch (err) {
+        console.warn("Auto-create customer in background:", err);
+      }
     }
 
     const invoiceData = {
       userId: userId,
-      customerName: party,
-      customerId: selectedCustomerId,
-      mobileNo: mobile || "-",
-      city: city || "-",
+      customerName: party.trim(),
+      customerId: effectiveCustomerId,
+      businessId: activeBizId,
+      mobileNo: mobile.trim() || "-",
+      city: city.trim() || "-",
       invoiceDate: invoiceDate,
       totalItems: items.length,
       totalAmount: total,
@@ -606,27 +630,20 @@ function CreateSalesInvoice() {
 
     if (value.trim().length >= 10) {
       try {
-        const customer = await getCustomerByPhone(value);
+        const customer = await getCustomerByPhone(value.trim());
         if (customer) {
-          setParty(customer.customerName);
-          setCity(customer.city || "");
-          setSelectedCustomerId(customer.customerId);
-        }
-        else {
-          // Customer not found
-          const confirmAdd = window.confirm("Customer not found. Would you like to add a new customer?");
-          if (confirmAdd) {
-            handleAddNewParty();
+          if (!party || party.trim() === "" || party.toLowerCase().includes("walk-in")) {
+            setParty(customer.customerName || customer.name || "");
+          }
+          if (customer.city) {
+            setCity(customer.city);
+          }
+          if (customer.customerId || customer.id) {
+            setSelectedCustomerId(customer.customerId || customer.id);
           }
         }
-
       } catch (err) {
-        console.error("Error fetching customer by phone:", err);
-        // Show popup for customer not found
-        const confirmAdd = window.confirm("Customer not found. Would you like to add a new customer?");
-        if (confirmAdd) {
-          handleAddNewParty();
-        }
+        // Customer not found yet, which is fine for fresh customers
       }
     }
   };
@@ -969,7 +986,7 @@ function CreateSalesInvoice() {
                   </div>
 
                   {/* Customer suggestions dropdown */}
-                  {showCustomerDropdown && (
+                  {showCustomerDropdown && party.trim().length > 0 && (
                     <div className="customer-suggestions-dropdown">
                       {isSearching ? (
                         <div className="customer-suggestion-item searching-state">
@@ -979,7 +996,7 @@ function CreateSalesInvoice() {
                         <>
                           {customerSuggestions.map((cust) => (
                             <div
-                              key={cust.customerId}
+                              key={cust.customerId || cust.id}
                               className="customer-suggestion-item"
                               onClick={() => handleSelectCustomer(cust)}
                             >
@@ -988,24 +1005,36 @@ function CreateSalesInvoice() {
                                 <div>
                                   <div className="customer-name">{cust.customerName || cust.name}</div>
                                   <div className="customer-details">
-                                    {cust.mobileNo && <span><BsTelephoneFill /> {cust.mobileNo || cust.phone}</span>}
+                                    {(cust.mobileNo || cust.phone) && <span><BsTelephoneFill /> {cust.mobileNo || cust.phone}</span>}
                                     {cust.city && <span><BsGeoAltFill /> {cust.city}</span>}
                                   </div>
                                 </div>
                               </div>
                             </div>
                           ))}
+                          <div
+                            className="customer-suggestion-item new-customer-option"
+                            style={{ background: "#f8f9fa", borderTop: "1px dashed #dee2e6", color: "#800000", fontWeight: "600", cursor: "pointer", padding: "10px 14px" }}
+                            onClick={() => {
+                              setSelectedCustomerId(null);
+                              setShowCustomerDropdown(false);
+                            }}
+                          >
+                            <BsPersonPlus className="me-2" /> Use "{party}" as fresh customer
+                          </div>
                         </>
                       ) : (
                         <div className="customer-suggestion-item no-results">
                           <div className="no-results-content">
-                            <p>No customer found</p>
-                            <button
-                              className="add-new-party-btn"
-                              onClick={handleAddNewParty}
+                            <div
+                              style={{ color: "#800000", fontWeight: "600", cursor: "pointer", padding: "8px 0" }}
+                              onClick={() => {
+                                setSelectedCustomerId(null);
+                                setShowCustomerDropdown(false);
+                              }}
                             >
-                              <BsPersonPlus /> Add New Party
-                            </button>
+                              <BsPersonPlus className="me-2" /> Use "{party}" as fresh customer
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1025,7 +1054,6 @@ function CreateSalesInvoice() {
                       value={mobile}
                       onChange={handleMobileChange}
                       className="invoice-input icon-padded-invoice"
-                      readOnly
                     />
                   </div>
                 </div>

@@ -23,7 +23,7 @@ export default function Dashboard() {
     storedUser = {};
   }
   const businessName = storedUser.businessName || "";
-  const ownerName = storedUser.ownerName || "";
+  const ownerName = storedUser.ownerName || storedUser.name || "";
   const companyLogo = localStorage.getItem("companyLogo") || "";
 
   const todayStr = new Date().toLocaleDateString('en-US', {
@@ -48,7 +48,7 @@ export default function Dashboard() {
             </div>
           )}
           <div>
-            <h2 className="banner-title mb-1">Welcome back, {ownerName}! 👋</h2>
+            <h2 className="banner-title mb-1">Welcome back{ownerName ? `, ${ownerName}` : ""}! 👋</h2>
             <p className="banner-subtitle mb-0">
               Here's what's happening with <strong>{businessName}</strong> today ({todayStr}).
             </p>

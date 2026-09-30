@@ -406,7 +406,7 @@ public class InvoiceController {
                 : (customer != null && customer.getBusinessId() != null ? customer.getBusinessId() : "DEFAULT");
         String fy = indianFinYear(java.time.LocalDate.now());
         if (invoiceSeriesRepository == null) {
-            return "INV-" + System.currentTimeMillis();
+            return "INV-" + fy + "-" + String.format("%05d", (int)(Math.random() * 90000 + 10000));
         }
         try {
             var series = invoiceSeriesRepository.findForUpdate(biz, fy)
@@ -414,12 +414,14 @@ public class InvoiceController {
             long seq = (series.getLastSeq() == null ? 0L : series.getLastSeq()) + 1;
             series.setLastSeq(seq);
             invoiceSeriesRepository.save(series);
-            String bus4 = biz.replaceAll("[^A-Za-z0-9]", "");
-            bus4 = (bus4.length() >= 4 ? bus4.substring(bus4.length() - 4) : String.format("%4s", bus4).replace(' ', '0'))
-                    .toUpperCase();
-            return String.format("INV-%s-%s-%06d", bus4, fy, seq);
+            String cleanBiz = biz.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+            if (cleanBiz.isEmpty() || cleanBiz.contains("DEFAULT") || cleanBiz.equals("UNKNOWN")) {
+                return String.format("INV-%s-%05d", fy, seq);
+            }
+            String prefix = cleanBiz.length() > 4 ? cleanBiz.substring(0, 4) : cleanBiz;
+            return String.format("INV-%s-%s-%05d", prefix, fy, seq);
         } catch (Exception e) {
-            return "INV-" + System.currentTimeMillis();
+            return "INV-" + fy + "-" + String.format("%05d", (int)(Math.random() * 90000 + 10000));
         }
     }
 
@@ -591,8 +593,43 @@ public class InvoiceController {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        Customer customer = null;
+        if (request.getCustomerId() != null) {
+            customer = customerRepository.findById(request.getCustomerId()).orElse(null);
+        }
+        String mobileNo = request.getMobileNo() != null ? request.getMobileNo().trim() : "";
+        String custName = request.getCustomerName() != null && !request.getCustomerName().isBlank()
+                ? request.getCustomerName().trim() : "Walk-in Customer";
+
+        if (customer == null && !mobileNo.isBlank() && !mobileNo.equals("-")) {
+            customer = customerRepository.findByPhone(mobileNo).orElse(null);
+        }
+        if (customer == null && !custName.isBlank() && !custName.equalsIgnoreCase("Walk-in Customer")) {
+            customer = customerRepository.findByName(custName).orElse(null);
+        }
+        if (customer == null) {
+            // Fresh / New Customer created automatically on the fly
+            customer = new Customer();
+            customer.setName(custName);
+            customer.setPhone(!mobileNo.isBlank() && !mobileNo.equals("-") ? mobileNo : ("9" + (int)(Math.random() * 900000000 + 100000000)));
+            customer.setCity(request.getCity() != null && !request.getCity().isBlank() ? request.getCity() : "Store Counter");
+            String reqBizId = request.getBusinessId();
+            if (reqBizId == null || reqBizId.isBlank()) {
+                reqBizId = (userBusinessRepository != null && user != null) ?
+                        userBusinessRepository.findByUserId(user.getId()).stream().map(ub -> ub.getBusiness().getId()).findFirst().orElse("BIZ-DEFAULT") : "BIZ-DEFAULT";
+            }
+            customer.setBusinessId(reqBizId);
+            customer.setCustomerType("Customer");
+            customer.setStatus(Customer.Status.ACTIVE);
+            try {
+                customer = customerRepository.save(customer);
+            } catch (Exception ex) {
+                customer = customerRepository.findAll().stream().findFirst().orElse(null);
+            }
+        }
+        if (customer == null) {
+            throw new RuntimeException("Unable to resolve or create customer record");
+        }
 
         // Save invoice
         Invoice invoice = new Invoice();

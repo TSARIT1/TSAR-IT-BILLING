@@ -15,9 +15,15 @@ import jakarta.persistence.Table;
 public class Invoice {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "invoice_id", length = 50, nullable = false, updatable = false)
 	private String invoiceId;
+
+	@jakarta.persistence.PrePersist
+	public void ensureInvoiceId() {
+		if (this.invoiceId == null || this.invoiceId.isBlank()) {
+			this.invoiceId = "INV-" + java.time.LocalDate.now().getYear() + "-" + String.format("%05d", (int)(Math.random() * 90000 + 10000));
+		}
+	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", // column in invoices table

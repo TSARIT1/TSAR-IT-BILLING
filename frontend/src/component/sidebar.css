@@ -256,3 +256,10 @@
     /* Full height on mobile */
   }
 }
+
+/* Brand contrast: Bootstrap's text-warning yellow (#ffc107) is unreadable on
+   the white sidebar — use the brand gold instead (WCAG AA on white). */
+.sidebar .menu-icon.text-warning,
+.sidebar .menu-text.text-warning {
+  color: #b45309 !important;
+}

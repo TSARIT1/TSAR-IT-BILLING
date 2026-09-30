@@ -11,6 +11,8 @@ public class InvoiceRequestDto {
 	
     private String userId;          
     private Long customerId;
+    private String customerName;
+    private String businessId;
     private String mobileNo;
     private String city;
     private String invoiceDate;
@@ -21,6 +23,22 @@ public class InvoiceRequestDto {
     private Long productId;
 
     private List<InvoiceItemsDto> items;
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+	public String getBusinessId() {
+		return businessId;
+	}
+
+	public void setBusinessId(String businessId) {
+		this.businessId = businessId;
+	}
 
 	public String getUserId() {
 		return userId;

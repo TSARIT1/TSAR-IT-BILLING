@@ -77,6 +77,31 @@ public class PdfService {
 	@Autowired
 	private InvoiceItemsRepository invoiceItemsRepository;
 
+	public static String formatInvoiceNumber(String rawId) {
+		if (rawId == null || rawId.trim().isEmpty()) {
+			return "INV-0001";
+		}
+		String clean = rawId.trim();
+		if (clean.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
+			return "INV-" + clean.substring(0, 8).toUpperCase();
+		}
+		return clean;
+	}
+
+	public static String formatSlipNumber(String rawId) {
+		if (rawId == null || rawId.trim().isEmpty()) {
+			return "SLIP-0001";
+		}
+		String clean = rawId.trim();
+		if (clean.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
+			return "SLIP-" + clean.substring(0, 8).toUpperCase();
+		}
+		if (clean.startsWith("INV-")) {
+			return "SLIP-" + clean.substring(4);
+		}
+		return clean;
+	}
+
 	// Export all products (table format)
 	public byte[] generateProductsPdf(List<Product> products) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -842,13 +867,11 @@ public class PdfService {
 					invoiceHeader.addHeaderCell(headerCell("Total Items"));
 					invoiceHeader.addHeaderCell(headerCell("Amount (Rs.)"));
 
-					String invoiceIdShort = invoice.getInvoiceId() != null
-							? invoice.getInvoiceId().substring(0, Math.min(8, invoice.getInvoiceId().length()))
-							: "N/A";
+					String invoiceIdClean = formatInvoiceNumber(invoice.getInvoiceId());
 					String supplierName = invoice.getCustomer() != null ? invoice.getCustomer().getName() : "N/A";
 
 					invoiceHeader.addCell(centerCell(invoiceSerialNo++));
-					invoiceHeader.addCell(bodyCell(invoiceIdShort));
+					invoiceHeader.addCell(bodyCell(invoiceIdClean));
 					invoiceHeader.addCell(bodyCell(supplierName));
 					invoiceHeader.addCell(bodyCell(invoice.getInvoiceDate()));
 					invoiceHeader.addCell(centerCell(invoice.getTotalItems()));
@@ -1106,8 +1129,7 @@ public class PdfService {
 							supplierName = pr.getInvoice().getCustomer().getName();
 						}
 						if (pr.getInvoice().getInvoiceId() != null) {
-							invoiceNo = "#" + pr.getInvoice().getInvoiceId().substring(0,
-									Math.min(8, pr.getInvoice().getInvoiceId().length()));
+							invoiceNo = formatInvoiceNumber(pr.getInvoice().getInvoiceId());
 						}
 					}
 
@@ -1362,8 +1384,8 @@ public class PdfService {
 					.setBorder(new SolidBorder(headerColor, 1))
 					.setPadding(5));
 			infoTable.addCell(new Cell()
-					.add(new Paragraph(invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "N/A")
-							.setFontSize(7))
+					.add(new Paragraph(formatInvoiceNumber(invoice != null ? invoice.getInvoiceId() : null))
+							.setFontSize(9).setBold())
 					.setBorder(new SolidBorder(headerColor, 1))
 					.setPadding(5));
 
@@ -2034,7 +2056,7 @@ public class PdfService {
 			// Slip Info Cell
 			Cell slipInfoCell = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
 			slipInfoCell.add(new Paragraph("SALES SLIP").setBold().setFontSize(18).setFontColor(headerColor));
-			slipInfoCell.add(new Paragraph("Slip No: " + (invoice != null && invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "-"))
+			slipInfoCell.add(new Paragraph("Slip No: " + formatSlipNumber(invoice != null ? invoice.getInvoiceId() : null))
 					.setFontSize(10).setBold());
 			slipInfoCell.add(new Paragraph("Date: " + LocalDate.now().format(dateFormatter))
 					.setFontSize(10).setBold());
@@ -2048,7 +2070,7 @@ public class PdfService {
 			saleInfoTable.setWidth(UnitValue.createPercentValue(100));
 			saleInfoTable.addCell(new Cell()
 					.add(new Paragraph(
-							"Sale Invoice ID: " + (invoice != null && invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "-"))
+							"Sale Invoice ID: " + formatInvoiceNumber(invoice != null ? invoice.getInvoiceId() : null))
 							.setFontSize(10).setBold())
 					.setBorder(Border.NO_BORDER)
 					.setPadding(3));
@@ -2257,8 +2279,10 @@ public class PdfService {
 			// Slip Info Cell
 			Cell slipInfoCell = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
 			slipInfoCell.add(new Paragraph("Slip No").setBold().setFontSize(10).setFontColor(headerColor));
-			slipInfoCell
-					.add(new Paragraph(sale.getId() != null ? sale.getId().toString() : "-").setFontSize(12).setBold());
+			String slipNum = sale.getInvoiceId() != null && !sale.getInvoiceId().isBlank()
+					? formatSlipNumber(sale.getInvoiceId())
+					: "SLIP-" + (sale.getId() != null ? String.format("%05d", sale.getId()) : "00001");
+			slipInfoCell.add(new Paragraph(slipNum).setFontSize(12).setBold());
 			slipInfoCell.add(new Paragraph("Date").setBold().setFontSize(10).setFontColor(headerColor).setMarginTop(5));
 			slipInfoCell.add(new Paragraph(sale.getCreatedAt() != null
 					? sale.getCreatedAt().format(dateFormatter)
@@ -2271,8 +2295,11 @@ public class PdfService {
 			/* ================= SALE INFO ================= */
 			Table saleInfoTable = new Table(2);
 			saleInfoTable.setWidth(UnitValue.createPercentValue(100));
+			String saleDisplay = sale.getInvoiceId() != null && !sale.getInvoiceId().isBlank()
+					? formatInvoiceNumber(sale.getInvoiceId())
+					: "SALE-" + (sale.getId() != null ? String.format("%05d", sale.getId()) : "00001");
 			saleInfoTable.addCell(new Cell()
-					.add(new Paragraph("Sale ID: " + (sale.getId() != null ? sale.getId().toString() : "-"))
+					.add(new Paragraph("Sale ID: " + saleDisplay)
 							.setFontSize(10).setBold())
 					.setBorder(Border.NO_BORDER)
 					.setPadding(3));
@@ -2539,11 +2566,8 @@ public class PdfService {
 			document.add(headerTable);
 			document.add(new LineSeparator(new SolidLine(1)).setMarginTop(3).setMarginBottom(5));
 
-			/* ================= INVOICE INFO ================= */
-			// Get last 6 characters of invoice ID
-			String billNo = invoice.getInvoiceId() != null && invoice.getInvoiceId().length() >= 6
-					? invoice.getInvoiceId().substring(invoice.getInvoiceId().length() - 6)
-					: invoice.getInvoiceId();
+			// Clean invoice / bill number
+			String billNo = formatInvoiceNumber(invoice.getInvoiceId());
 
 			// Get customer info
 			String customerName = invoice.getCustomer() != null ? invoice.getCustomer().getName() : "-";
